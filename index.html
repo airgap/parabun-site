@@ -77,13 +77,13 @@
           TypedArrays are passed through a <code>SharedArrayBuffer</code>, so <code>postMessage</code> transfers a
           handle rather than a copy.
         </p>
-        <figure class="code"><figcaption class="code-header"><span class="code-lang">parabun</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
+        <pre><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
 
 <span class="pure">pure</span> <span class="kw">function</span> <span class="fn">score</span>(row) { <span class="kw">return</span> row.reduce((a, b) => a + b * b, 0); }
 
 <span class="kw">const</span> rows = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="kw">new</span> <span class="type">SharedArrayBuffer</span>(<span class="num">1_000_000</span> * <span class="num">4</span>));
 <span class="com">// ...fill rows...</span>
-<span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });</code></pre></figure>
+<span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });</code></pre>
 
         <h3><span class="import">bun:simd</span></h3>
         <p>
@@ -91,12 +91,12 @@
           above 4&nbsp;MiB are processed in place rather than copied into WASM memory. <code>alloc()</code> returns a
           typed array backed by the WASM linear memory for zero-copy use.
         </p>
-        <figure class="code"><figcaption class="code-header"><span class="code-lang">typescript</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">import</span> { mulScalar, add, dot, sum } <span class="kw">from</span> <span class="str">"bun:simd"</span>;
+        <pre><code><span class="kw">import</span> { mulScalar, add, dot, sum } <span class="kw">from</span> <span class="str">"bun:simd"</span>;
 
 <span class="kw">const</span> y = <span class="fn">mulScalar</span>(<span class="kw">new</span> <span class="type">Float32Array</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]), <span class="num">3</span>); <span class="com">// [3, 6, 9, 12]</span>
 <span class="kw">const</span> z = <span class="fn">add</span>(a, b);
 <span class="kw">const</span> d = <span class="fn">dot</span>(u, v);
-<span class="kw">const</span> s = <span class="fn">sum</span>(a);</code></pre></figure>
+<span class="kw">const</span> s = <span class="fn">sum</span>(a);</code></pre>
 
         <table class="bench" aria-label="SIMD benchmark, N=100,000">
           <thead>
@@ -143,7 +143,7 @@
           runtime-compiled to PTX (via NVRTC) or MSL (via <code>newLibraryWithSource:</code>) when the body fits a
           supported shape: arithmetic, ternary, <code>Math.*</code>.
         </p>
-        <figure class="code"><figcaption class="code-header"><span class="code-lang">typescript</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">import</span> gpu <span class="kw">from</span> <span class="str">"bun:gpu"</span>;
+        <pre><code><span class="kw">import</span> gpu <span class="kw">from</span> <span class="str">"bun:gpu"</span>;
 
 <span class="kw">const</span> mat = gpu.<span class="fn">alloc</span>(M * K, <span class="str">"f32"</span>);
 <span class="com">// ...fill mat...</span>
@@ -151,7 +151,7 @@
 <span class="kw">for</span> (<span class="kw">const</span> q <span class="kw">of</span> queries) {
   <span class="kw">const</span> scores = gpu.<span class="fn">matVec</span>(held, q, M, K); <span class="com">// no copy</span>
 }
-gpu.<span class="fn">release</span>(held);</code></pre></figure>
+gpu.<span class="fn">release</span>(held);</code></pre>
 
         <h3><span class="import">bun:llm</span></h3>
         <p>
@@ -161,7 +161,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
           4-warps-per-block layout; QKV and Gate+Up projections are byte-concatenated at load time and dispatched as one
           matVec per layer.
         </p>
-        <figure class="code"><figcaption class="code-header"><span class="code-lang">typescript</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">import</span> llm <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+        <pre><code><span class="kw">import</span> llm <span class="kw">from</span> <span class="str">"bun:llm"</span>;
 
 <span class="kw">using</span> m = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
 
@@ -170,7 +170,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
   { role: <span class="str">"user"</span>, content: <span class="str">"What is the capital of France?"</span> },
 ])) {
   process.stdout.<span class="fn">write</span>(piece);
-}</code></pre></figure>
+}</code></pre>
 
         <table class="bench" aria-label="LLM decode throughput, Llama-3.2-1B-Instruct Q4_K_M on RTX 4070 Ti">
           <thead>
@@ -214,7 +214,8 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
 
       <div class="diff">
         <div>
-          <figure class="code"><figcaption class="code-header"><span class="code-lang">before</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">import</span> { MemoryVectorStore }
+          <div class="diff-label">Before</div>
+          <pre><code><span class="kw">import</span> { MemoryVectorStore }
   <span class="kw">from</span> <span class="str">"langchain/vectorstores/memory"</span>;
 
 <span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">MemoryVectorStore</span>(emb);
@@ -223,7 +224,8 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
   .<span class="fn">similaritySearchVectorWithScore</span>(q, <span class="num">10</span>);</code></pre>
         </div>
         <div>
-          <figure class="code"><figcaption class="code-header"><span class="code-lang">after</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">import</span> { ParabunVectorStore }
+          <div class="diff-label">After</div>
+          <pre><code><span class="kw">import</span> { ParabunVectorStore }
   <span class="kw">from</span> <span class="str">"./parabun-store.pjs"</span>;
 
 <span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">ParabunVectorStore</span>(emb);
@@ -281,7 +283,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
         self-references route through the outer wrapper, so <code>fib</code> below runs the body 21 times for
         <code>fib(20)</code>, not 21,891.
       </p>
-      <figure class="code"><figcaption class="code-header"><span class="code-lang">parabun</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="com">// declarator form — `memo` implies pure + function</span>
+      <pre><code><span class="com">// declarator form — `memo` implies pure + function</span>
 <span class="pb-kw">memo</span> <span class="fn">fib</span>(n: <span class="type">number</span>): <span class="type">number</span> {
   <span class="kw">return</span> n &lt; <span class="num">2</span> ? n : <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
 }
@@ -290,7 +292,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
 <span class="kw">const</span> <span class="fn">normalize</span> = <span class="pb-kw">memo</span> (s: <span class="type">string</span>) =&gt; s.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
 
 <span class="com">// async dedupes concurrent in-flight calls, evicts on reject</span>
-<span class="pb-kw">memo</span> <span class="kw">async</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) { <span class="kw">return</span> <span class="kw">await</span> db.users.<span class="fn">get</span>(id); }</code></pre></figure>
+<span class="pb-kw">memo</span> <span class="kw">async</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) { <span class="kw">return</span> <span class="kw">await</span> db.users.<span class="fn">get</span>(id); }</code></pre>
 
       <h3><span class="pb-kw">signal</span>, <span class="pb-kw">effect</span>, <span class="pb-op">~&gt;</span></h3>
       <p>
@@ -301,7 +303,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
         <code>effect(() =&gt; { B = A; })</code>, so <code>B</code> stays in step with <code>A</code> and whatever
         signals <code>A</code> reads from.
       </p>
-      <figure class="code"><figcaption class="code-header"><span class="code-lang">parabun</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="pb-kw">signal</span> <span class="pb-signal-ref">count</span> = <span class="num">0</span>;
+      <pre><code><span class="pb-kw">signal</span> <span class="pb-signal-ref">count</span> = <span class="num">0</span>;
 <span class="pb-kw">signal</span> <span class="pb-signal-ref">doubled</span> = <span class="pb-signal-ref">count</span> * <span class="num">2</span>;   <span class="com">// auto-derived</span>
 
 <span class="pb-kw">effect</span> { console.<span class="fn">log</span>(<span class="pb-signal-ref">count</span>, <span class="pb-signal-ref">doubled</span>); }
@@ -309,7 +311,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
 <span class="pb-signal-ref">count</span>++;                           <span class="com">// effect re-runs: 1, 2</span>
 
 <span class="com">// bind signal value into a DOM-ish sink — updates track dep changes</span>
-<span class="pb-signal-ref">count</span> <span class="pb-op">~&gt;</span> el.innerHTML;</code></pre></figure>
+<span class="pb-signal-ref">count</span> <span class="pb-op">~&gt;</span> el.innerHTML;</code></pre>
 
       <h3>
         <span class="pb-op">|&gt;</span>, <span class="pb-op">..!</span>, <span class="pb-op">..&amp;</span>,
@@ -322,7 +324,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
         disambiguates to an inclusive-range literal otherwise (<code>0..5</code> excludes 5, <code>0..=5</code> includes
         it).
       </p>
-      <figure class="code"><figcaption class="code-header"><span class="code-lang">parabun</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="pb-kw">pure</span> <span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
+      <pre><code><span class="pb-kw">pure</span> <span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
 
 <span class="kw">const</span> result = <span class="num">5</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span>;   <span class="com">// 625 — both calls inlined</span>
 
@@ -330,7 +332,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
   <span class="pb-op">..!</span> err =&gt; console.<span class="fn">error</span>(err)      <span class="com">// .catch</span>
   <span class="pb-op">..&amp;</span> () =&gt; console.<span class="fn">log</span>(<span class="str">"done"</span>); <span class="com">// .finally</span>
 
-<span class="kw">for</span> (<span class="kw">const</span> i <span class="kw">of</span> <span class="num">0</span><span class="pb-op">..=</span><span class="num">9</span>) <span class="fn">emit</span>(i);                    <span class="com">// [0..9]</span></code></pre></figure>
+<span class="kw">for</span> (<span class="kw">const</span> i <span class="kw">of</span> <span class="num">0</span><span class="pb-op">..=</span><span class="num">9</span>) <span class="fn">emit</span>(i);                    <span class="com">// [0..9]</span></code></pre>
 
       <h3><span class="pb-kw">defer</span> and <span class="pb-kw">arena</span></h3>
       <p>
@@ -339,7 +341,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
         awaits the cleanup. <code>arena { ... }</code> runs the block with the GC paused, then frees everything
         allocated inside on exit — useful for tight numeric loops with short-lived intermediate allocations.
       </p>
-      <figure class="code"><figcaption class="code-header"><span class="code-lang">parabun</span><button class="lig-toggle" type="button" aria-pressed="true" title="Toggle ligatures">ligatures ON</button></figcaption><pre><code><span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
+      <pre><code><span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
   <span class="kw">const</span> fd = fs.<span class="fn">openSync</span>(path);
   <span class="pb-kw">defer</span> fs.<span class="fn">closeSync</span>(fd);              <span class="com">// runs on every exit path</span>
   <span class="kw">return</span> <span class="type">JSON</span>.<span class="fn">parse</span>(fs.<span class="fn">readFileSync</span>(fd));
@@ -348,7 +350,7 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
 <span class="pb-kw">arena</span> {
   <span class="kw">const</span> buf = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="num">1_000_000</span>);
   <span class="com">// ...numeric work...</span>
-}                                        <span class="com">// buf freed here, no GC pressure</span></code></pre></figure>
+}                                        <span class="com">// buf freed here, no GC pressure</span></code></pre>
 
       <p class="footnote">
         Full grammar in <a href="https://github.com/airgap/parabun/blob/main/LLMs.md#language-extensions">LLMs.md</a>,
@@ -371,28 +373,27 @@ gpu.<span class="fn">release</span>(held);</code></pre></figure>
         </span>
       </footer>
     </main>
+    <button id="lig-fab" class="fab" type="button" aria-pressed="true" title="Toggle contextual ligatures in code">
+      ligatures ON
+    </button>
     <script>
       (() => {
-        const buttons = document.querySelectorAll(".lig-toggle");
-        if (!buttons.length) return;
+        const btn = document.getElementById("lig-fab");
+        if (!btn) return;
         const root = document.documentElement;
         const sync = on => {
           root.classList.toggle("ligatures", on);
-          for (const b of buttons) {
-            b.setAttribute("aria-pressed", on ? "true" : "false");
-            b.textContent = on ? "ligatures ON" : "ligatures OFF";
-          }
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          btn.textContent = on ? "ligatures ON" : "ligatures OFF";
         };
         sync(root.classList.contains("ligatures"));
-        for (const b of buttons) {
-          b.addEventListener("click", () => {
-            const next = !root.classList.contains("ligatures");
-            sync(next);
-            try {
-              localStorage.setItem("parabun-ligatures", next ? "on" : "off");
-            } catch {}
-          });
-        }
+        btn.addEventListener("click", () => {
+          const next = !root.classList.contains("ligatures");
+          sync(next);
+          try {
+            localStorage.setItem("parabun-ligatures", next ? "on" : "off");
+          } catch {}
+        });
       })();
     </script>
   </body>

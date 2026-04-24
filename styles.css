@@ -74,58 +74,44 @@ header {
   color: var(--text);
 }
 
-/* Per-block code wrapper. The <figure> groups the language label + ligature
-   toggle (in <figcaption>) with the <pre> body so the two stay visually
-   adjacent with no gap between them. */
-figure.code {
-  margin: 12px 0 20px;
-}
-.code-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+/* Floating action button — pinned to the bottom-right of the viewport,
+   flips contextual ligatures site-wide. Stays inside a safe-area inset
+   on iOS so it doesn't collide with the home indicator. */
+.fab {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 16px));
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  z-index: 10;
   font-family: var(--mono);
   font-size: 12px;
-  color: var(--text-faint);
-  background: var(--bg-code);
-  border: 1px solid var(--rule);
-  border-bottom: none;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  padding: 6px 12px;
-}
-figure.code > pre {
-  margin: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-.code-lang {
+  font-weight: 500;
   letter-spacing: 0.02em;
-}
-.lig-toggle {
-  font: inherit;
-  color: inherit;
-  background: transparent;
+  color: var(--text-dim);
+  background: var(--bg-elev);
   border: 1px solid var(--rule);
-  border-radius: 3px;
-  padding: 1px 8px;
+  border-radius: 999px;
+  padding: 8px 14px;
   cursor: pointer;
-  line-height: 1.4;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition:
+    color 80ms,
+    border-color 80ms,
+    background 80ms;
 }
-.lig-toggle:hover {
+.fab:hover {
   color: var(--text);
   border-color: var(--text-dim);
+  background: var(--bg-code);
 }
-.lig-toggle[aria-pressed="true"] {
+.fab[aria-pressed="true"] {
   color: var(--accent);
   border-color: var(--accent-dim);
 }
 
 /* Ligature toggle: default off (no font-variant-ligatures hint), `on` when
-   html.ligatures is present. JetBrains Mono (first in the mono stack) ships
+   html.ligatures is present. JetBrains Mono (loaded as a webfont) ships
    with contextual ligatures for `=>`, `|>`, `!=`, `..=`, etc.; the toggle
-   is a no-op if the user lacks a ligature-capable font. */
+   is a no-op if the user blocks the font. */
 code,
 pre,
 .install,
@@ -316,8 +302,17 @@ pre code {
   margin: 16px 0 20px;
 }
 
-.diff figure.code {
+.diff pre {
   margin: 0;
+}
+
+.diff-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
 }
 
 @media (max-width: 640px) {
