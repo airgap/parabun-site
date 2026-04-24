@@ -32,6 +32,7 @@
     </script>
   </head>
   <body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
     <main class="page">
       <header>
         <span class="brand"><span class="marker">/</span> parabun</span>
@@ -48,6 +49,37 @@
         for purity, memoization, and reactive bindings in <code>.pts</code> / <code>.pjs</code> files. Regular
         <code>.ts</code> and <code>.js</code> files behave the same as in upstream Bun.
       </p>
+
+      <figure class="simd-demo" aria-label="SIMD lanes process 8 elements in parallel while .map processes them one at a time.">
+        <div class="simd-row simd-parallel">
+          <div class="simd-label">bun:simd<span class="simd-sub">8 lanes · 1 cycle</span></div>
+          <div class="simd-track">
+            <span class="simd-packet" style="--lane: 0"></span>
+            <span class="simd-packet" style="--lane: 1"></span>
+            <span class="simd-packet" style="--lane: 2"></span>
+            <span class="simd-packet" style="--lane: 3"></span>
+            <span class="simd-packet" style="--lane: 4"></span>
+            <span class="simd-packet" style="--lane: 5"></span>
+            <span class="simd-packet" style="--lane: 6"></span>
+            <span class="simd-packet" style="--lane: 7"></span>
+          </div>
+          <div class="simd-out" aria-hidden="true">out</div>
+        </div>
+        <div class="simd-row simd-serial">
+          <div class="simd-label">.map<span class="simd-sub">1 lane · 8 cycles</span></div>
+          <div class="simd-track">
+            <span class="simd-packet" style="--i: 0"></span>
+            <span class="simd-packet" style="--i: 1"></span>
+            <span class="simd-packet" style="--i: 2"></span>
+            <span class="simd-packet" style="--i: 3"></span>
+            <span class="simd-packet" style="--i: 4"></span>
+            <span class="simd-packet" style="--i: 5"></span>
+            <span class="simd-packet" style="--i: 6"></span>
+            <span class="simd-packet" style="--i: 7"></span>
+          </div>
+          <div class="simd-out" aria-hidden="true">out</div>
+        </div>
+      </figure>
 
       <div class="install">
         <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
@@ -396,5 +428,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         });
       })();
     </script>
+    <script src="bg.js" defer></script>
+    <script src="fx.js" defer></script>
   </body>
 </html>
