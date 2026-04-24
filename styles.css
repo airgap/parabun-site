@@ -74,6 +74,46 @@ header {
   color: var(--text);
 }
 
+.nav-toggle {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.nav-toggle:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+.nav-toggle[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+/* Ligature toggle: default off (no font-variant-ligatures hint), `on` when
+   html.ligatures is present. JetBrains Mono (first in the mono stack) ships
+   with contextual ligatures for `=>`, `|>`, `!=`, `..=`, etc.; the toggle
+   is a no-op if the user lacks a ligature-capable font. */
+code,
+pre,
+.install,
+.prompt,
+.brand {
+  font-variant-ligatures: none;
+  font-feature-settings: "calt" 0;
+}
+html.ligatures code,
+html.ligatures pre,
+html.ligatures .install,
+html.ligatures .prompt,
+html.ligatures .brand {
+  font-variant-ligatures: contextual;
+  font-feature-settings: "calt" 1;
+}
+
 h1 {
   font-size: 40px;
   line-height: 1.15;

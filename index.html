@@ -9,12 +9,32 @@
       content="Parabun is Bun with built-in primitives for threading, SIMD, GPU, and on-device LLM inference. Drop-in for any Bun script."
     />
     <link rel="stylesheet" href="styles.css" />
+    <!-- Applied before <body> paints so code blocks don't flash without
+         ligatures and then toggle on. Defaults to `on`; the toggle in the
+         header persists state to localStorage. -->
+    <script>
+      try {
+        const pref = localStorage.getItem("parabun-ligatures");
+        if (pref !== "off") document.documentElement.classList.add("ligatures");
+      } catch {
+        document.documentElement.classList.add("ligatures");
+      }
+    </script>
   </head>
   <body>
     <main class="page">
       <header>
         <span class="brand"><span class="marker">/</span> parabun</span>
         <nav class="nav">
+          <button
+            id="lig-toggle"
+            class="nav-toggle"
+            type="button"
+            aria-pressed="true"
+            title="Toggle contextual ligatures in code (requires a ligature-capable font like JetBrains Mono)"
+          >
+            ligatures
+          </button>
           <a href="https://github.com/airgap/parabun">github</a>
           <a href="https://github.com/airgap/parabun/blob/main/LLMs.md">docs</a>
         </nav>
@@ -352,5 +372,24 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </span>
       </footer>
     </main>
+    <script>
+      (() => {
+        const btn = document.getElementById("lig-toggle");
+        if (!btn) return;
+        const root = document.documentElement;
+        const setState = on => {
+          root.classList.toggle("ligatures", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+        };
+        setState(root.classList.contains("ligatures"));
+        btn.addEventListener("click", () => {
+          const next = !root.classList.contains("ligatures");
+          setState(next);
+          try {
+            localStorage.setItem("parabun-ligatures", next ? "on" : "off");
+          } catch {}
+        });
+      })();
+    </script>
   </body>
 </html>
