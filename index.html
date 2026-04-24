@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Parabun — parallel Bun</title>
+    <meta
+      name="description"
+      content="Parabun is Bun with built-in primitives for threading, SIMD, GPU, and on-device LLM inference. Drop-in for any Bun script."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <span class="brand"><span class="marker">/</span> parabun</span>
+        <nav class="nav">
+          <a href="https://github.com/airgap/parabun">github</a>
+          <a href="https://github.com/airgap/parabun/blob/main/LLMs.md">docs</a>
+        </nav>
+      </header>
+
+      <h1>Bun, plus <em>parallelism</em> that fits in one line.</h1>
+      <p class="lede">
+        Parabun is a fork of
+        <a href="https://bun.com">Bun</a> that ships four extra modules — a worker pool, SIMD primitives for typed
+        arrays, a compute-only GPU surface, and a from-scratch GGUF/Llama runtime — behind the same binary. Regular
+        <code>.ts</code> and <code>.js</code> files work unchanged. Everything else is opt-in.
+      </p>
+
+      <div class="install">
+        <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
+      </div>
+      <p class="caveat">
+        Linux &amp; macOS. Windows build in progress. Already installed? <code>parabun self-update</code> refreshes the
+        binary and VS Code extension in one step.
+      </p>
+
+      <div class="install">
+        <span class="prompt">$</span>curl -fsSL
+        https://raw.githubusercontent.com/airgap/parabun/main/install-extension.sh | bash
+      </div>
+      <p class="caveat">
+        Installs the Parabun VS Code extension into every editor it finds (code / cursor / kiro) — gives you the proper
+        <code>.pts</code> / <code>.pjs</code> grammar, an LSP with hover, go-to-def, purity diagnostics, memo hints, and
+        operator docs.
+      </p>
+
+      <h2>The modules</h2>
+
+      <div class="modules">
+        <h3><span class="import">bun:parallel</span> — worker pool</h3>
+        <p>
+          <code>pmap</code> / <code>preduce</code> chunk arrays across a persistent worker pool. Functions are shipped
+          via <code>fn.toString()</code>, so they must be pure — no closures, no outer references. TypedArrays ride in a
+          <code>SharedArrayBuffer</code>, so <code>postMessage</code> is a handle, not a copy.
+        </p>
+        <pre><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
+
+<span class="pure">pure</span> <span class="kw">function</span> <span class="fn">score</span>(row) { <span class="kw">return</span> row.reduce((a, b) => a + b * b, 0); }
+
+<span class="kw">const</span> rows = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="kw">new</span> <span class="type">SharedArrayBuffer</span>(<span class="num">1_000_000</span> * <span class="num">4</span>));
+<span class="com">// ...fill rows...</span>
+<span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });</code></pre>
+
+        <h3><span class="import">bun:simd</span> — vector primitives</h3>
+        <p>
+          Hand-assembled WebAssembly v128 kernels for
+          <code>Float32Array</code> (f32x4) and <code>Float64Array</code> (f64x2). Copy-in is skipped above a 4&nbsp;MiB
+          footprint via per-type tight loops. <code>alloc()</code> returns a typed array backed by the WASM linear
+          memory for true zero-copy.
+        </p>
+        <pre><code><span class="kw">import</span> { mulScalar, add, dot, sum } <span class="kw">from</span> <span class="str">"bun:simd"</span>;
+
+<span class="kw">const</span> y = <span class="fn">mulScalar</span>(<span class="kw">new</span> <span class="type">Float32Array</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]), <span class="num">3</span>); <span class="com">// [3, 6, 9, 12]</span>
+<span class="kw">const</span> z = <span class="fn">add</span>(a, b);
+<span class="kw">const</span> d = <span class="fn">dot</span>(u, v);
+<span class="kw">const</span> s = <span class="fn">sum</span>(a);</code></pre>
+
+        <table class="bench" aria-label="SIMD benchmark, N=100,000">
+          <thead>
+            <tr>
+              <th>op (N=100k, f32)</th>
+              <th class="num-cell">.map / .reduce</th>
+              <th class="num-cell">tight loop</th>
+              <th class="num-cell">bun:simd</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="winner">
+              <td>mulScalar(a, 3)</td>
+              <td class="num-cell">808 µs</td>
+              <td class="num-cell">60 µs</td>
+              <td class="num-cell">30 µs</td>
+            </tr>
+            <tr class="winner">
+              <td>add(a, b)</td>
+              <td class="num-cell">884 µs</td>
+              <td class="num-cell">73 µs</td>
+              <td class="num-cell">40 µs</td>
+            </tr>
+            <tr class="winner">
+              <td>sum(a)</td>
+              <td class="num-cell">574 µs</td>
+              <td class="num-cell">43 µs</td>
+              <td class="num-cell">17 µs</td>
+            </tr>
+            <tr class="winner">
+              <td>dot(a, b)</td>
+              <td class="num-cell">716 µs</td>
+              <td class="num-cell">51 µs</td>
+              <td class="num-cell">24 µs</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3><span class="import">bun:gpu</span> — compute-only GPU</h3>
+        <p>
+          Metal on macOS, CUDA on Linux/Windows, CPU fallback everywhere. A held matrix stays resident across
+          <code>matVec</code> calls so the per-call host→device copy disappears. Arbitrary pure functions on
+          <code>Float32Array</code> are runtime-compiled to PTX (NVRTC) or MSL (<code>newLibraryWithSource:</code>) when
+          they match the supported shape (arithmetic, ternary, <code>Math.*</code>).
+        </p>
+        <pre><code><span class="kw">import</span> gpu <span class="kw">from</span> <span class="str">"bun:gpu"</span>;
+
+<span class="kw">const</span> mat = gpu.<span class="fn">alloc</span>(M * K, <span class="str">"f32"</span>);
+<span class="com">// ...fill mat...</span>
+<span class="kw">const</span> held = gpu.<span class="fn">hold</span>(mat);                   <span class="com">// uploaded once</span>
+<span class="kw">for</span> (<span class="kw">const</span> q <span class="kw">of</span> queries) {
+  <span class="kw">const</span> scores = gpu.<span class="fn">matVec</span>(held, q, M, K); <span class="com">// no copy</span>
+}
+gpu.<span class="fn">release</span>(held);</code></pre>
+
+        <h3><span class="import">bun:llm</span> — on-device LLM inference</h3>
+        <p>
+          From-scratch GGUF runtime: file loader, byte-level BPE tokenizer, Llama/Qwen2 forward pass, greedy + nucleus
+          sampling. Weights <code>mmap</code> off disk; the residual stream and KV cache stay on-device. Only the 4-byte
+          argmax crosses PCIe per token. Q4_K and Q6_K matVec kernels use a 1-warp-per-row / 4-warps-per-block layout;
+          QKV and Gate+Up projections are byte-concatenated at load time and dispatched as one matVec per layer.
+        </p>
+        <pre><code><span class="kw">import</span> llm <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+
+<span class="kw">using</span> m = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
+
+<span class="kw">for await</span> (<span class="kw">const</span> piece <span class="kw">of</span> m.<span class="fn">chat</span>([
+  { role: <span class="str">"system"</span>, content: <span class="str">"You are helpful and concise."</span> },
+  { role: <span class="str">"user"</span>, content: <span class="str">"What is the capital of France?"</span> },
+])) {
+  process.stdout.<span class="fn">write</span>(piece);
+}</code></pre>
+
+        <table class="bench" aria-label="LLM decode throughput, Llama-3.2-1B-Instruct Q4_K_M on RTX 4070 Ti">
+          <thead>
+            <tr>
+              <th>Llama-3.2-1B Q4_K_M · RTX 4070 Ti</th>
+              <th class="num-cell">parabun</th>
+              <th class="num-cell">ollama</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="winner">
+              <td>greedy decode (device-only)</td>
+              <td class="num-cell">340 tok/s</td>
+              <td class="num-cell">~350 tok/s</td>
+            </tr>
+            <tr>
+              <td>greedy decode (logits DtoH)</td>
+              <td class="num-cell">275 tok/s</td>
+              <td class="num-cell">—</td>
+            </tr>
+            <tr>
+              <td>prompt prefill</td>
+              <td class="num-cell">295 tok/s</td>
+              <td class="num-cell">—</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="footnote">
+          At ollama parity on this model/hardware. Chat templates for Llama-3, ChatML, and Mistral-Instruct are
+          auto-detected from the GGUF's <code>tokenizer.chat_template</code>. CUDA backend today; Metal kernels not yet
+          wired.
+        </p>
+      </div>
+
+      <h2>Case study — vector search, drop-in for LangChain</h2>
+      <p>
+        <code>ParabunVectorStore</code> extends <code>VectorStore</code> from <code>@langchain/core</code> and
+        implements the same <code>addVectors</code> / <code>similaritySearchVectorWithScore</code> signatures. Swap the
+        constructor, change nothing else.
+      </p>
+
+      <div class="diff">
+        <div>
+          <div class="diff-label">Before</div>
+          <pre><code><span class="kw">import</span> { MemoryVectorStore }
+  <span class="kw">from</span> <span class="str">"langchain/vectorstores/memory"</span>;
+
+<span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">MemoryVectorStore</span>(emb);
+<span class="kw">await</span> store.<span class="fn">addVectors</span>(vectors, docs);
+<span class="kw">const</span> hits = <span class="kw">await</span> store
+  .<span class="fn">similaritySearchVectorWithScore</span>(q, <span class="num">10</span>);</code></pre>
+        </div>
+        <div>
+          <div class="diff-label">After</div>
+          <pre><code><span class="kw">import</span> { ParabunVectorStore }
+  <span class="kw">from</span> <span class="str">"./parabun-store.pjs"</span>;
+
+<span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">ParabunVectorStore</span>(emb);
+<span class="kw">await</span> store.<span class="fn">addVectors</span>(vectors, docs);
+<span class="kw">const</span> hits = <span class="kw">await</span> store
+  .<span class="fn">similaritySearchVectorWithScore</span>(q, <span class="num">10</span>);</code></pre>
+        </div>
+      </div>
+
+      <table class="bench" aria-label="RAG retrieval benchmark, 100k × 384 f32">
+        <thead>
+          <tr>
+            <th>100k × 384 f32, top-10</th>
+            <th class="num-cell">add_ms</th>
+            <th class="num-cell">score_ms</th>
+            <th class="num-cell">vs LangChain</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LangChain MemoryVectorStore</td>
+            <td class="num-cell">4.0</td>
+            <td class="num-cell">48.2</td>
+            <td class="num-cell">1.00×</td>
+          </tr>
+          <tr class="winner">
+            <td>ParabunVectorStore (drop-in)</td>
+            <td class="num-cell">82.7</td>
+            <td class="num-cell">15.9</td>
+            <td class="num-cell">2.83×</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="footnote">
+        <code>add_ms</code> is higher because rows are packed into one SAB <code>Float32Array</code> and normalized in
+        place — one-time <code>O(N·D)</code> work. Break-even is about three searches. Top-K indices and scores are
+        identical to LangChain's to four decimal places.
+      </p>
+
+      <h2>Optional syntax — <code>.pts</code> / <code>.pjs</code></h2>
+      <p>
+        Parabun also reads files ending in <code>.pts</code> / <code>.ptsx</code> / <code>.pjs</code> /
+        <code>.pjsx</code>. Each adds parse-time desugarings — everything compiles down to standard JS, nothing reaches
+        the runtime, and none of it is required to use the runtime modules. GitHub doesn't render the <code>.pts</code>
+        extension, but the
+        <a href="https://github.com/airgap/parabun/tree/main/editors">VS Code / Cursor / Kiro extension</a>
+        ships with full grammar + LSP.
+      </p>
+
+      <h3><span class="pb-kw">pure</span> / <span class="pb-kw">memo</span> — enforced purity, opt-in caching</h3>
+      <p>
+        A <code>pure</code> function is rejected at parse time if it mutates an outer variable, reads <code>this</code>,
+        or calls a known-impure global. Prefix <code>pure</code> with <code>memo</code> — or drop
+        <code>pure</code> entirely and write <code>memo</code> as the declarator — and the result is cached by argument
+        identity: 0-arg singleton, 1-arg <code>Map</code>, multi-arg nested <code>Map</code> chain. Recursive
+        self-references route through the outer wrapper, so <code>fib</code> below runs the body 21 times for
+        <code>fib(20)</code>, not 21,891.
+      </p>
+      <pre><code><span class="com">// declarator form — `memo` implies pure + function</span>
+<span class="pb-kw">memo</span> <span class="fn">fib</span>(n: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="kw">return</span> n &lt; <span class="num">2</span> ? n : <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
+}
+
+<span class="com">// arrow form — same thing as an expression prefix</span>
+<span class="kw">const</span> <span class="fn">normalize</span> = <span class="pb-kw">memo</span> (s: <span class="type">string</span>) =&gt; s.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
+
+<span class="com">// async dedupes concurrent in-flight calls, evicts on reject</span>
+<span class="pb-kw">memo</span> <span class="kw">async</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) { <span class="kw">return</span> <span class="kw">await</span> db.users.<span class="fn">get</span>(id); }</code></pre>
+
+      <h3>
+        <span class="pb-kw">signal</span> / <span class="pb-kw">effect</span> / <span class="pb-op">~&gt;</span> —
+        reactive data flow
+      </h3>
+      <p>
+        <code>signal NAME = &lt;rhs&gt;</code> desugars to a <code>Signal</code> binding; bare reads rewrite to
+        <code>.get()</code>, assignments to <code>.set()</code>. If the RHS references another in-scope signal, the
+        binding auto-promotes to a read-only <code>derived()</code>. <code>effect { ... }</code> tracks every signal it
+        reads as a dependency and re-runs on change. <code>A ~&gt; B</code> is reactive binding — it desugars to
+        <code>effect(() =&gt; { B = A; })</code>, so <code>B</code> stays in step with <code>A</code> and whatever
+        signals <code>A</code> reads from.
+      </p>
+      <pre><code><span class="pb-kw">signal</span> <span class="pb-signal-ref">count</span> = <span class="num">0</span>;
+<span class="pb-kw">signal</span> <span class="pb-signal-ref">doubled</span> = <span class="pb-signal-ref">count</span> * <span class="num">2</span>;   <span class="com">// auto-derived</span>
+
+<span class="pb-kw">effect</span> { console.<span class="fn">log</span>(<span class="pb-signal-ref">count</span>, <span class="pb-signal-ref">doubled</span>); }
+
+<span class="pb-signal-ref">count</span>++;                           <span class="com">// effect re-runs: 1, 2</span>
+
+<span class="com">// bind signal value into a DOM-ish sink — updates track dep changes</span>
+<span class="pb-signal-ref">count</span> <span class="pb-op">~&gt;</span> el.innerHTML;</code></pre>
+
+      <h3>
+        <span class="pb-op">|&gt;</span> / <span class="pb-op">..!</span> / <span class="pb-op">..&amp;</span> /
+        <span class="pb-op">..=</span> — pipeline + error chain
+      </h3>
+      <p>
+        <code>x |&gt; f</code> is <code>f(x)</code>. <code>pure</code> functions passed through <code>|&gt;</code> get
+        inlined at parse time — no call overhead. <code>..!</code> / <code>..&amp;</code> are <code>.catch</code> /
+        <code>.finally</code> in suffix position. <code>..=</code> is <code>= await</code> in a declaration and
+        disambiguates to an inclusive-range literal otherwise (<code>0..5</code> excludes 5, <code>0..=5</code> includes
+        it).
+      </p>
+      <pre><code><span class="pb-kw">pure</span> <span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
+
+<span class="kw">const</span> result = <span class="num">5</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span>;   <span class="com">// 625 — both calls inlined</span>
+
+<span class="kw">const</span> json <span class="pb-op">..=</span> fetch(<span class="str">"/api"</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>())
+  <span class="pb-op">..!</span> err =&gt; console.<span class="fn">error</span>(err)      <span class="com">// .catch</span>
+  <span class="pb-op">..&amp;</span> () =&gt; console.<span class="fn">log</span>(<span class="str">"done"</span>); <span class="com">// .finally</span>
+
+<span class="kw">for</span> (<span class="kw">const</span> i <span class="kw">of</span> <span class="num">0</span><span class="pb-op">..=</span><span class="num">9</span>) <span class="fn">emit</span>(i);                    <span class="com">// [0..9]</span></code></pre>
+
+      <h3><span class="pb-kw">defer</span> / <span class="pb-kw">arena</span> — scoped cleanup + GC-deferred blocks</h3>
+      <p>
+        <code>defer EXPR</code> schedules <code>EXPR</code> to run when the enclosing block exits (return, throw,
+        fall-through). Multiple defers dispose in LIFO order. <code>defer await EXPR</code> inside an async function
+        awaits the cleanup. <code>arena { ... }</code> runs the block with the GC paused, then frees everything
+        allocated inside on exit — useful for tight numeric loops with short-lived intermediate allocations.
+      </p>
+      <pre><code><span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
+  <span class="kw">const</span> fd = fs.<span class="fn">openSync</span>(path);
+  <span class="pb-kw">defer</span> fs.<span class="fn">closeSync</span>(fd);              <span class="com">// runs on every exit path</span>
+  <span class="kw">return</span> <span class="type">JSON</span>.<span class="fn">parse</span>(fs.<span class="fn">readFileSync</span>(fd));
+}
+
+<span class="pb-kw">arena</span> {
+  <span class="kw">const</span> buf = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="num">1_000_000</span>);
+  <span class="com">// ...numeric work...</span>
+}                                        <span class="com">// buf freed here, no GC pressure</span></code></pre>
+
+      <p class="footnote">
+        Full grammar in <a href="https://github.com/airgap/parabun/blob/main/LLMs.md#language-extensions">LLMs.md</a>,
+        and the LSP carries arity-based <em>"could be memo"</em> / <em>"memo probably not worth it"</em> hints plus full
+        purity diagnostics.
+      </p>
+
+      <div class="disclaimer">
+        <strong>Honest scope.</strong> Parabun's wins are on typed-array numeric kernels, embarrassingly-parallel
+        workloads, and GPU-friendly matrix shapes. For HTTP handlers, JSON, and ordinary business logic, it behaves
+        exactly like the Bun version it forks from — because that's what it is.
+      </div>
+
+      <footer>
+        <span>Parabun is a fork of Bun. Not affiliated with Oven.</span>
+        <span>
+          <a href="https://github.com/airgap/parabun">source</a> ·
+          <a href="https://github.com/airgap/parabun/releases">releases</a> ·
+          <a href="https://github.com/airgap/parabun/tree/main/editors">editors</a>
+        </span>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "parabun-site",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot index.html"
+  }
+}
