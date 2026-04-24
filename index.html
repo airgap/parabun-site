@@ -20,20 +20,20 @@
         </nav>
       </header>
 
-      <h1>Bun, plus <em>parallelism</em> that fits in one line.</h1>
+      <h1>Parabun</h1>
       <p class="lede">
-        Parabun is a fork of
-        <a href="https://bun.com">Bun</a> that ships four extra modules — a worker pool, SIMD primitives for typed
-        arrays, a compute-only GPU surface, and a from-scratch GGUF/Llama runtime — behind the same binary. Regular
-        <code>.ts</code> and <code>.js</code> files work unchanged. Everything else is opt-in.
+        A fork of <a href="https://bun.com">Bun</a> with four additional runtime modules — a worker pool, SIMD
+        primitives for typed arrays, a compute-only GPU surface, and a GGUF/Llama runtime — and parse-time extensions
+        for purity, memoization, and reactive bindings in <code>.pts</code> / <code>.pjs</code> files. Regular
+        <code>.ts</code> and <code>.js</code> files behave the same as in upstream Bun.
       </p>
 
       <div class="install">
         <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
       </div>
       <p class="caveat">
-        Linux &amp; macOS. Windows build in progress. Already installed? <code>parabun self-update</code> refreshes the
-        binary and VS Code extension in one step.
+        Linux and macOS. Windows build is in progress. <code>parabun self-update</code> refreshes an existing install
+        along with the VS Code extension.
       </p>
 
       <div class="install">
@@ -41,19 +41,20 @@
         https://raw.githubusercontent.com/airgap/parabun/main/install-extension.sh | bash
       </div>
       <p class="caveat">
-        Installs the Parabun VS Code extension into every editor it finds (code / cursor / kiro) — gives you the proper
-        <code>.pts</code> / <code>.pjs</code> grammar, an LSP with hover, go-to-def, purity diagnostics, memo hints, and
-        operator docs.
+        Installs the VS Code extension into any of <code>code</code>, <code>cursor</code>, or <code>kiro</code> found on
+        <code>$PATH</code>. The extension provides the <code>.pts</code> / <code>.pjs</code> TextMate grammar and an LSP
+        with hover, go-to-definition, purity diagnostics, memo hints, and operator documentation.
       </p>
 
-      <h2>The modules</h2>
+      <h2>Runtime modules</h2>
 
       <div class="modules">
-        <h3><span class="import">bun:parallel</span> — worker pool</h3>
+        <h3><span class="import">bun:parallel</span></h3>
         <p>
-          <code>pmap</code> / <code>preduce</code> chunk arrays across a persistent worker pool. Functions are shipped
-          via <code>fn.toString()</code>, so they must be pure — no closures, no outer references. TypedArrays ride in a
-          <code>SharedArrayBuffer</code>, so <code>postMessage</code> is a handle, not a copy.
+          <code>pmap</code> and <code>preduce</code> chunk arrays across a persistent worker pool. Functions are
+          serialized via <code>fn.toString()</code>, so they must be pure — no closures, no outer references.
+          TypedArrays are passed through a <code>SharedArrayBuffer</code>, so <code>postMessage</code> transfers a
+          handle rather than a copy.
         </p>
         <pre><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
 
@@ -63,12 +64,11 @@
 <span class="com">// ...fill rows...</span>
 <span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });</code></pre>
 
-        <h3><span class="import">bun:simd</span> — vector primitives</h3>
+        <h3><span class="import">bun:simd</span></h3>
         <p>
-          Hand-assembled WebAssembly v128 kernels for
-          <code>Float32Array</code> (f32x4) and <code>Float64Array</code> (f64x2). Copy-in is skipped above a 4&nbsp;MiB
-          footprint via per-type tight loops. <code>alloc()</code> returns a typed array backed by the WASM linear
-          memory for true zero-copy.
+          WebAssembly v128 kernels for <code>Float32Array</code> (f32x4) and <code>Float64Array</code> (f64x2). Inputs
+          above 4&nbsp;MiB are processed in place rather than copied into WASM memory. <code>alloc()</code> returns a
+          typed array backed by the WASM linear memory for zero-copy use.
         </p>
         <pre><code><span class="kw">import</span> { mulScalar, add, dot, sum } <span class="kw">from</span> <span class="str">"bun:simd"</span>;
 
@@ -87,25 +87,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="winner">
+            <tr>
               <td>mulScalar(a, 3)</td>
               <td class="num-cell">808 µs</td>
               <td class="num-cell">60 µs</td>
               <td class="num-cell">30 µs</td>
             </tr>
-            <tr class="winner">
+            <tr>
               <td>add(a, b)</td>
               <td class="num-cell">884 µs</td>
               <td class="num-cell">73 µs</td>
               <td class="num-cell">40 µs</td>
             </tr>
-            <tr class="winner">
+            <tr>
               <td>sum(a)</td>
               <td class="num-cell">574 µs</td>
               <td class="num-cell">43 µs</td>
               <td class="num-cell">17 µs</td>
             </tr>
-            <tr class="winner">
+            <tr>
               <td>dot(a, b)</td>
               <td class="num-cell">716 µs</td>
               <td class="num-cell">51 µs</td>
@@ -114,12 +114,13 @@
           </tbody>
         </table>
 
-        <h3><span class="import">bun:gpu</span> — compute-only GPU</h3>
+        <h3><span class="import">bun:gpu</span></h3>
         <p>
-          Metal on macOS, CUDA on Linux/Windows, CPU fallback everywhere. A held matrix stays resident across
-          <code>matVec</code> calls so the per-call host→device copy disappears. Arbitrary pure functions on
-          <code>Float32Array</code> are runtime-compiled to PTX (NVRTC) or MSL (<code>newLibraryWithSource:</code>) when
-          they match the supported shape (arithmetic, ternary, <code>Math.*</code>).
+          Metal on macOS, CUDA on Linux and Windows, CPU fallback on hosts without a GPU. A matrix passed to
+          <code>gpu.hold()</code> stays resident across <code>matVec</code> calls, so only the input vector crosses the
+          host↔device boundary per call. Pure <code>Float32Array</code> → <code>Float32Array</code> functions are
+          runtime-compiled to PTX (via NVRTC) or MSL (via <code>newLibraryWithSource:</code>) when the body fits a
+          supported shape: arithmetic, ternary, <code>Math.*</code>.
         </p>
         <pre><code><span class="kw">import</span> gpu <span class="kw">from</span> <span class="str">"bun:gpu"</span>;
 
@@ -131,12 +132,13 @@
 }
 gpu.<span class="fn">release</span>(held);</code></pre>
 
-        <h3><span class="import">bun:llm</span> — on-device LLM inference</h3>
+        <h3><span class="import">bun:llm</span></h3>
         <p>
-          From-scratch GGUF runtime: file loader, byte-level BPE tokenizer, Llama/Qwen2 forward pass, greedy + nucleus
-          sampling. Weights <code>mmap</code> off disk; the residual stream and KV cache stay on-device. Only the 4-byte
-          argmax crosses PCIe per token. Q4_K and Q6_K matVec kernels use a 1-warp-per-row / 4-warps-per-block layout;
-          QKV and Gate+Up projections are byte-concatenated at load time and dispatched as one matVec per layer.
+          An in-tree GGUF runtime: file loader, byte-level BPE tokenizer, Llama and Qwen2 forward passes, greedy and
+          nucleus sampling. Weights are <code>mmap</code>'d off disk; the residual stream and KV cache live on-device.
+          Per-token traffic across PCIe is a 4-byte argmax. Q4_K and Q6_K matVec kernels use a 1-warp-per-row,
+          4-warps-per-block layout; QKV and Gate+Up projections are byte-concatenated at load time and dispatched as one
+          matVec per layer.
         </p>
         <pre><code><span class="kw">import</span> llm <span class="kw">from</span> <span class="str">"bun:llm"</span>;
 
@@ -158,7 +160,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </tr>
           </thead>
           <tbody>
-            <tr class="winner">
+            <tr>
               <td>greedy decode (device-only)</td>
               <td class="num-cell">340 tok/s</td>
               <td class="num-cell">~350 tok/s</td>
@@ -176,17 +178,17 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           </tbody>
         </table>
         <p class="footnote">
-          At ollama parity on this model/hardware. Chat templates for Llama-3, ChatML, and Mistral-Instruct are
-          auto-detected from the GGUF's <code>tokenizer.chat_template</code>. CUDA backend today; Metal kernels not yet
-          wired.
+          Numbers are within run-to-run noise of ollama on this model and hardware. Chat templates for Llama-3, ChatML,
+          and Mistral-Instruct are detected from the GGUF's <code>tokenizer.chat_template</code>. Only the CUDA backend
+          is wired in this module today; Metal kernels are pending.
         </p>
       </div>
 
-      <h2>Case study — vector search, drop-in for LangChain</h2>
+      <h2>Example: LangChain <code>VectorStore</code></h2>
       <p>
         <code>ParabunVectorStore</code> extends <code>VectorStore</code> from <code>@langchain/core</code> and
-        implements the same <code>addVectors</code> / <code>similaritySearchVectorWithScore</code> signatures. Swap the
-        constructor, change nothing else.
+        implements the <code>addVectors</code> and <code>similaritySearchVectorWithScore</code> methods, so call sites
+        that accept any <code>VectorStore</code> work against it without changes.
       </p>
 
       <div class="diff">
@@ -229,7 +231,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td class="num-cell">1.00×</td>
           </tr>
           <tr class="winner">
-            <td>ParabunVectorStore (drop-in)</td>
+            <td>ParabunVectorStore</td>
             <td class="num-cell">82.7</td>
             <td class="num-cell">15.9</td>
             <td class="num-cell">2.83×</td>
@@ -237,22 +239,21 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </tbody>
       </table>
       <p class="footnote">
-        <code>add_ms</code> is higher because rows are packed into one SAB <code>Float32Array</code> and normalized in
-        place — one-time <code>O(N·D)</code> work. Break-even is about three searches. Top-K indices and scores are
-        identical to LangChain's to four decimal places.
+        <code>add_ms</code> is higher because rows are packed into a single SAB <code>Float32Array</code> and normalized
+        in place — one-time <code>O(N·D)</code> work amortized across subsequent queries. Top-K indices and scores match
+        LangChain's to four decimal places.
       </p>
 
-      <h2>Optional syntax — <code>.pts</code> / <code>.pjs</code></h2>
+      <h2>Language extensions — <code>.pts</code> / <code>.pjs</code></h2>
       <p>
-        Parabun also reads files ending in <code>.pts</code> / <code>.ptsx</code> / <code>.pjs</code> /
-        <code>.pjsx</code>. Each adds parse-time desugarings — everything compiles down to standard JS, nothing reaches
-        the runtime, and none of it is required to use the runtime modules. GitHub doesn't render the <code>.pts</code>
-        extension, but the
+        Files ending in <code>.pts</code>, <code>.ptsx</code>, <code>.pjs</code>, or <code>.pjsx</code> are parsed with
+        additional desugarings. All output is standard JS; no runtime support is required, and the runtime modules above
+        do not depend on any of this syntax. GitHub's TextMate grammars do not cover <code>.pts</code>; the
         <a href="https://github.com/airgap/parabun/tree/main/editors">VS Code / Cursor / Kiro extension</a>
-        ships with full grammar + LSP.
+        provides the grammar and an LSP.
       </p>
 
-      <h3><span class="pb-kw">pure</span> / <span class="pb-kw">memo</span> — enforced purity, opt-in caching</h3>
+      <h3><span class="pb-kw">pure</span> and <span class="pb-kw">memo</span></h3>
       <p>
         A <code>pure</code> function is rejected at parse time if it mutates an outer variable, reads <code>this</code>,
         or calls a known-impure global. Prefix <code>pure</code> with <code>memo</code> — or drop
@@ -272,10 +273,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 <span class="com">// async dedupes concurrent in-flight calls, evicts on reject</span>
 <span class="pb-kw">memo</span> <span class="kw">async</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) { <span class="kw">return</span> <span class="kw">await</span> db.users.<span class="fn">get</span>(id); }</code></pre>
 
-      <h3>
-        <span class="pb-kw">signal</span> / <span class="pb-kw">effect</span> / <span class="pb-op">~&gt;</span> —
-        reactive data flow
-      </h3>
+      <h3><span class="pb-kw">signal</span>, <span class="pb-kw">effect</span>, <span class="pb-op">~&gt;</span></h3>
       <p>
         <code>signal NAME = &lt;rhs&gt;</code> desugars to a <code>Signal</code> binding; bare reads rewrite to
         <code>.get()</code>, assignments to <code>.set()</code>. If the RHS references another in-scope signal, the
@@ -295,8 +293,8 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 <span class="pb-signal-ref">count</span> <span class="pb-op">~&gt;</span> el.innerHTML;</code></pre>
 
       <h3>
-        <span class="pb-op">|&gt;</span> / <span class="pb-op">..!</span> / <span class="pb-op">..&amp;</span> /
-        <span class="pb-op">..=</span> — pipeline + error chain
+        <span class="pb-op">|&gt;</span>, <span class="pb-op">..!</span>, <span class="pb-op">..&amp;</span>,
+        <span class="pb-op">..=</span>
       </h3>
       <p>
         <code>x |&gt; f</code> is <code>f(x)</code>. <code>pure</code> functions passed through <code>|&gt;</code> get
@@ -340,9 +338,9 @@ gpu.<span class="fn">release</span>(held);</code></pre>
       </p>
 
       <div class="disclaimer">
-        <strong>Honest scope.</strong> Parabun's wins are on typed-array numeric kernels, embarrassingly-parallel
-        workloads, and GPU-friendly matrix shapes. For HTTP handlers, JSON, and ordinary business logic, it behaves
-        exactly like the Bun version it forks from — because that's what it is.
+        <strong>Scope.</strong> The added modules target typed-array numeric work, embarrassingly-parallel loops, and
+        GPU-friendly matrix shapes. HTTP handlers, JSON parsing, and ordinary application code go through the same paths
+        as upstream Bun — no changes in performance or behavior are expected there.
       </div>
 
       <footer>
