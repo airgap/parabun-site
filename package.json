@@ -2,6 +2,7 @@
   "name": "parabun-site",
   "private": true,
   "scripts": {
-    "dev": "bun --hot index.html"
+    "dev": "bun --hot index.html",
+    "build": "rm -rf dist && mkdir -p dist && cp index.html styles.css dist/"
   }
 }
