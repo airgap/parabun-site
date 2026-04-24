@@ -8,6 +8,16 @@
       name="description"
       content="Parabun is Bun with built-in primitives for threading, SIMD, GPU, and on-device LLM inference. Drop-in for any Bun script."
     />
+    <!-- JetBrains Mono — shipped as a webfont so ligatures render even
+         when the visitor doesn't have the font installed locally. Google
+         Fonts serves the full ligature set (calt on by default); the
+         @font-face-embedded stylesheet caches aggressively. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
     <link rel="stylesheet" href="styles.css" />
     <!-- Applied before <body> paints so code blocks don't flash without
          ligatures and then toggle on. Defaults to `on`; the toggle in the
