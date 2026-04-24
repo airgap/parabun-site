@@ -73,3 +73,65 @@
   );
   document.querySelectorAll("table.bench").forEach((t) => io.observe(t));
 })();
+
+// SIMD demo orchestration: count packets as they complete a sweep, and
+// restart the parallel row's animations every 48s so its 8-iteration
+// burst re-syncs with the serial row's 64-packet macro cycle.
+(() => {
+  const parallelRow = document.querySelector(".simd-parallel");
+  const serialRow = document.querySelector(".simd-serial");
+  if (!parallelRow || !serialRow) return;
+
+  const pOut = parallelRow.querySelector(".simd-count");
+  const sOut = serialRow.querySelector(".simd-count");
+  const pPackets = parallelRow.querySelectorAll(".simd-packet");
+  const sPackets = serialRow.querySelectorAll(".simd-packet");
+  if (!pOut || !sOut) return;
+
+  const CYCLE_MS = 48000;
+  let pCount = 0;
+  let sCount = 0;
+
+  // `animationiteration` fires at the end of each iteration except the
+  // last (which fires `animationend`). Wiring both covers the count-capped
+  // parallel animation (8 iterations) and the infinite serial animation.
+  const bump = (get, set, out) => () => {
+    const n = get();
+    if (n >= 64) return;
+    const next = n + 1;
+    set(next);
+    out.textContent = String(next);
+  };
+  const bumpP = bump(
+    () => pCount,
+    (v) => (pCount = v),
+    pOut,
+  );
+  const bumpS = bump(
+    () => sCount,
+    (v) => (sCount = v),
+    sOut,
+  );
+
+  pPackets.forEach((p) => {
+    p.addEventListener("animationiteration", bumpP);
+    p.addEventListener("animationend", bumpP);
+  });
+  sPackets.forEach((p) => {
+    p.addEventListener("animationiteration", bumpS);
+  });
+
+  const reset = () => {
+    pCount = 0;
+    sCount = 0;
+    pOut.textContent = "0";
+    sOut.textContent = "0";
+    pPackets.forEach((p) => {
+      p.getAnimations().forEach((a) => {
+        a.cancel();
+        a.play();
+      });
+    });
+  };
+  setInterval(reset, CYCLE_MS);
+})();

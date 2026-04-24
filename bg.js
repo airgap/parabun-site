@@ -30,6 +30,8 @@ void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
 precision mediump float;
 uniform float u_time;
 uniform vec2  u_res;
+uniform float u_scroll;   // window.scrollY, raw pixels
+uniform float u_vel;      // smoothed scroll velocity, 0..1
 
 float hash(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
@@ -54,6 +56,9 @@ float fbm(vec2 p) {
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res.xy;
   vec2 p  = (uv - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
+  // Vertical parallax — the noise field drifts as the page scrolls.
+  // 0.0008 ≈ one shader-unit of shift per ~1250px scroll.
+  p.y += u_scroll * 0.0008;
   float t = u_time * 0.035;
 
   vec2 q = vec2(fbm(p + t),
@@ -68,7 +73,9 @@ void main() {
 
   vec3 col = base;
   col = mix(col, cool, smoothstep(0.18, 0.78, f));
-  col = mix(col, warm, smoothstep(0.52, 0.95, f) * 0.90);
+  // Scroll velocity briefly brightens the warm embers — the scene feels
+  // alive while the user drags the page, settles when they stop.
+  col = mix(col, warm, smoothstep(0.52, 0.95, f) * (0.90 + u_vel * 0.55));
 
   // No vignette: paragraph text is opaque on its own, code blocks have an
   // opaque backdrop, and embers are what make the thing worth having.
@@ -110,6 +117,8 @@ void main() {
 
   const uTime = gl.getUniformLocation(prog, "u_time");
   const uRes = gl.getUniformLocation(prog, "u_res");
+  const uScroll = gl.getUniformLocation(prog, "u_scroll");
+  const uVel = gl.getUniformLocation(prog, "u_vel");
 
   const resize = () => {
     const w = Math.max(1, Math.floor(window.innerWidth * scale));
@@ -126,8 +135,20 @@ void main() {
 
   const start = performance.now();
   let revealed = false;
+  let lastY = window.scrollY;
+  let vel = 0;
   const draw = (tMs) => {
+    const y = window.scrollY;
+    // Target velocity: scroll delta scaled so ~35px/frame saturates at 1.
+    // `max(vel * 0.88, target)` snaps velocity up and decays it slowly,
+    // giving a ~200ms tail after the user stops scrolling.
+    const target = Math.min(1, Math.abs(y - lastY) / 35);
+    vel = Math.max(vel * 0.88, target);
+    lastY = y;
+
     gl.uniform1f(uTime, (tMs - start) / 1000);
+    gl.uniform1f(uScroll, y);
+    gl.uniform1f(uVel, vel);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     if (!revealed) {
       revealed = true;

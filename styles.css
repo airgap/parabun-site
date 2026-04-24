@@ -502,12 +502,17 @@ footer a:hover {
 
 .simd-parallel .simd-packet {
   top: calc(6px + var(--lane) * 9px);
-  animation: simd-flash 0.5s linear infinite;
+  /* 8 iterations × 0.75s = 6s of bursts, then fill-mode:both holds the
+     off-screen terminal frame. fx.js restarts via WAAPI every 48s to
+     re-sync with the serial row's 64-packet macro cycle. */
+  animation: simd-flash 0.75s linear 8 both;
 }
 .simd-serial .simd-packet {
   top: 4px;
-  animation: simd-sweep 4s linear infinite;
-  animation-delay: calc(var(--i) * 0.5s);
+  /* 6s inner cycle × 8 macro repeats = 48s for 64 packets. Stagger 0.75s
+     so exactly one serial packet crosses per step. */
+  animation: simd-sweep 6s linear infinite;
+  animation-delay: calc(var(--i) * 0.75s);
 }
 
 /* Parallel rhythm: one full-track sweep per 0.5s "step", packets 0–7
@@ -558,7 +563,11 @@ footer a:hover {
   font-size: 10px;
   color: var(--text-faint);
   text-align: right;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.simd-count {
+  color: var(--accent);
 }
 
 @media (max-width: 520px) {
