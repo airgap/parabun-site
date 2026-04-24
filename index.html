@@ -52,7 +52,7 @@
 
       <figure class="simd-demo" aria-label="SIMD lanes process 8 elements in parallel while .map processes them one at a time.">
         <div class="simd-row simd-parallel">
-          <div class="simd-label">bun:simd<span class="simd-sub">8 lanes · 1 cycle</span></div>
+          <div class="simd-label">bun:simd<span class="simd-sub">8 per step</span></div>
           <div class="simd-track">
             <span class="simd-packet" style="--lane: 0"></span>
             <span class="simd-packet" style="--lane: 1"></span>
@@ -66,7 +66,7 @@
           <div class="simd-out" aria-hidden="true">out</div>
         </div>
         <div class="simd-row simd-serial">
-          <div class="simd-label">.map<span class="simd-sub">1 lane · 8 cycles</span></div>
+          <div class="simd-label">.map<span class="simd-sub">1 per step</span></div>
           <div class="simd-track">
             <span class="simd-packet" style="--i: 0"></span>
             <span class="simd-packet" style="--i: 1"></span>

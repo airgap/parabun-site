@@ -36,7 +36,9 @@ body {
 
 /* Half-resolution WebGL nebula. CSS upscales to viewport, which doubles as
    a free bokeh and hides pixelation. Sits behind .page and .fab via stacking
-   context; if WebGL fails, html's solid --bg shows through unchanged. */
+   context. Starts at opacity:0 and fades in after the first successful draw,
+   so a WebGL init failure leaves html's solid --bg visible instead of a
+   black canvas covering it. */
 #bg-canvas {
   position: fixed;
   inset: 0;
@@ -44,8 +46,12 @@ body {
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.75;
-  filter: saturate(1.15);
+  opacity: 0;
+  transition: opacity 500ms ease-out;
+  filter: saturate(1.2);
+}
+#bg-canvas.ready {
+  opacity: 1;
 }
 
 .page {
@@ -496,7 +502,7 @@ footer a:hover {
 
 .simd-parallel .simd-packet {
   top: calc(6px + var(--lane) * 9px);
-  animation: simd-sweep 4s linear infinite;
+  animation: simd-flash 0.5s linear infinite;
 }
 .simd-serial .simd-packet {
   top: 4px;
@@ -504,6 +510,29 @@ footer a:hover {
   animation-delay: calc(var(--i) * 0.5s);
 }
 
+/* Parallel rhythm: one full-track sweep per 0.5s "step", packets 0–7
+   abreast. Eight steps per serial cycle, so every step shows 8 parallel
+   packets against 1 serial packet — the 8× throughput the numbers below
+   are promising. */
+@keyframes simd-flash {
+  0% {
+    transform: translateX(-18px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    transform: translateX(calc(100cqw + 4px));
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100cqw + 4px));
+    opacity: 0;
+  }
+}
+
+/* Serial: 4s cycle, staggered so one packet crosses per 0.5s step. */
 @keyframes simd-sweep {
   0% {
     transform: translateX(-18px);

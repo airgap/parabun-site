@@ -62,18 +62,16 @@ void main() {
                 fbm(p + 3.2 * q + vec2(8.3, 2.8) - t * 0.4));
   float f = fbm(p + 2.6 * r);
 
-  vec3 base = vec3(0.035, 0.035, 0.042);          // near --bg
-  vec3 cool = vec3(0.075, 0.070, 0.130);          // slate violet
+  vec3 base = vec3(0.055, 0.055, 0.070);          // slightly raised charcoal
+  vec3 cool = vec3(0.175, 0.115, 0.310);          // saturated deep violet
   vec3 warm = vec3(0.962, 0.690, 0.254);          // --accent #f5b041
 
   vec3 col = base;
-  col = mix(col, cool, smoothstep(0.30, 0.85, f));
-  col = mix(col, warm, smoothstep(0.72, 0.98, f) * 0.55);
+  col = mix(col, cool, smoothstep(0.18, 0.78, f));
+  col = mix(col, warm, smoothstep(0.52, 0.95, f) * 0.90);
 
-  // Pull the center slightly darker so body text stays readable without
-  // needing an opaque backdrop behind the content column.
-  float d = distance(uv, vec2(0.5, 0.42));
-  col *= mix(0.62, 1.0, smoothstep(0.15, 0.95, d));
+  // No vignette: paragraph text is opaque on its own, code blocks have an
+  // opaque backdrop, and embers are what make the thing worth having.
 
   gl_FragColor = vec4(col, 1.0);
 }
@@ -127,9 +125,14 @@ void main() {
   addEventListener("resize", resize, { passive: true });
 
   const start = performance.now();
+  let revealed = false;
   const draw = (tMs) => {
     gl.uniform1f(uTime, (tMs - start) / 1000);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (!revealed) {
+      revealed = true;
+      canvas.classList.add("ready");
+    }
   };
 
   if (reduced) {
