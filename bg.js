@@ -89,8 +89,8 @@ void main() {
   // position so dragging the page literally rotates through the spectrum;
   // the brightness mask keeps dark voids dark but is wide enough that the
   // shimmer covers most of the visible nebula, not just the embers.
-  vec3 oil = oilslick(f * 0.625 + u_time * 0.18 + u_scroll * 0.0018);
-  col = mix(col, oil, smoothstep(0.10, 0.60, f) * u_vel * 0.10);
+  vec3 oil = oilslick(f * 1.25 + u_time * 0.18 + u_scroll * 0.0018);
+  col = mix(col, oil, smoothstep(0.10, 0.60, f) * u_vel * 0.025);
 
   // No vignette: paragraph text is opaque on its own, code blocks have an
   // opaque backdrop, and embers are what make the thing worth having.
