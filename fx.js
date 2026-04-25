@@ -74,9 +74,12 @@
   document.querySelectorAll("table.bench").forEach((t) => io.observe(t));
 })();
 
-// SIMD demo orchestration: count packets as they complete a sweep, and
-// restart the parallel row's animations every 48s so its 8-iteration
-// burst re-syncs with the serial row's 64-packet macro cycle.
+// SIMD demo orchestration: tick the counters every STEP_MS (the time one
+// packet takes to cross its lane) and restart the parallel row's 8-
+// iteration burst every 48s so it re-syncs with the serial row's 64-
+// packet macro cycle. Counters are time-driven rather than event-driven
+// because `animationiteration` fires per full 6s iteration (not per
+// sweep), which would leave the serial counter stuck at 0 for 6s.
 (() => {
   const parallelRow = document.querySelector(".simd-parallel");
   const serialRow = document.querySelector(".simd-serial");
@@ -85,53 +88,55 @@
   const pOut = parallelRow.querySelector(".simd-count");
   const sOut = serialRow.querySelector(".simd-count");
   const pPackets = parallelRow.querySelectorAll(".simd-packet");
-  const sPackets = serialRow.querySelectorAll(".simd-packet");
   if (!pOut || !sOut) return;
 
-  const CYCLE_MS = 48000;
-  let pCount = 0;
-  let sCount = 0;
+  const STEP_MS = 750;
+  const CYCLE_MS = 48000; // 64 * STEP_MS — exactly 8 serial iterations
+  const TOTAL = 64;
 
-  // `animationiteration` fires at the end of each iteration except the
-  // last (which fires `animationend`). Wiring both covers the count-capped
-  // parallel animation (8 iterations) and the infinite serial animation.
-  const bump = (get, set, out) => () => {
-    const n = get();
-    if (n >= 64) return;
-    const next = n + 1;
-    set(next);
-    out.textContent = String(next);
+  let cycleTimers = [];
+  const clearCycle = () => {
+    cycleTimers.forEach(clearTimeout);
+    cycleTimers = [];
   };
-  const bumpP = bump(
-    () => pCount,
-    (v) => (pCount = v),
-    pOut,
-  );
-  const bumpS = bump(
-    () => sCount,
-    (v) => (sCount = v),
-    sOut,
-  );
 
-  pPackets.forEach((p) => {
-    p.addEventListener("animationiteration", bumpP);
-    p.addEventListener("animationend", bumpP);
-  });
-  sPackets.forEach((p) => {
-    p.addEventListener("animationiteration", bumpS);
-  });
+  // First tick lands at STEP_MS — when the first packet has finished
+  // crossing — and then every STEP_MS until `n` saturates at TOTAL.
+  const drive = (el, inc) => {
+    let n = 0;
+    el.textContent = "0";
+    const bump = () => {
+      if (n >= TOTAL) return;
+      n = Math.min(TOTAL, n + inc);
+      el.textContent = String(n);
+    };
+    cycleTimers.push(
+      setTimeout(() => {
+        bump();
+        if (n >= TOTAL) return;
+        const id = setInterval(() => {
+          bump();
+          if (n >= TOTAL) clearInterval(id);
+        }, STEP_MS);
+        cycleTimers.push(id);
+      }, STEP_MS),
+    );
+  };
 
-  const reset = () => {
-    pCount = 0;
-    sCount = 0;
-    pOut.textContent = "0";
-    sOut.textContent = "0";
+  const startCycle = () => {
+    clearCycle();
+    drive(pOut, 8);
+    drive(sOut, 1);
+  };
+
+  startCycle();
+  setInterval(() => {
     pPackets.forEach((p) => {
       p.getAnimations().forEach((a) => {
         a.cancel();
         a.play();
       });
     });
-  };
-  setInterval(reset, CYCLE_MS);
+    startCycle();
+  }, CYCLE_MS);
 })();
