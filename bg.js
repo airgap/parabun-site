@@ -32,6 +32,7 @@ uniform float u_time;
 uniform vec2  u_res;
 uniform float u_scroll;   // window.scrollY, raw pixels
 uniform float u_vel;      // smoothed scroll velocity, 0..1
+uniform vec2  u_cursor;   // smoothed pointer in 0..1 UV space
 
 float hash(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
@@ -60,6 +61,14 @@ void main() {
   // (like distant stars sliding past behind the content, slower than the
   // foreground). 0.0008 ≈ one shader-unit of shift per ~1250px scroll.
   p.y -= u_scroll * 0.0008;
+
+  // Cursor lensing — pull the noise sampling slightly toward the pointer
+  // with a Gaussian falloff. The field looks like it bulges around the
+  // cursor without any visible chrome.
+  vec2 cursor_p = (u_cursor - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
+  vec2 toCursor = cursor_p - p;
+  p += toCursor * 0.18 * exp(-dot(toCursor, toCursor) * 1.5);
+
   float t = u_time * 0.035;
 
   vec2 q = vec2(fbm(p + t),
@@ -120,6 +129,7 @@ void main() {
   const uRes = gl.getUniformLocation(prog, "u_res");
   const uScroll = gl.getUniformLocation(prog, "u_scroll");
   const uVel = gl.getUniformLocation(prog, "u_vel");
+  const uCursor = gl.getUniformLocation(prog, "u_cursor");
 
   const resize = () => {
     const w = Math.max(1, Math.floor(window.innerWidth * scale));
@@ -138,6 +148,21 @@ void main() {
   let revealed = false;
   let lastY = window.scrollY;
   let vel = 0;
+  // Cursor in 0..1 UV space. Default to center so the lens sits in the
+  // middle of the field until the user moves the pointer (or never, on
+  // touch devices). cursor lerps toward cursorTarget every frame.
+  let cursorX = 0.5;
+  let cursorY = 0.5;
+  let cursorTargetX = 0.5;
+  let cursorTargetY = 0.5;
+  addEventListener(
+    "mousemove",
+    (e) => {
+      cursorTargetX = e.clientX / window.innerWidth;
+      cursorTargetY = 1 - e.clientY / window.innerHeight;
+    },
+    { passive: true },
+  );
   const draw = (tMs) => {
     const y = window.scrollY;
     // Target velocity: scroll delta scaled so ~12px/frame saturates at 1
@@ -148,9 +173,15 @@ void main() {
     vel = Math.max(vel * 0.92, target);
     lastY = y;
 
+    // Lerp cursor by 0.12/frame — gives the field a touch of inertia,
+    // so a quick mouse jerk doesn't translate to a sharp jolt.
+    cursorX += (cursorTargetX - cursorX) * 0.12;
+    cursorY += (cursorTargetY - cursorY) * 0.12;
+
     gl.uniform1f(uTime, (tMs - start) / 1000);
     gl.uniform1f(uScroll, y);
     gl.uniform1f(uVel, vel);
+    gl.uniform2f(uCursor, cursorX, cursorY);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     if (!revealed) {
       revealed = true;
