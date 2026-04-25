@@ -34,29 +34,7 @@ body {
   padding: 0;
 }
 
-/* Half-resolution WebGL nebula. CSS upscales to viewport, which doubles as
-   a free bokeh and hides pixelation. Sits behind .page and .fab via stacking
-   context. Starts at opacity:0 and fades in after the first successful draw,
-   so a WebGL init failure leaves html's solid --bg visible instead of a
-   black canvas covering it. */
-#bg-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 500ms ease-out;
-  filter: saturate(1.2);
-}
-#bg-canvas.ready {
-  opacity: 0.5;
-}
-
 .page {
-  position: relative;
-  z-index: 1;
   max-width: 760px;
   margin: 0 auto;
   padding: 72px 32px 128px;
@@ -128,13 +106,6 @@ header {
 .fab[aria-pressed="true"] {
   color: var(--accent);
   border-color: var(--accent-dim);
-}
-
-/* Stack the bg-style toggle above the ligatures FAB so they don't
-   overlap at the bottom-right corner. ~44px gap covers the FAB
-   height plus a hair of breathing room. */
-#bg-fab.fab {
-  bottom: max(60px, calc(env(safe-area-inset-bottom, 16px) + 44px));
 }
 
 /* Ligature toggle: default off (no font-variant-ligatures hint), `on` when
