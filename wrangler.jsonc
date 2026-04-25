@@ -14,6 +14,11 @@
   // dedicated subdomain. Requires script.dev's zone to be on this CF
   // account; wrangler claims the hostname on deploy.
   "routes": [{ "pattern": "parabun.script.dev", "custom_domain": true }],
+  // Keep the parabun-site.<acct>.workers.dev fallback alive too, so we have
+  // a way to verify deploys before DNS propagation finishes for the custom
+  // domain (and as a sanity URL when CF's edge caches act up).
+  "workers_dev": true,
+  "preview_urls": true,
   "observability": {
     "enabled": true,
   },
