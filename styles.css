@@ -130,6 +130,13 @@ header {
   border-color: var(--accent-dim);
 }
 
+/* Stack the bg-style toggle above the ligatures FAB so they don't
+   overlap at the bottom-right corner. ~44px gap covers the FAB
+   height plus a hair of breathing room. */
+#bg-fab.fab {
+  bottom: max(60px, calc(env(safe-area-inset-bottom, 16px) + 44px));
+}
+
 /* Ligature toggle: default off (no font-variant-ligatures hint), `on` when
    html.ligatures is present. JetBrains Mono (loaded as a webfont) ships
    with contextual ligatures for `=>`, `|>`, `!=`, `..=`, etc.; the toggle

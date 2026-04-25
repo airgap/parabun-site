@@ -1,7 +1,15 @@
-// Fullscreen fragment-shader nebula. Renders at half-resolution and relies on
-// CSS upscale for a free bokeh. Single frame when the user prefers reduced
-// motion, paused when the tab is hidden, skipped entirely if WebGL isn't
-// available — so the solid --bg on <html> is the always-safe fallback.
+// Fullscreen fragment-shader background. Two looks shipped:
+//   "lanes" — vertical SIMD-pipeline lanes with comet-shaped pulses.
+//   "grid"  — compute-fabric tile heatmap; cells fire as if dispatched.
+// User toggles between them via #bg-fab; choice persists in localStorage
+// under "parabun-bg". Both share the same uniforms (time, resolution,
+// scroll position, scroll velocity, cursor) so the toggle is a pure
+// program swap inside the same rAF loop.
+//
+// Renders at half-resolution and CSS-upscales for free bokeh. Single
+// frame under prefers-reduced-motion, paused when the tab is hidden,
+// skipped entirely if WebGL is unavailable — html's solid --bg is the
+// always-safe fallback.
 (() => {
   const canvas = document.getElementById("bg-canvas");
   if (!canvas) return;
@@ -24,74 +32,133 @@ attribute vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
 `;
 
-  // Domain-warped FBM nebula. Muted palette: charcoal base, a cool
-  // slate-violet mid, and the site's amber accent as sparse embers.
-  const FS = `
+  // Shared uniform block, repeated at the top of each fragment shader.
+  const COMMON = `
 precision mediump float;
 uniform float u_time;
 uniform vec2  u_res;
-uniform float u_scroll;   // window.scrollY, raw pixels
-uniform float u_vel;      // smoothed scroll velocity, 0..1
-uniform vec2  u_cursor;   // smoothed pointer in 0..1 UV space
+uniform float u_scroll;
+uniform float u_vel;
+uniform vec2  u_cursor;
 
 float hash(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
 }
-float noise(vec2 p) {
-  vec2 i = floor(p), f = fract(p);
-  float a = hash(i),
-        b = hash(i + vec2(1.0, 0.0)),
-        c = hash(i + vec2(0.0, 1.0)),
-        d = hash(i + vec2(1.0, 1.0));
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+float hash1(float n) {
+  return fract(sin(n * 17.5341) * 43758.5453);
 }
-float fbm(vec2 p) {
-  float v = 0.0, a = 0.5;
-  for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
-  return v;
-}
+`;
 
+  // -----------------------------------------------------------------
+  // LANES — N vertical pipelines. Each lane is a thin baseline rule
+  // with a single comet-shaped pulse cycling top-to-bottom. Pulse
+  // speed and phase vary per lane (deterministic from laneIdx) so
+  // the pattern looks alive without coordinated flashes. Cursor
+  // boosts the warm head; scroll velocity speeds every pulse.
+  // -----------------------------------------------------------------
+  const FS_LANES =
+    COMMON +
+    `
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res.xy;
-  vec2 p  = (uv - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
-  // Vertical parallax — the noise field drifts with the scroll direction
-  // (like distant stars sliding past behind the content, slower than the
-  // foreground). 0.0008 ≈ one shader-unit of shift per ~1250px scroll.
-  p.y -= u_scroll * 0.0008;
+  float aspect = u_res.x / u_res.y;
 
-  // Cursor lensing — pull the noise sampling slightly toward the pointer
-  // with a Gaussian falloff. cursor_p gets the same parallax shift as p
-  // so the lens stays anchored under the cursor regardless of scroll
-  // position; without this, scrolling drifted the lens center away from
-  // the pointer and weakened the pull.
-  vec2 cursor_p = (u_cursor - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
-  cursor_p.y -= u_scroll * 0.0008;
-  vec2 toCursor = cursor_p - p;
-  p += toCursor * 0.18 * exp(-dot(toCursor, toCursor) * 1.5);
+  // Wider screens get more lanes so density stays roughly constant.
+  float N = floor(aspect * 14.0 + 6.0);   // ~24 lanes at 16:9, ~14 on portrait
+  float laneIdx = floor(uv.x * N);
+  float laneCenter = (laneIdx + 0.5) / N;
+  // dxPx is in canvas pixels; canvas is half-res so /2 ≈ CSS px.
+  float dxPx = abs(uv.x - laneCenter) * u_res.x;
+  // Baseline rule line, ~2 canvas-px wide.
+  float laneLine = exp(-dxPx * dxPx / 4.0);
 
-  float t = u_time * 0.035;
+  float seedSpeed  = hash1(laneIdx);
+  float seedPhase  = hash1(laneIdx + 13.7);
+  float seedBright = hash1(laneIdx + 27.3);
 
-  vec2 q = vec2(fbm(p + t),
-                fbm(p + vec2(5.2, 1.3) - t * 0.6));
-  vec2 r = vec2(fbm(p + 3.2 * q + vec2(1.7, 9.2) + t * 0.25),
-                fbm(p + 3.2 * q + vec2(8.3, 2.8) - t * 0.4));
-  float f = fbm(p + 2.6 * r);
+  // Pulse moves down (toward smaller uv.y, since gl_FragCoord origin
+  // is bottom-left). Speed: 0.15..0.45 cycles/sec, +scroll velocity.
+  float speed = 0.15 + seedSpeed * 0.30 + u_vel * 0.5;
+  float pulsePos = fract(u_time * speed + seedPhase);
+  float pulseY = 1.0 - pulsePos;
 
-  vec3 base = vec3(0.055, 0.055, 0.070);          // slightly raised charcoal
-  vec3 cool = vec3(0.175, 0.115, 0.310);          // saturated deep violet
-  vec3 warm = vec3(0.962, 0.690, 0.254);          // --accent #f5b041
+  // Comet shape: short sharp head, long soft trail above.
+  float dy = uv.y - pulseY;
+  float headLen = 0.012;
+  float tailLen = 0.10;
+  float lenSq = mix(headLen * headLen, tailLen * tailLen, step(0.0, dy));
+  float pulse = exp(-dy * dy / lenSq);
+
+  // Cursor brightens whatever lane(s) it's near (aspect-corrected).
+  vec2 dCur = (uv - u_cursor) * vec2(aspect, 1.0);
+  float cursorBoost = exp(-dot(dCur, dCur) * 5.0);
+
+  vec3 base     = vec3(0.030, 0.030, 0.038);
+  vec3 laneCol  = vec3(0.090, 0.080, 0.140);   // dim violet
+  vec3 pulseCol = vec3(0.962, 0.690, 0.254);   // --accent
 
   vec3 col = base;
-  col = mix(col, cool, smoothstep(0.18, 0.78, f));
-  // Scroll velocity briefly brightens the warm embers — the scene feels
-  // alive while the user drags the page, settles when they stop.
-  col = mix(col, warm, smoothstep(0.52, 0.95, f) * (0.90 + u_vel * 0.55));
+  col += laneCol * laneLine * (0.45 + 0.35 * seedBright);
+  col += pulseCol * laneLine * pulse * (0.85 + cursorBoost * 0.6);
 
-  // No vignette: paragraph text is opaque on its own, code blocks have an
-  // opaque backdrop, and embers are what make the thing worth having.
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+  // -----------------------------------------------------------------
+  // GRID — fixed-pixel cells (so they look square regardless of
+  // aspect ratio). Only ~30% of cells are "active"; each active
+  // cell pulses sharply on its own period (sin^18 = thin spikes).
+  // Cursor area boosts spike intensity; scroll velocity flashes the
+  // whole field briefly.
+  // -----------------------------------------------------------------
+  const FS_GRID =
+    COMMON +
+    `
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  float aspect = u_res.x / u_res.y;
+
+  const float CELL_PX = 16.0; // canvas pixels — 32 CSS px after upscale
+  vec2 cellPx = gl_FragCoord.xy / CELL_PX;
+  vec2 cell = floor(cellPx);
+  vec2 inCell = fract(cellPx);
+
+  // Square cell mask with a small gutter so the grid reads as tiles.
+  vec2 d = abs(inCell - 0.5);
+  float cellD = max(d.x, d.y);
+  float cellMask = smoothstep(0.46, 0.40, cellD);
+
+  // Per-cell parameters. seed/seed2 differ from the active mask so
+  // active cells aren't biased to certain timings.
+  float seed   = hash(cell);
+  float seed2  = hash(cell + vec2(31.7, 17.3));
+  float active = step(0.70, hash(cell + vec2(99.1, 77.7)));
+
+  // Sharp-spike pulse — sin^18 is essentially zero except for a
+  // brief flash near each peak. Period 1.8..6.8s.
+  float period = 1.8 + seed2 * 5.0;
+  float phase  = seed * 6.28318;
+  float spike  = pow(max(0.0, sin(u_time / period * 6.28318 + phase)), 18.0);
+
+  // Cursor boosts both spike intensity and the baseline brightness
+  // around the pointer, so the cells beneath it always read warm.
+  vec2 dCur = (uv - u_cursor) * vec2(aspect, 1.0);
+  float cursorBoost = exp(-dot(dCur, dCur) * 5.0);
+  spike *= 1.0 + cursorBoost * 1.6;
+
+  // Scrolling momentarily kicks every cell.
+  spike *= 1.0 + u_vel * 0.5;
+
+  vec3 base     = vec3(0.030, 0.030, 0.038);
+  vec3 cellCool = vec3(0.090, 0.080, 0.140);
+  vec3 cellHot  = vec3(0.962, 0.690, 0.254);
+
+  vec3 col = base;
+  col += cellCool * cellMask * (0.30 + cursorBoost * 0.25);
+  col += cellHot  * cellMask * active * spike * 0.85;
 
   gl_FragColor = vec4(col, 1.0);
 }
@@ -107,15 +174,36 @@ void main() {
     }
     return s;
   };
-  const vs = compile(gl.VERTEX_SHADER, VS);
-  const fs = compile(gl.FRAGMENT_SHADER, FS);
-  if (!vs || !fs) return;
-  const prog = gl.createProgram();
-  gl.attachShader(prog, vs);
-  gl.attachShader(prog, fs);
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-  gl.useProgram(prog);
+
+  // Returns { prog, uTime, uRes, uScroll, uVel, uCursor } or null.
+  const buildProgram = (fsSrc) => {
+    const vs = compile(gl.VERTEX_SHADER, VS);
+    const fs = compile(gl.FRAGMENT_SHADER, fsSrc);
+    if (!vs || !fs) return null;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    // Lock a_pos to attribute location 0 in both programs so the same
+    // vertex pointer state works for either active program.
+    gl.bindAttribLocation(prog, 0, "a_pos");
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.warn("bg.js program link failed:", gl.getProgramInfoLog(prog));
+      return null;
+    }
+    return {
+      prog,
+      uTime: gl.getUniformLocation(prog, "u_time"),
+      uRes: gl.getUniformLocation(prog, "u_res"),
+      uScroll: gl.getUniformLocation(prog, "u_scroll"),
+      uVel: gl.getUniformLocation(prog, "u_vel"),
+      uCursor: gl.getUniformLocation(prog, "u_cursor"),
+    };
+  };
+
+  const lanes = buildProgram(FS_LANES);
+  const grid = buildProgram(FS_GRID);
+  if (!lanes || !grid) return;
 
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -124,15 +212,16 @@ void main() {
     new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
     gl.STATIC_DRAW,
   );
-  const aPos = gl.getAttribLocation(prog, "a_pos");
-  gl.enableVertexAttribArray(aPos);
-  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-  const uTime = gl.getUniformLocation(prog, "u_time");
-  const uRes = gl.getUniformLocation(prog, "u_res");
-  const uScroll = gl.getUniformLocation(prog, "u_scroll");
-  const uVel = gl.getUniformLocation(prog, "u_vel");
-  const uCursor = gl.getUniformLocation(prog, "u_cursor");
+  let active = (() => {
+    try {
+      return localStorage.getItem("parabun-bg") === "grid" ? grid : lanes;
+    } catch {
+      return lanes;
+    }
+  })();
 
   const resize = () => {
     const w = Math.max(1, Math.floor(window.innerWidth * scale));
@@ -141,19 +230,13 @@ void main() {
       canvas.width = w;
       canvas.height = h;
       gl.viewport(0, 0, w, h);
-      gl.uniform2f(uRes, w, h);
     }
   };
   resize();
   addEventListener("resize", resize, { passive: true });
 
-  const start = performance.now();
-  let revealed = false;
   let lastY = window.scrollY;
   let vel = 0;
-  // Cursor in 0..1 UV space. Default to center so the lens sits in the
-  // middle of the field until the user moves the pointer (or never, on
-  // touch devices). cursor lerps toward cursorTarget every frame.
   let cursorX = 0.5;
   let cursorY = 0.5;
   let cursorTargetX = 0.5;
@@ -166,34 +249,53 @@ void main() {
     },
     { passive: true },
   );
+
+  const start = performance.now();
+  let revealed = false;
+
   const draw = (tMs) => {
     const y = window.scrollY;
-    // Target velocity: scroll delta scaled so ~12px/frame saturates at 1
-    // (was 35 — too high to register at trackpad speeds). `max(vel * 0.92,
-    // target)` snaps velocity up and decays it over ~500ms, giving the
-    // oilslick a visible tail after the user stops scrolling.
     const target = Math.min(1, Math.abs(y - lastY) / 12);
     vel = Math.max(vel * 0.92, target);
     lastY = y;
 
-    // Lerp cursor by 0.12/frame — gives the field a touch of inertia,
-    // so a quick mouse jerk doesn't translate to a sharp jolt.
     cursorX += (cursorTargetX - cursorX) * 0.12;
     cursorY += (cursorTargetY - cursorY) * 0.12;
 
-    gl.uniform1f(uTime, (tMs - start) / 1000);
-    gl.uniform1f(uScroll, y);
-    gl.uniform1f(uVel, vel);
-    gl.uniform2f(uCursor, cursorX, cursorY);
+    gl.useProgram(active.prog);
+    gl.uniform1f(active.uTime, (tMs - start) / 1000);
+    gl.uniform2f(active.uRes, canvas.width, canvas.height);
+    gl.uniform1f(active.uScroll, y);
+    gl.uniform1f(active.uVel, vel);
+    gl.uniform2f(active.uCursor, cursorX, cursorY);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
     if (!revealed) {
       revealed = true;
       canvas.classList.add("ready");
     }
   };
 
+  // FAB hookup. The HTML ships with the lanes label as default; sync()
+  // overrides it from the loaded preference, then click toggles + saves.
+  const fab = document.getElementById("bg-fab");
+  if (fab) {
+    const sync = () => {
+      const isGrid = active === grid;
+      fab.textContent = isGrid ? "bg: grid" : "bg: lanes";
+      fab.setAttribute("aria-pressed", isGrid ? "true" : "false");
+    };
+    sync();
+    fab.addEventListener("click", () => {
+      active = active === lanes ? grid : lanes;
+      try {
+        localStorage.setItem("parabun-bg", active === grid ? "grid" : "lanes");
+      } catch {}
+      sync();
+    });
+  }
+
   if (reduced) {
-    // One frame and done — still a pretty static nebula.
     draw(performance.now());
     return;
   }
