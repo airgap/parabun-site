@@ -91,6 +91,18 @@ h2[id] {
   color: var(--text);
 }
 
+/* External-link glyph — anything pointing off-site (http/https in the nav)
+ * gets a trailing ↗ so users can tell it leaves the page before clicking. */
+.nav a[href^="http"]::after {
+  content: " ↗";
+  font-size: 0.85em;
+  color: var(--text-faint);
+  margin-left: 1px;
+}
+.nav a[href^="http"]:hover::after {
+  color: var(--text-dim);
+}
+
 /* Floating action button — pinned to the bottom-right of the viewport,
    flips contextual ligatures site-wide. Stays inside a safe-area inset
    on iOS so it doesn't collide with the home indicator. */
