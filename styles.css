@@ -46,6 +46,23 @@ header {
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 56px;
+  /* Sticky so the section nav stays reachable while scrolling. backdrop-blur
+   * over a translucent --bg keeps content underneath legible. */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 14px 0;
+  margin-top: -14px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  border-bottom: 1px solid transparent;
+}
+
+/* Once anchor-linked, the heading would otherwise scroll under the sticky
+ * header — pad the scroll target so it lands below the bar. */
+h2[id] {
+  scroll-margin-top: 64px;
 }
 
 .brand {

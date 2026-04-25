@@ -36,6 +36,9 @@
       <header>
         <span class="brand"><span class="marker">/</span> parabun</span>
         <nav class="nav">
+          <a href="#runtime-modules">modules</a>
+          <a href="#language">language</a>
+          <a href="#roadmap">roadmap</a>
           <a href="https://github.com/airgap/parabun">github</a>
           <a href="https://github.com/airgap/parabun/blob/main/LLMs.md">docs</a>
         </nav>
@@ -67,7 +70,7 @@
         with hover, go-to-definition, purity diagnostics, memo hints, and operator documentation.
       </p>
 
-      <h2>Runtime modules</h2>
+      <h2 id="runtime-modules">Runtime modules</h2>
 
       <div class="modules">
         <h3><span class="import">bun:parallel</span></h3>
@@ -217,7 +220,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </p>
       </div>
 
-      <h2>Example: LangChain <code>VectorStore</code></h2>
+      <h2 id="example">Example: LangChain <code>VectorStore</code></h2>
       <p>
         <code>ParabunVectorStore</code> extends <code>VectorStore</code> from <code>@langchain/core</code> and
         implements the <code>addVectors</code> and <code>similaritySearchVectorWithScore</code> methods, so call sites
@@ -281,7 +284,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         LangChain's to four decimal places.
       </p>
 
-      <h2>Language extensions — <code>.pts</code> / <code>.pjs</code></h2>
+      <h2 id="language">Language extensions — <code>.pts</code> / <code>.pjs</code></h2>
       <p>
         Files ending in <code>.pts</code>, <code>.ptsx</code>, <code>.pjs</code>, or <code>.pjsx</code> are parsed with
         additional desugarings. All output is standard JS; no runtime support is required, and the runtime modules above
@@ -386,7 +389,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         purity diagnostics.
       </p>
 
-      <h2>Roadmap</h2>
+      <h2 id="roadmap">Roadmap</h2>
 
       <p>
         Parabun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The modules
