@@ -302,17 +302,35 @@ pre code {
   margin: 16px 0 20px;
 }
 
-.diff pre {
+.diff figure.code {
   margin: 0;
 }
 
-.diff-label {
+/* Per-block code wrapper. <figure> groups the language label
+   (in <figcaption>) with the <pre> body so the two stay visually
+   adjacent with no gap between them. The page-wide ligature FAB
+   handles toggling, so the header is label-only. */
+figure.code {
+  margin: 12px 0 20px;
+}
+.code-header {
   font-family: var(--mono);
   font-size: 12px;
   color: var(--text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
+  background: var(--bg-code);
+  border: 1px solid var(--rule);
+  border-bottom: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  padding: 6px 12px;
+}
+figure.code > pre {
+  margin: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.code-lang {
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 640px) {
