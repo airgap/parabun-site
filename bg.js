@@ -63,9 +63,12 @@ void main() {
   p.y -= u_scroll * 0.0008;
 
   // Cursor lensing — pull the noise sampling slightly toward the pointer
-  // with a Gaussian falloff. The field looks like it bulges around the
-  // cursor without any visible chrome.
+  // with a Gaussian falloff. cursor_p gets the same parallax shift as p
+  // so the lens stays anchored under the cursor regardless of scroll
+  // position; without this, scrolling drifted the lens center away from
+  // the pointer and weakened the pull.
   vec2 cursor_p = (u_cursor - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
+  cursor_p.y -= u_scroll * 0.0008;
   vec2 toCursor = cursor_p - p;
   p += toCursor * 0.18 * exp(-dot(toCursor, toCursor) * 1.5);
 
