@@ -50,37 +50,6 @@
         <code>.ts</code> and <code>.js</code> files behave the same as in upstream Bun.
       </p>
 
-      <figure class="simd-demo" aria-label="SIMD lanes process 8 elements in parallel while .map processes them one at a time.">
-        <div class="simd-row simd-parallel">
-          <div class="simd-label">bun:simd<span class="simd-sub">8 lanes · 6s</span></div>
-          <div class="simd-track">
-            <span class="simd-packet" style="--lane: 0"></span>
-            <span class="simd-packet" style="--lane: 1"></span>
-            <span class="simd-packet" style="--lane: 2"></span>
-            <span class="simd-packet" style="--lane: 3"></span>
-            <span class="simd-packet" style="--lane: 4"></span>
-            <span class="simd-packet" style="--lane: 5"></span>
-            <span class="simd-packet" style="--lane: 6"></span>
-            <span class="simd-packet" style="--lane: 7"></span>
-          </div>
-          <div class="simd-out" aria-hidden="true"><span class="simd-count" data-row="parallel">0</span>/64</div>
-        </div>
-        <div class="simd-row simd-serial">
-          <div class="simd-label">.map<span class="simd-sub">1 lane · 48s</span></div>
-          <div class="simd-track">
-            <span class="simd-packet" style="--i: 0"></span>
-            <span class="simd-packet" style="--i: 1"></span>
-            <span class="simd-packet" style="--i: 2"></span>
-            <span class="simd-packet" style="--i: 3"></span>
-            <span class="simd-packet" style="--i: 4"></span>
-            <span class="simd-packet" style="--i: 5"></span>
-            <span class="simd-packet" style="--i: 6"></span>
-            <span class="simd-packet" style="--i: 7"></span>
-          </div>
-          <div class="simd-out" aria-hidden="true"><span class="simd-count" data-row="serial">0</span>/64</div>
-        </div>
-      </figure>
-
       <div class="install">
         <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
       </div>
