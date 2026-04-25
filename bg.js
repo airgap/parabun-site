@@ -53,13 +53,6 @@ float fbm(vec2 p) {
   return v;
 }
 
-// Inigo Quilez cosine palette — full-spectrum iridescence for the
-// scroll-shimmer pass. Phase offsets (0, 1/3, 2/3) put the RGB peaks
-// 120° apart so the gradient cycles through the whole hue wheel.
-vec3 oilslick(float t) {
-  return 0.5 + 0.5 * cos(6.28318 * (vec3(2.0) * t + vec3(0.0, 0.33, 0.67)));
-}
-
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res.xy;
   vec2 p  = (uv - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
@@ -84,13 +77,6 @@ void main() {
   // Scroll velocity briefly brightens the warm embers — the scene feels
   // alive while the user drags the page, settles when they stop.
   col = mix(col, warm, smoothstep(0.52, 0.95, f) * (0.90 + u_vel * 0.55));
-
-  // Iridescent oilslick overlay, gated by u_vel. Hue cycles with scroll
-  // position so dragging the page literally rotates through the spectrum;
-  // the brightness mask keeps dark voids dark but is wide enough that the
-  // shimmer covers most of the visible nebula, not just the embers.
-  vec3 oil = oilslick(f * 1.5 + u_time * 0.06 + u_scroll * 0.0006);
-  col = mix(col, oil, smoothstep(0.10, 0.60, f) * u_vel * 0.05);
 
   // No vignette: paragraph text is opaque on its own, code blocks have an
   // opaque backdrop, and embers are what make the thing worth having.
