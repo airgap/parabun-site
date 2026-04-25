@@ -27,6 +27,17 @@ html {
   -webkit-font-smoothing: antialiased;
   font-variant-numeric: tabular-nums;
   text-rendering: optimizeLegibility;
+  /* Smooth-scroll the page for anchor jumps. The h2[id] scroll-margin-top
+   * already keeps targets clear of the sticky header. */
+  scroll-behavior: smooth;
+}
+
+/* Respect the system "reduce motion" preference — disable smooth-scroll
+ * (and any future motion) for users who've opted out at the OS level. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
