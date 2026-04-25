@@ -56,9 +56,10 @@ float fbm(vec2 p) {
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res.xy;
   vec2 p  = (uv - 0.5) * vec2(u_res.x / u_res.y, 1.0) * 2.6;
-  // Vertical parallax — the noise field drifts as the page scrolls.
-  // 0.0008 ≈ one shader-unit of shift per ~1250px scroll.
-  p.y += u_scroll * 0.0008;
+  // Vertical parallax — the noise field drifts with the scroll direction
+  // (like distant stars sliding past behind the content, slower than the
+  // foreground). 0.0008 ≈ one shader-unit of shift per ~1250px scroll.
+  p.y -= u_scroll * 0.0008;
   float t = u_time * 0.035;
 
   vec2 q = vec2(fbm(p + t),
