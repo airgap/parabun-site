@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Parabun — parallel Bun</title>
+    <title>Parabun — JavaScript that can actually use your hardware</title>
     <meta
       name="description"
-      content="Parabun is Bun with built-in primitives for threading, SIMD, GPU, and on-device LLM inference. Drop-in for any Bun script."
+      content="A fork of Bun with the hardware-acceleration primitives JavaScript forgot — multithreaded compute, raw GPU kernels, SIMD intrinsics, on-device LLM inference, and direct camera / mic / codec access from plain TypeScript."
     />
     <!-- JetBrains Mono — shipped as a webfont so ligatures render even
          when the visitor doesn't have the font installed locally. Google
@@ -47,10 +47,24 @@
 
       <h1>Parabun</h1>
       <p class="lede">
-        A fork of <a href="https://bun.com">Bun</a> with runtime modules for parallel execution, typed-array SIMD,
-        compute-only GPU, on-device LLM inference, image codecs and pixel work, audio codecs and DSP, and streaming CSV
-        — plus parse-time extensions for purity, memoization, and reactive bindings in <code>.pts</code> /
-        <code>.pjs</code> files. Regular <code>.ts</code> and <code>.js</code> files behave the same as in upstream Bun.
+        A fork of <a href="https://bun.com">Bun</a> with the hardware-acceleration primitives JavaScript forgot.
+        <strong
+          >Multithreaded compute. Raw GPU kernels. SIMD intrinsics. Direct camera, microphone, and codec access.</strong
+        >
+        All from plain TypeScript, in one statically-linked binary.
+      </p>
+      <p class="lede">
+        Standard JS runtimes leave performance on the table that the hardware can deliver —
+        <code>worker_threads</code> is awkward, GPU access is portable-shader-only (WebGPU / WebGL), SIMD lives in
+        WebAssembly, typed-array ops are sequential, and touching a camera or microphone means an
+        <code>ffmpeg</code> subprocess or an N-API binding. Parabun closes those gaps. If you've ever spawned a Python
+        sidecar from your Node server because Node couldn't keep up, Parabun is the runtime that deletes the sidecar.
+      </p>
+      <p class="lede caveat">
+        <em>What this isn't:</em> a NumPy / PyTorch / JAX replacement. Scientific Python is deeply ahead in scientific
+        computing and ML training. Parabun is for the developer who'd otherwise <em>leave</em> TypeScript — to spawn a
+        Python subprocess, write an N-API module, or rewrite a hot service in Rust. It keeps that developer in
+        TypeScript.
       </p>
 
       <div class="install">
