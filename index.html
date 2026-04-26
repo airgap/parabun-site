@@ -47,10 +47,10 @@
 
       <h1>Parabun</h1>
       <p class="lede">
-        A fork of <a href="https://bun.com">Bun</a> with four additional runtime modules — a worker pool, SIMD
-        primitives for typed arrays, a compute-only GPU surface, and a GGUF/Llama runtime — and parse-time extensions
-        for purity, memoization, and reactive bindings in <code>.pts</code> / <code>.pjs</code> files. Regular
-        <code>.ts</code> and <code>.js</code> files behave the same as in upstream Bun.
+        A fork of <a href="https://bun.com">Bun</a> with runtime modules for parallel execution, typed-array SIMD,
+        compute-only GPU, on-device LLM inference, image codecs and pixel work, audio codecs and DSP, and streaming CSV
+        — plus parse-time extensions for purity, memoization, and reactive bindings in <code>.pts</code> /
+        <code>.pjs</code> files. Regular <code>.ts</code> and <code>.js</code> files behave the same as in upstream Bun.
       </p>
 
       <div class="install">
@@ -165,6 +165,113 @@
 }
 gpu.<span class="fn">release</span>(held);</code></pre>
         </figure>
+
+        <p class="footnote">
+          Beyond <code>matVec</code> / <code>simdMap</code>, <span class="import">bun:gpu</span> ships
+          <code>conv2D</code>, <code>scan</code>, <code>reduce</code>, <code>argMin</code> / <code>argMax</code>,
+          <code>histogram</code>, and <code>median</code> / <code>quantile</code> — CPU correctness paths today, with
+          optional CUDA / Metal hooks on the same dispatch surface for follow-up device kernels.
+        </p>
+
+        <h3><span class="import">bun:image</span></h3>
+        <p>
+          A Sharp-class image module baked into the runtime — JPEG / PNG / WebP decode and encode (libjpeg-turbo,
+          libpng, libwebp + libsharpyuv vendored statically), bilinear and Lanczos resize, separable Gaussian blur,
+          unsharp-mask sharpen, Sobel edge-detect, 90 / 180 / 270 rotate, flip, crop, brightness / contrast / saturation
+          adjust, threshold, invert, grayscale, per-channel histogram, and Porter-Duff source-over alpha compositing. No
+          <code>npm install sharp</code>, no Node-ABI-versioned binary distribution.
+        </p>
+        <figure class="code">
+          <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
+          <pre><code><span class="kw">import</span> image <span class="kw">from</span> <span class="str">"bun:image"</span>;
+
+<span class="kw">const</span> bytes = <span class="kw">await</span> Bun.<span class="fn">file</span>(<span class="str">"photo.jpg"</span>).<span class="fn">bytes</span>();
+<span class="kw">const</span> img = image.<span class="fn">decode</span>(bytes);
+<span class="kw">const</span> small = image.<span class="fn">resize</span>(img, { width: <span class="num">800</span>, height: <span class="num">600</span>, kernel: <span class="str">"lanczos"</span> });
+<span class="kw">const</span> sharp = image.<span class="fn">sharpen</span>(small, { amount: <span class="num">1.5</span> });
+<span class="kw">const</span> webp = image.<span class="fn">encode</span>(sharp, { format: <span class="str">"webp"</span>, quality: <span class="num">85</span> });
+<span class="kw">await</span> Bun.<span class="fn">write</span>(<span class="str">"photo.webp"</span>, webp);</code></pre>
+        </figure>
+
+        <h3><span class="import">bun:audio</span></h3>
+        <p>
+          A from-scratch audio toolkit: WAV / MP3 decode, Opus encode and decode (libopus 1.6.1), rnnoise-based
+          denoiser, FFT, RBJ Audio EQ Cookbook biquads (lowpass / highpass / bandpass / notch), resample, STFT
+          spectrogram, voice-activity detection, AGC, peak / RMS / windowed envelope, mix, normalize, interleave /
+          deinterleave, and PCM type conversion. Heavy codecs (libopus, minimp3, rnnoise) ship statically; paired with
+          <span class="import">bun:rtp</span>, the surface is enough for a full voice-call capture pipeline short of OS
+          audio I/O.
+        </p>
+        <figure class="code">
+          <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
+          <pre><code><span class="kw">import</span> audio <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+<span class="kw">import</span> rtp <span class="kw">from</span> <span class="str">"bun:rtp"</span>;
+
+<span class="kw">const</span> enc = <span class="kw">new</span> audio.<span class="fn">OpusEncoder</span>({ sampleRate: <span class="num">48000</span>, channels: <span class="num">1</span>, application: <span class="str">"voip"</span> });
+<span class="kw">const</span> den = <span class="kw">new</span> audio.<span class="fn">Denoiser</span>();
+<span class="kw">const</span> agc = <span class="kw">new</span> audio.<span class="fn">Gain</span>({ targetLevel: <span class="num">0.1</span> });
+
+<span class="kw">for</span> (<span class="kw">const</span> i16Frame <span class="kw">of</span> micFrames) {
+  <span class="kw">const</span> f32 = audio.<span class="fn">i16ToF32</span>(i16Frame);     <span class="com">// OS audio → DSP space</span>
+  den.<span class="fn">process</span>(f32);                          <span class="com">// suppress noise (in place)</span>
+  agc.<span class="fn">process</span>(f32);                          <span class="com">// normalize loudness</span>
+  <span class="kw">const</span> opus = enc.<span class="fn">encode</span>(f32);
+  <span class="fn">send</span>(rtp.<span class="fn">pack</span>({ payloadType: <span class="num">111</span>, sequence, timestamp, ssrc, payload: opus }));
+}</code></pre>
+        </figure>
+
+        <h3><span class="import">bun:csv</span></h3>
+        <p>
+          Streaming RFC 4180 parser — async generator, full quote and escape handling, configurable delimiter, header
+          mode that yields records keyed by column name, per-cell type inference (number / boolean / null). An opt-in
+          <code>parallel: true</code> mode chunks the input across <span class="import">bun:parallel</span>'s worker
+          pool when the input has no quoted cells and is large enough.
+        </p>
+        <figure class="code">
+          <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
+          <pre><code><span class="kw">import</span> csv <span class="kw">from</span> <span class="str">"bun:csv"</span>;
+
+<span class="kw">for await</span> (<span class="kw">const</span> row <span class="kw">of</span> csv.<span class="fn">parseCsv</span>(Bun.<span class="fn">file</span>(<span class="str">"rows.csv"</span>), { header: <span class="kw">true</span> })) {
+  <span class="fn">process</span>(row.id, row.name, row.score);
+}</code></pre>
+        </figure>
+        <table class="bench" aria-label="bun:csv parallel-vs-serial sweep on a 16-core x86 release build">
+          <thead>
+            <tr>
+              <th>fixture</th>
+              <th class="num-cell">serial (med)</th>
+              <th class="num-cell">parallel (med)</th>
+              <th class="num-cell">speedup</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>5 MB · 128k rows</td>
+              <td class="num-cell">152 ms</td>
+              <td class="num-cell">129 ms</td>
+              <td class="num-cell">1.18×</td>
+            </tr>
+            <tr>
+              <td>50 MB · 1.25M rows</td>
+              <td class="num-cell">1446 ms</td>
+              <td class="num-cell">1528 ms</td>
+              <td class="num-cell">0.95×</td>
+            </tr>
+            <tr>
+              <td>200 MB · 4.92M rows</td>
+              <td class="num-cell">5892 ms</td>
+              <td class="num-cell">6363 ms</td>
+              <td class="num-cell">0.93×</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="footnote">
+          <code>parallel: true</code> is not a per-file speedup. The serial state machine is already
+          memory-bandwidth-bound, and the parallel path's materialize-and-fork overhead grows with input size — so it
+          helps a little at small files, breaks even around 50 MB, and gets worse from there. Use it to keep the event
+          loop responsive while parsing (parsing N files concurrently does scale across cores), not because you expect
+          bigger files to go faster. <code>bench/parabun-csv-parallel/</code> reproduces these numbers.
+        </p>
 
         <h3><span class="import">bun:llm</span></h3>
         <p>
@@ -393,14 +500,21 @@ gpu.<span class="fn">release</span>(held);</code></pre>
       <h2 id="roadmap">Roadmap</h2>
 
       <p>
-        Parabun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The modules
-        above are the foundation; the next set attack the most common
-        <em>"I have to shell out / use Python / write native code"</em> pain points in JS-land.
+        Parabun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The shipped
+        modules — <span class="import">bun:parallel</span>, <span class="import">bun:simd</span>,
+        <span class="import">bun:gpu</span>, <span class="import">bun:pipeline</span>,
+        <span class="import">bun:arena</span>, <span class="import">bun:signals</span>,
+        <span class="import">bun:llm</span>, <span class="import">bun:image</span>,
+        <span class="import">bun:audio</span>, <span class="import">bun:csv</span>,
+        <span class="import">bun:rtp</span> — cover the typed-array, codec, and CPU/GPU-parallel surface; the remaining
+        items below attack the next layer of <em>"I have to shell out / use Python / write native code"</em>
+        pain points.
       </p>
 
       <p>
-        Each module ships behind a compile-time feature flag. Production builds slim to only what your app imports —
-        heavy codecs (ffmpeg, Apache Arrow) are opt-in, server / Lambda / Workers builds stay minimal.
+        Each module ships behind a compile-time feature flag. The
+        <a href="/configure">configurator</a> generates a <code>bun build --compile</code> invocation with only the
+        modules you check — production builds slim to whatever your app actually imports.
       </p>
 
       <table class="bench" aria-label="Parabun module roadmap">
@@ -413,19 +527,50 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td>in flight</td>
+            <td>shipped</td>
             <td><span class="import">bun:image</span></td>
-            <td>JPEG / PNG / WebP / AVIF decode + GPU-accelerated resize. Sharp-class but bundleable.</td>
+            <td>
+              JPEG / PNG / WebP decode + encode, resize (bilinear / Lanczos), blur / sharpen / edge-detect, rotate /
+              flip / crop, adjust / threshold / invert / grayscale, histogram, alpha composite.
+            </td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td><span class="import">bun:audio</span></td>
+            <td>
+              WAV / MP3 / Opus codecs, RBJ biquads, FFT, resample, spectrogram, VAD, denoiser (rnnoise), AGC, mix /
+              normalize / envelope, planar ⇄ frame-major + i16 ⇄ f32 PCM helpers.
+            </td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td><span class="import">bun:csv</span></td>
+            <td>
+              Streaming RFC 4180 parser. <code>parallel: true</code> is "off-the-main-thread", not a per-file speedup —
+              see the table above.
+            </td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td><span class="import">bun:rtp</span></td>
+            <td>RFC 3550 packet pack/parse + jitter buffer. Transport for the codec stack.</td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td><span class="import">bun:gpu</span> primitives</td>
+            <td>
+              <code>conv2D</code>, <code>scan</code>, <code>reduce</code>, <code>argMin</code> / <code>argMax</code>,
+              <code>histogram</code>, <code>median</code> / <code>quantile</code>. CPU correctness paths today; CUDA /
+              Metal hooks slot in via the existing dispatch.
+            </td>
           </tr>
           <tr>
             <td>next</td>
-            <td><span class="import">bun:gpu</span> kernels</td>
-            <td>2D convolution, FFT, sort, scan, histogram. Composes into image / audio / video / data work.</td>
-          </tr>
-          <tr>
-            <td>next</td>
-            <td><span class="import">bun:csv</span> + <span class="import">bun:arrow</span></td>
-            <td>Parallel CSV parse + columnar (Parquet / Arrow IPC) with SIMD column ops. The "5 GB CSV" story.</td>
+            <td><span class="import">bun:gpu</span> device kernels</td>
+            <td>
+              Wire CUDA / Metal kernels for the primitives above (Hillis-Steele scan, parallel reductions,
+              atomic-privatized histogram).
+            </td>
           </tr>
           <tr>
             <td>next</td>
@@ -436,9 +581,17 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </td>
           </tr>
           <tr>
+            <td>next</td>
+            <td><span class="import">bun:arrow</span></td>
+            <td>
+              Columnar (Parquet / Arrow IPC) with SIMD column ops. The "5 GB analytical query" story to pair with
+              <span class="import">bun:csv</span>.
+            </td>
+          </tr>
+          <tr>
             <td>planned</td>
-            <td><span class="import">bun:audio</span></td>
-            <td>FFT, spectrograms, IIR / FIR filters, resampling. Currently no good options in JS.</td>
+            <td><span class="import">bun:image</span> AVIF</td>
+            <td>AVIF decode (libavif / libheif vendor add). Round out the codec coverage matrix.</td>
           </tr>
           <tr>
             <td>planned</td>
@@ -449,6 +602,14 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td>planned</td>
             <td><span class="import">bun:camera</span></td>
             <td>Live video capture (V4L2 / AVFoundation / Media Foundation). Makes Parabun a real embedded runtime.</td>
+          </tr>
+          <tr>
+            <td>planned</td>
+            <td>OS audio I/O</td>
+            <td>
+              Live capture + playback for <span class="import">bun:audio</span> (ALSA / CoreAudio / WASAPI via
+              <span class="import">bun:ffi</span>). Closes the voice-call pipeline.
+            </td>
           </tr>
         </tbody>
       </table>
