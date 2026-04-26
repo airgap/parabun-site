@@ -3,6 +3,6 @@
   "private": true,
   "scripts": {
     "dev": "bun --hot index.html",
-    "build": "rm -rf dist && mkdir -p dist && cp index.html styles.css fx.js dist/"
+    "build": "rm -rf dist && mkdir -p dist/configure && cp index.html styles.css fx.js dist/ && cp configure.html dist/configure/index.html && cp styles.css dist/configure/"
   }
 }

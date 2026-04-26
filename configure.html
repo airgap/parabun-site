@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configure your Parabun build</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* ── Configurator-specific styling. The rest reuses styles.css. ────── */
+      .config-banner {
+        margin: 24px 0 32px;
+        padding: 14px 18px;
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        border-left: 2px solid var(--accent);
+        font-size: 14px;
+      }
+      .config-banner strong {
+        color: var(--accent);
+      }
+      .config-group {
+        margin: 28px 0;
+      }
+      .config-group h3 {
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-faint);
+        font-weight: 500;
+        margin: 0 0 8px;
+      }
+      .config-row {
+        display: grid;
+        grid-template-columns: 22px 1fr 80px;
+        gap: 12px;
+        align-items: baseline;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .config-row:last-child {
+        border-bottom: none;
+      }
+      .config-row input[type="checkbox"] {
+        margin: 0;
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .config-row.locked input[type="checkbox"] {
+        cursor: not-allowed;
+        opacity: 0.4;
+      }
+      .config-row label {
+        cursor: pointer;
+      }
+      .config-row.locked label {
+        cursor: default;
+      }
+      .config-row .mod-name {
+        font-family: var(--mono);
+        font-size: 14px;
+        color: var(--text);
+      }
+      .config-row .mod-desc {
+        font-size: 13px;
+        color: var(--text-dim);
+        margin-left: 8px;
+      }
+      .config-row .mod-size {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-faint);
+        text-align: right;
+      }
+      .config-row .mod-size.weighty {
+        color: var(--text-dim);
+      }
+      .config-row.locked .mod-size {
+        color: var(--text-faint);
+        font-style: italic;
+      }
+
+      .config-output {
+        margin: 32px 0;
+        padding: 18px 20px;
+        background: var(--bg-code);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+      }
+      .config-output .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-faint);
+        margin-bottom: 10px;
+      }
+      .config-output pre {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-all;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      .config-output .copy {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+        background: transparent;
+        border: 1px solid var(--accent-dim);
+        padding: 6px 12px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .config-output .copy:hover {
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+      }
+      .config-output .copy.copied {
+        color: var(--add);
+        border-color: var(--add);
+      }
+
+      .config-summary {
+        margin: 28px 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .config-summary .stat {
+        font-family: var(--mono);
+      }
+      .config-summary .stat .value {
+        font-size: 28px;
+        color: var(--accent);
+        display: block;
+      }
+      .config-summary .stat .caption {
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      .config-bar {
+        margin-top: 6px;
+        height: 4px;
+        background: var(--rule);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .config-bar .fill {
+        height: 100%;
+        background: var(--accent);
+        transition: width 0.15s ease-out;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <span class="brand"><span class="marker">/</span> parabun</span>
+        <nav class="nav">
+          <a href="/">home</a>
+          <a href="/#runtime-modules">modules</a>
+          <a href="/#roadmap">roadmap</a>
+          <a href="https://github.com/airgap/parabun" target="_blank" rel="noopener">github</a>
+        </nav>
+      </header>
+
+      <h1>Configure your build</h1>
+      <p class="lede">
+        Pick the modules you actually need. The configurator generates a <code>bun build --compile</code> command and
+        estimates the resulting binary size. Defaults to everything checked — uncheck what you don't need.
+      </p>
+
+      <div class="config-banner">
+        <strong>Preview.</strong> The UI works today; the <code>--with</code> / <code>--without</code> build flags it
+        emits ship in a follow-up Parabun release. Use this page now to plan the modules your app will need; the command
+        will work as soon as the runtime flags land.
+      </div>
+
+      <div class="config-summary">
+        <div class="stat">
+          <span class="value" id="stat-size">~130 MB</span>
+          <span class="caption">estimated binary size</span>
+          <div class="config-bar"><div class="fill" id="size-bar" style="width: 100%"></div></div>
+        </div>
+        <div class="stat">
+          <span class="value" id="stat-modules">12 / 12</span>
+          <span class="caption">modules included</span>
+          <div class="config-bar"><div class="fill" id="modules-bar" style="width: 100%"></div></div>
+        </div>
+      </div>
+
+      <div id="config-form">
+        <!-- Groups + rows are rendered by the inline script below. -->
+      </div>
+
+      <div class="config-output">
+        <div class="label">your build command</div>
+        <pre id="output-cmd"></pre>
+        <button class="copy" id="copy-btn" type="button">copy</button>
+      </div>
+
+      <p class="footnote">
+        Notes: sizes are debug-build estimates; release builds are roughly <strong>40% smaller</strong> after stripping.
+        <code>bun:gpu</code> uses system Metal / CUDA via FFI and adds no static-link weight; same for
+        <code>bun:camera</code> (V4L2 / AVFoundation / Media Foundation are all OS-provided).
+        <code>bun:llm</code> piggybacks on <code>bun:gpu</code>+<code>bun:simd</code> so it's free if you've already
+        included those.
+      </p>
+
+      <div class="disclaimer">
+        <strong>Scope.</strong> The added modules target typed-array numeric work, embarrassingly-parallel loops, and
+        GPU-friendly matrix shapes. HTTP handlers, JSON parsing, and ordinary application code go through the same paths
+        as upstream Bun — no changes in performance or behavior are expected there.
+      </div>
+
+      <footer>
+        <span>Parabun is a fork of Bun. Not affiliated with Oven.</span>
+        <span>
+          <a href="https://github.com/airgap/parabun" target="_blank" rel="noopener">source</a> ·
+          <a href="https://github.com/airgap/parabun/releases" target="_blank" rel="noopener">releases</a>
+        </span>
+      </footer>
+    </main>
+
+    <script>
+      // ─── Module catalog ─────────────────────────────────────────────────
+      // Each entry: id, label (the module specifier), description, size in MB
+      // (binary contribution), default-on (most start true), and locked
+      // (always-on modules can't be disabled).
+      const GROUPS = [
+        {
+          name: "Bun core (always included)",
+          modules: [
+            {
+              id: "core",
+              label: "bun core",
+              desc: "runtime, transpiler, package manager, http server",
+              size: 70,
+              locked: true,
+              on: true,
+            },
+          ],
+        },
+        {
+          name: "Compute",
+          modules: [
+            {
+              id: "simd",
+              label: "bun:simd",
+              desc: "SIMD primitives over typed arrays (always linked)",
+              size: 0,
+              on: true,
+              locked: true,
+            },
+            {
+              id: "parallel",
+              label: "bun:parallel",
+              desc: "pmap / preduce / pool / Mutex / Semaphore — pure JS",
+              size: 0,
+              on: true,
+              locked: true,
+            },
+            { id: "gpu", label: "bun:gpu", desc: "Metal + CUDA + WebGPU via FFI; system libs only", size: 0, on: true },
+            {
+              id: "llm",
+              label: "bun:llm",
+              desc: "GGUF / Llama inference (uses bun:gpu + bun:simd)",
+              size: 0,
+              on: true,
+            },
+          ],
+        },
+        {
+          name: "Media",
+          modules: [
+            { id: "image", label: "bun:image", desc: "JPEG / PNG / WebP decode + encode + resize", size: 6, on: true },
+            { id: "video", label: "bun:video", desc: "ffmpeg transcode / thumbnail / concat", size: 30, on: false },
+            {
+              id: "audio",
+              label: "bun:audio",
+              desc: "FFT, spectrograms, IIR / FIR filters, resampling",
+              size: 2,
+              on: false,
+            },
+            {
+              id: "camera",
+              label: "bun:camera",
+              desc: "live capture (V4L2 / AVFoundation / Media Foundation)",
+              size: 0,
+              on: false,
+            },
+          ],
+        },
+        {
+          name: "Data",
+          modules: [
+            {
+              id: "csv",
+              label: "bun:csv",
+              desc: "streaming CSV parser, parallel chunk mode (pure JS)",
+              size: 0,
+              on: true,
+            },
+            {
+              id: "arrow",
+              label: "bun:arrow",
+              desc: "Apache Arrow + Parquet read with SIMD column ops",
+              size: 20,
+              on: false,
+            },
+          ],
+        },
+      ];
+
+      const TOTAL_FULL_MB = GROUPS.reduce((sum, g) => sum + g.modules.reduce((s, m) => s + m.size, 0), 0);
+      const TOTAL_MODULES = GROUPS.reduce((n, g) => n + g.modules.length, 0);
+
+      // ─── Render ─────────────────────────────────────────────────────────
+      const formEl = document.getElementById("config-form");
+      const state = Object.create(null);
+
+      for (const group of GROUPS) {
+        const groupEl = document.createElement("div");
+        groupEl.className = "config-group";
+        const h3 = document.createElement("h3");
+        h3.textContent = group.name;
+        groupEl.appendChild(h3);
+
+        for (const mod of group.modules) {
+          state[mod.id] = mod.on;
+          const row = document.createElement("div");
+          row.className = "config-row" + (mod.locked ? " locked" : "");
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.id = "cb-" + mod.id;
+          cb.checked = mod.on;
+          cb.disabled = !!mod.locked;
+          cb.addEventListener("change", () => {
+            state[mod.id] = cb.checked;
+            update();
+          });
+
+          const label = document.createElement("label");
+          label.htmlFor = cb.id;
+          const name = document.createElement("span");
+          name.className = "mod-name";
+          name.textContent = mod.label;
+          const desc = document.createElement("span");
+          desc.className = "mod-desc";
+          desc.textContent = "— " + mod.desc;
+          label.appendChild(name);
+          label.appendChild(desc);
+
+          const size = document.createElement("span");
+          size.className = "mod-size" + (mod.size >= 5 ? " weighty" : "");
+          size.textContent = mod.locked ? "core" : mod.size === 0 ? "+0 MB" : `+${mod.size} MB`;
+
+          row.appendChild(cb);
+          row.appendChild(label);
+          row.appendChild(size);
+          groupEl.appendChild(row);
+        }
+
+        formEl.appendChild(groupEl);
+      }
+
+      // ─── Live update ────────────────────────────────────────────────────
+      const cmdEl = document.getElementById("output-cmd");
+      const sizeEl = document.getElementById("stat-size");
+      const modsEl = document.getElementById("stat-modules");
+      const sizeBar = document.getElementById("size-bar");
+      const modsBar = document.getElementById("modules-bar");
+      const copyBtn = document.getElementById("copy-btn");
+
+      function update() {
+        const optional = GROUPS.flatMap(g => g.modules).filter(m => !m.locked);
+        const off = optional.filter(m => !state[m.id]).map(m => m.id);
+        const on = optional.filter(m => state[m.id]);
+        const onCount = on.length + GROUPS[0].modules.length; // core counts
+
+        // Generate the shortest-readable command. Use --without when most
+        // modules are kept; --with when most are dropped.
+        const optionalCount = optional.length;
+        const offCount = off.length;
+        let flag = "";
+        if (offCount === 0) {
+          flag = ""; // full build, no flags needed
+        } else if (offCount <= optionalCount / 2) {
+          flag = "--without=" + off.join(",");
+        } else {
+          const onIds = on.map(m => m.id).join(",");
+          flag = onIds.length > 0 ? "--with=" + onIds : "--minimal";
+        }
+
+        const command = `bun build --compile${flag ? " " + flag : ""} app.ts`;
+        cmdEl.textContent = command;
+
+        const totalSize = on.reduce((s, m) => s + m.size, 0) + GROUPS[0].modules.reduce((s, m) => s + m.size, 0);
+        sizeEl.textContent = `~${totalSize} MB`;
+        sizeBar.style.width = `${(totalSize / TOTAL_FULL_MB) * 100}%`;
+
+        modsEl.textContent = `${onCount} / ${TOTAL_MODULES}`;
+        modsBar.style.width = `${(onCount / TOTAL_MODULES) * 100}%`;
+
+        copyBtn.textContent = "copy";
+        copyBtn.classList.remove("copied");
+      }
+
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(cmdEl.textContent);
+          copyBtn.textContent = "copied!";
+          copyBtn.classList.add("copied");
+          setTimeout(() => {
+            copyBtn.textContent = "copy";
+            copyBtn.classList.remove("copied");
+          }, 1500);
+        } catch {
+          // Fallback for older clipboard APIs
+          const range = document.createRange();
+          range.selectNode(cmdEl);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          document.execCommand("copy");
+          sel.removeAllRanges();
+          copyBtn.textContent = "copied!";
+        }
+      });
+
+      update();
+    </script>
+  </body>
+</html>
