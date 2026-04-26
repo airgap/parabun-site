@@ -36,6 +36,7 @@
       <header>
         <span class="brand"><span class="marker">/</span> parabun</span>
         <nav class="nav">
+          <a href="#stack">stack</a>
           <a href="#runtime-modules">modules</a>
           <a href="#language">language</a>
           <a href="#roadmap">roadmap</a>
@@ -84,6 +85,59 @@
         <code>$PATH</code>. The extension provides the <code>.pts</code> / <code>.pjs</code> TextMate grammar and an LSP
         with hover, go-to-definition, purity diagnostics, memo hints, and operator documentation.
       </p>
+
+      <h2 id="stack">How the modules stack</h2>
+      <p>
+        Tier 0 reaches hardware directly — typed-array SIMD, persistent worker pool, raw GPU kernels via NVRTC / MSL,
+        buffer pooling. Tier 1 composes those primitives into media + data modules — codecs, capture devices, on-device
+        LLM inference. Tier 2 is the application layer that sits on top of Tier 1 — vision pipelines, voice pipelines,
+        inference serving — currently in progress.
+      </p>
+
+      <div class="tiers" aria-label="Parabun module dependency stack">
+        <div class="tier">
+          <span class="tier-label">Tier 2 — apps<em>in progress</em></span>
+          <div class="tier-row">
+            <span class="mod-pill planned">bun:vision</span>
+            <span class="mod-pill planned">bun:speech</span>
+            <span class="mod-pill planned">bun:serve</span>
+            <span class="mod-pill planned">bun:arrow</span>
+          </div>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Tier 1 — composed</span>
+          <div class="tier-row">
+            <span class="mod-pill">bun:image</span>
+            <span class="mod-pill">bun:audio</span>
+            <span class="mod-pill">bun:camera</span>
+            <span class="mod-pill">bun:llm</span>
+            <span class="mod-pill">bun:csv</span>
+            <span class="mod-pill planned">bun:video</span>
+          </div>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Tier 0 — primitives</span>
+          <div class="tier-row">
+            <span class="mod-pill">bun:simd</span>
+            <span class="mod-pill">bun:gpu</span>
+            <span class="mod-pill">bun:parallel</span>
+            <span class="mod-pill">bun:arena</span>
+            <span class="mod-pill">bun:pipeline</span>
+            <span class="mod-pill">bun:signals</span>
+            <span class="mod-pill">bun:rtp</span>
+          </div>
+        </div>
+        <div class="tier">
+          <span class="tier-label">hardware</span>
+          <div class="tier-row">
+            <span class="mod-pill hw">CPU cores</span>
+            <span class="mod-pill hw">CUDA / Metal</span>
+            <span class="mod-pill hw">SIMD lanes</span>
+            <span class="mod-pill hw">V4L2 / ALSA</span>
+            <span class="mod-pill hw">vendored codecs</span>
+          </div>
+        </div>
+      </div>
 
       <h2 id="runtime-modules">Runtime modules</h2>
 
@@ -579,11 +633,70 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </td>
           </tr>
           <tr>
-            <td>next</td>
+            <td>shipped</td>
+            <td><span class="import">bun:camera</span></td>
+            <td>
+              V4L2 capture on Linux — <code>devices()</code>, <code>formats(path)</code>, <code>open(...)</code> with an
+              async-iterator <code>frames()</code> over kernel-mmapped buffers. AVFoundation + Media Foundation follow
+              on the same surface.
+            </td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td>OS audio I/O</td>
+            <td>
+              Live ALSA capture + playback for <span class="import">bun:audio</span>. <code>devices()</code> /
+              <code>capture(...)</code> / <code>play(...)</code> with Float32 PCM streams, S16_LE on the wire. CoreAudio
+              + WASAPI follow.
+            </td>
+          </tr>
+          <tr>
+            <td>partial</td>
             <td><span class="import">bun:gpu</span> device kernels</td>
             <td>
-              Wire CUDA / Metal kernels for the primitives above (Hillis-Steele scan, parallel reductions,
-              atomic-privatized histogram).
+              CUDA <code>reduce</code> (sum / min / max) + atomic-privatized <code>histogram</code> shipped. Scan, Metal
+              mirror, and the rest of the secondary primitives still on CPU until wired.
+            </td>
+          </tr>
+          <tr>
+            <td>in progress</td>
+            <td><span class="import">bun:vision</span></td>
+            <td>
+              Tier 2 — composes <span class="import">bun:camera</span> + <span class="import">bun:image</span> +
+              <span class="import">bun:gpu</span> + <span class="import">bun:llm</span> into detection, tracking, OCR.
+              Pi-camera headline.
+            </td>
+          </tr>
+          <tr>
+            <td>in progress</td>
+            <td><span class="import">bun:speech</span></td>
+            <td>
+              Tier 2 — VAD-gated mic capture (existing <span class="import">bun:audio</span> DSP), Whisper STT via
+              <span class="import">bun:llm</span>'s GGUF runtime, Piper TTS. Voice-assistant headline.
+            </td>
+          </tr>
+          <tr>
+            <td>in progress</td>
+            <td><span class="import">bun:serve</span></td>
+            <td>
+              Tier 2 — HTTP wrapper around <span class="import">bun:llm</span> with batching, queueing, and an
+              OpenAI-compatible API. Makes Parabun a viable Ollama alternative.
+            </td>
+          </tr>
+          <tr>
+            <td>in progress</td>
+            <td><span class="import">bun:arrow</span></td>
+            <td>
+              Tier 2 — columnar (Parquet / Arrow IPC) with SIMD column ops. The "5 GB analytical query" pair to
+              <span class="import">bun:csv</span>.
+            </td>
+          </tr>
+          <tr>
+            <td>in progress</td>
+            <td><span class="import">bun:video</span></td>
+            <td>
+              Tier 1 — JS surface scaffolded; libavcodec / V4L2 M2M / NVDEC native binding lands with hardware bring-up.
+              Decode + encode + container muxing.
             </td>
           </tr>
           <tr>
@@ -595,35 +708,9 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </td>
           </tr>
           <tr>
-            <td>next</td>
-            <td><span class="import">bun:arrow</span></td>
-            <td>
-              Columnar (Parquet / Arrow IPC) with SIMD column ops. The "5 GB analytical query" story to pair with
-              <span class="import">bun:csv</span>.
-            </td>
-          </tr>
-          <tr>
             <td>planned</td>
             <td><span class="import">bun:image</span> AVIF</td>
-            <td>AVIF decode (libavif / libheif vendor add). Round out the codec coverage matrix.</td>
-          </tr>
-          <tr>
-            <td>planned</td>
-            <td><span class="import">bun:video</span></td>
-            <td>ffmpeg-class transcode / thumbnail / concat as a runtime module. No more <code>which ffmpeg</code>.</td>
-          </tr>
-          <tr>
-            <td>planned</td>
-            <td><span class="import">bun:camera</span></td>
-            <td>Live video capture (V4L2 / AVFoundation / Media Foundation). Makes Parabun a real embedded runtime.</td>
-          </tr>
-          <tr>
-            <td>planned</td>
-            <td>OS audio I/O</td>
-            <td>
-              Live capture + playback for <span class="import">bun:audio</span> (ALSA / CoreAudio / WASAPI via
-              <span class="import">bun:ffi</span>). Closes the voice-call pipeline.
-            </td>
+            <td>AVIF decode/encode (libavif + AOM / dav1d vendor add). Rounds out the codec coverage matrix.</td>
           </tr>
         </tbody>
       </table>
