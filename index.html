@@ -487,11 +487,17 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         <p>
           <code>arrow.toIPC(table)</code> and <code>arrow.fromIPC(bytes)</code> serialize via the Arrow IPC streaming
           format — continuation-prefixed Schema + RecordBatch messages, FlatBuffers metadata, 8-byte-aligned body
-          buffers. The FlatBuffers builder/reader is hand-rolled in the module; no npm dep. Six types round-trip today:
-          <code>int32</code>, <code>int64</code>, <code>float32</code>, <code>float64</code>,
-          <code>bool</code> (bit-packed on the wire), <code>utf8</code> (offsets + bytes), each with optional validity
-          bitmaps. Parquet remains pending — it's a separate format with its own thrift metadata and page-level
-          encodings.
+          buffers, plus DictionaryBatch decode for dictionary-encoded columns (apache-arrow's default for utf8). The
+          FlatBuffers builder/reader is hand-rolled in the module; no npm dep. Six types round-trip: <code>int32</code>,
+          <code>int64</code>, <code>float32</code>, <code>float64</code>, <code>bool</code> (bit-packed on the wire),
+          <code>utf8</code> (offsets + bytes), each with optional validity bitmaps. Wire compatibility is verified
+          against apache-arrow 21.1.0 in <code>bench/parabun-arrow-ipc-interop/</code> — both directions (Parabun →
+          apache-arrow and apache-arrow → Parabun) round-trip a 3-column batch including dictionary-encoded strings.
+        </p>
+        <p>
+          That means the bytes Parabun produces are the same wire format pyarrow, arrow-rs, nanoarrow, polars, and
+          duckdb consume on the streaming path. Parquet remains pending — it's a separate format with its own thrift
+          metadata and page-level encodings.
         </p>
       </div>
 
@@ -784,8 +790,10 @@ gpu.<span class="fn">release</span>(held);</code></pre>
               <code>max</code>, <code>count</code>, <code>variance</code>, <code>stddev</code>, <code>quantile</code>,
               <code>median</code>, <code>distinct</code>, <code>filter</code>, <code>groupBy</code>),
               <code>fromRows</code> / <code>toRows</code> for the row ↔ columnar bridge, and Arrow IPC streaming format
-              (<code>fromIPC</code> / <code>toIPC</code>, hand-rolled FlatBuffers builder + reader; round-trips all six
-              in-memory types with validity bitmaps). Parquet pending.
+              with dictionary-batch decode (<code>fromIPC</code> / <code>toIPC</code>, hand-rolled FlatBuffers builder +
+              reader; round-trips all six in-memory types with validity bitmaps; reads apache-arrow / pyarrow / arrow-rs
+              / polars / duckdb output including Dictionary&lt;Utf8&gt;). Wire-compat verified against apache-arrow
+              21.1.0 in <code>bench/parabun-arrow-ipc-interop/</code>. Parquet pending.
             </td>
           </tr>
           <tr>
