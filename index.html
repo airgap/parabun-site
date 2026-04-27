@@ -81,9 +81,9 @@
         Three groups. Tier 0 is the primitive layer — SIMD, worker pool, GPU kernels (NVRTC / MSL), buffer pool. Tier 1
         is the codec / capture / inference layer — image, audio, camera, CSV, GGUF LLM. Tier 2 is built on Tier 1:
         <span class="import">bun:vision</span> (frames + motion), <span class="import">bun:speech</span> (VAD
-        utterances), <span class="import">bun:arrow</span> (columnar tables + computes; IPC / Parquet pending). Engines
-        that need vendored deps (Whisper, Piper, ONNX detectors, FlatBuffers) throw with documented errors until those
-        land.
+        utterances), <span class="import">bun:arrow</span> (columnar tables + computes + Arrow IPC reader/writer;
+        Parquet pending). Engines that need vendored deps (Whisper, Piper, ONNX detectors) throw with documented errors
+        until those land.
       </p>
 
       <div class="tiers" aria-label="Parabun module dependency stack">
@@ -478,15 +478,20 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           In-memory columnar tables. <code>arrow.recordBatch({ ... })</code> takes a map of typed arrays (or plain
           arrays — types are inferred) and returns a <code>RecordBatch</code> with a <code>Schema</code>. Columns are
           typed-array views with optional validity bitmaps; <code>arrow.table([...])</code> concatenates batches across
-          one schema. Computes today: <code>sum</code>, <code>mean</code>, <code>min</code>, <code>max</code>,
-          <code>count</code>, <code>filter</code>, plus <code>concat</code> to materialize a table-wide column into one
-          typed array.
+          one schema. Computes: <code>sum</code>, <code>mean</code>, <code>min</code>, <code>max</code>,
+          <code>count</code>, <code>variance</code>, <code>stddev</code>, <code>quantile</code>, <code>median</code>,
+          <code>distinct</code>, <code>filter</code>, <code>groupBy</code>. <code>fromRows</code> /
+          <code>toRows</code> bridge between row-shaped JS data (e.g. <code>bun:csv</code> output) and the columnar
+          form; <code>concat</code> materializes a table-wide column into one typed array.
         </p>
         <p>
-          <code>fromIPC</code> / <code>toIPC</code> / <code>fromParquet</code> are typed but throw — Arrow IPC needs a
-          FlatBuffers decoder before the schema messages can be read, and Parquet is its own format (thrift metadata,
-          page-level encodings) on top of that. The in-memory model already follows Arrow's layout, so adding the
-          serialization passes doesn't change the public API.
+          <code>arrow.toIPC(table)</code> and <code>arrow.fromIPC(bytes)</code> serialize via the Arrow IPC streaming
+          format — continuation-prefixed Schema + RecordBatch messages, FlatBuffers metadata, 8-byte-aligned body
+          buffers. The FlatBuffers builder/reader is hand-rolled in the module; no npm dep. Six types round-trip today:
+          <code>int32</code>, <code>int64</code>, <code>float32</code>, <code>float64</code>,
+          <code>bool</code> (bit-packed on the wire), <code>utf8</code> (offsets + bytes), each with optional validity
+          bitmaps. Parquet remains pending — it's a separate format with its own thrift metadata and page-level
+          encodings.
         </p>
       </div>
 
@@ -775,9 +780,12 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td><span class="import">bun:arrow</span></td>
             <td>
               Tier 2 — in-memory columnar tables (<code>RecordBatch</code>, <code>Table</code>, <code>Column</code>),
-              type inference from typed arrays, validity bitmaps, computes (<code>sum</code>, <code>mean</code>,
-              <code>min</code>, <code>max</code>, <code>count</code>, <code>filter</code>) ship today. Arrow IPC reader
-              + writer pending a FlatBuffers decoder; Parquet pending after that.
+              type inference, validity bitmaps, computes (<code>sum</code>, <code>mean</code>, <code>min</code>,
+              <code>max</code>, <code>count</code>, <code>variance</code>, <code>stddev</code>, <code>quantile</code>,
+              <code>median</code>, <code>distinct</code>, <code>filter</code>, <code>groupBy</code>),
+              <code>fromRows</code> / <code>toRows</code> for the row ↔ columnar bridge, and Arrow IPC streaming format
+              (<code>fromIPC</code> / <code>toIPC</code>, hand-rolled FlatBuffers builder + reader; round-trips all six
+              in-memory types with validity bitmaps). Parquet pending.
             </td>
           </tr>
           <tr>
