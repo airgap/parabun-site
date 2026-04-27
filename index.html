@@ -42,7 +42,7 @@
           <a href="#roadmap">roadmap</a>
           <a href="/configure">configure</a>
           <a href="https://github.com/airgap/parabun" target="_blank" rel="noopener">github</a>
-          <a href="https://github.com/airgap/parabun/blob/main/LLMs.md" target="_blank" rel="noopener">docs</a>
+          <a href="/docs/">docs</a>
         </nav>
       </header>
 
@@ -384,8 +384,9 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 
         <h3 id="bun-llm"><span class="import">bun:llm</span></h3>
         <p>
-          An in-tree GGUF runtime: file loader, byte-level BPE tokenizer, Llama and Qwen2 forward passes, greedy and
-          nucleus sampling. Weights are <code>mmap</code>'d off disk; the residual stream and KV cache live on-device.
+          An in-tree native inference stack covering three model classes: Llama / Qwen2 chat + completion
+          (<code>LLM</code>), BERT-family sentence embedders (<code>Encoder</code>), and Whisper STT
+          (<code>WhisperModel</code>). Weights <code>mmap</code> off disk; residual stream and KV cache live on-device.
           Per-token traffic across PCIe is a 4-byte argmax. Q4_K and Q6_K matVec kernels use a 1-warp-per-row,
           4-warps-per-block layout; QKV and Gate+Up projections are byte-concatenated at load time and dispatched as one
           matVec per layer.
@@ -443,6 +444,13 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           concurrency gate (default 1). Default port is 11434, matching ollama's, so OpenAI clients that auto-discover a
           local ollama work unchanged.
         </p>
+        <p>
+          <code>WhisperModel</code> loads whisper.cpp <code>ggml-*.bin</code> files (F32 / F16 / Q4_0 / Q5_0 / Q5_1 /
+          Q8_0) and runs encoder-decoder STT — KV cache, chunked long-audio, beam search, language detection across all
+          99 Whisper languages. CUDA-accelerated end-to-end (encoder im2col conv + matmuls + per-head batched attention;
+          decoder per-token matVecs + LM head). On an RTX 4070 Ti, an 11&nbsp;s JFK clip transcribes in 1.6&nbsp;s with
+          <code>tiny.en</code> — about 6.9× real-time.
+        </p>
 
         <h3 id="bun-vision"><span class="import">bun:vision</span></h3>
         <p>
@@ -468,9 +476,10 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           onsets, hangover to seal on silence, and a minimum-length filter to drop clicks and breath sounds.
         </p>
         <p>
-          <code>speech.transcribe</code> (Whisper) and <code>speech.speak</code> (Piper) are typed but throw. Whisper
-          needs encoder-decoder transformer support in <span class="import">bun:llm</span> (the current path is
-          decoder-only); Piper needs libpiper or an ONNX runtime vendored.
+          <code>speech.transcribe(utt, { engine: "whisper", model })</code> is real — it dispatches to the
+          <code>WhisperModel</code> in <span class="import">bun:llm</span>, with a per-process model cache so the
+          wei&shy;ghts aren't reloaded between calls. <code>speech.speak</code> (Piper) is still typed but throws —
+          needs libpiper or an ONNX runtime vendored.
         </p>
 
         <h3 id="bun-arrow"><span class="import">bun:arrow</span></h3>
@@ -485,19 +494,27 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           form; <code>concat</code> materializes a table-wide column into one typed array.
         </p>
         <p>
-          <code>arrow.toIPC(table)</code> and <code>arrow.fromIPC(bytes)</code> serialize via the Arrow IPC streaming
-          format — continuation-prefixed Schema + RecordBatch messages, FlatBuffers metadata, 8-byte-aligned body
-          buffers, plus DictionaryBatch decode for dictionary-encoded columns (apache-arrow's default for utf8). The
-          FlatBuffers builder/reader is hand-rolled in the module; no npm dep. Six types round-trip: <code>int32</code>,
-          <code>int64</code>, <code>float32</code>, <code>float64</code>, <code>bool</code> (bit-packed on the wire),
-          <code>utf8</code> (offsets + bytes), each with optional validity bitmaps. Wire compatibility is verified
-          against apache-arrow 21.1.0 in <code>bench/parabun-arrow-ipc-interop/</code> — both directions (Parabun →
-          apache-arrow and apache-arrow → Parabun) round-trip a 3-column batch including dictionary-encoded strings.
+          <code>arrow.toIPC(table)</code> and <code>arrow.fromIPC(bytes)</code> handle both the Arrow IPC
+          <strong>streaming</strong> format (continuation-prefixed Schema + RecordBatch messages) and the
+          <strong>file</strong> format (<code>ARROW1</code>-bracketed messages + a Footer flatbuffer with random-access
+          Block offsets). <code>fromIPC</code> auto-detects via the head/tail magic bytes. Pass <code>"file"</code> as
+          the second arg to <code>toIPC</code> to write the file format; default is streaming.
         </p>
         <p>
-          That means the bytes Parabun produces are the same wire format pyarrow, arrow-rs, nanoarrow, polars, and
-          duckdb consume on the streaming path. Parquet remains pending — it's a separate format with its own thrift
-          metadata and page-level encodings.
+          Seven logical types round-trip: <code>int32</code>, <code>int64</code>, <code>float32</code>,
+          <code>float64</code>, <code>bool</code> (bit-packed on the wire), <code>utf8</code> (offsets + bytes), and
+          <code>list&lt;T&gt;</code> (offsets + recursive child column — including
+          <code>list&lt;list&lt;T&gt;&gt;</code>). On read, narrow ints (int8 / int16 / uint8 / uint16) are widened to
+          int32, uint32 widens to int64; Date / Time / Timestamp coerce to int / int64. DictionaryBatch decode handles
+          apache-arrow's default <code>Dictionary&lt;Utf8&gt;</code>. The FlatBuffers builder/reader is hand-rolled — no
+          npm dep.
+        </p>
+        <p>
+          Wire compat verified against <code>apache-arrow@21.1.0</code> in
+          <code>bench/parabun-arrow-ipc-interop/</code> — six round-trip directions (streaming + file ×
+          Parabun↔apache-arrow, plus Parabun→apache-arrow → Parabun for List). The bytes Parabun produces are the same
+          wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on both the streaming and file paths.
+          Parquet, Struct / Map / FixedSizeList / Decimal types, and Dictionary delta batches remain pending.
         </p>
       </div>
 
@@ -773,27 +790,25 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </td>
           </tr>
           <tr>
-            <td>partial</td>
+            <td>shipped</td>
             <td><span class="import">bun:speech</span></td>
             <td>
-              Tier 2 — VAD-gated utterance segmentation ships today (<code>speech.listen</code> over any audio chunk
-              iterator). Whisper STT (<code>transcribe</code>) pending encoder-decoder support in
-              <span class="import">bun:llm</span>; Piper TTS (<code>speak</code>) pending libpiper / ONNX vendor add.
+              Tier 2 — VAD-gated utterance segmentation (<code>speech.listen</code>) plus Whisper STT
+              (<code>speech.transcribe</code>, dispatching to <span class="import">bun:llm</span>'s
+              <code>WhisperModel</code> — encoder-decoder, KV cache, beam search, language detection, CUDA-accelerated
+              end-to-end). Piper TTS (<code>speak</code>) still stubs pending libpiper / ONNX vendor add.
             </td>
           </tr>
           <tr>
-            <td>partial</td>
+            <td>shipped</td>
             <td><span class="import">bun:arrow</span></td>
             <td>
-              Tier 2 — in-memory columnar tables (<code>RecordBatch</code>, <code>Table</code>, <code>Column</code>),
-              type inference, validity bitmaps, computes (<code>sum</code>, <code>mean</code>, <code>min</code>,
-              <code>max</code>, <code>count</code>, <code>variance</code>, <code>stddev</code>, <code>quantile</code>,
-              <code>median</code>, <code>distinct</code>, <code>filter</code>, <code>groupBy</code>),
-              <code>fromRows</code> / <code>toRows</code> for the row ↔ columnar bridge, and Arrow IPC streaming format
-              with dictionary-batch decode (<code>fromIPC</code> / <code>toIPC</code>, hand-rolled FlatBuffers builder +
-              reader; round-trips all six in-memory types with validity bitmaps; reads apache-arrow / pyarrow / arrow-rs
-              / polars / duckdb output including Dictionary&lt;Utf8&gt;). Wire-compat verified against apache-arrow
-              21.1.0 in <code>bench/parabun-arrow-ipc-interop/</code>. Parquet pending.
+              Tier 2 — in-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile /
+              median / distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
+              <code>fromRows</code> / <code>toRows</code> bridges, and Arrow IPC streaming + file formats with
+              dictionary-batch decode and List&lt;T&gt; nested types. Seven types round-trip: int32, int64, float32,
+              float64, bool, utf8, list. Wire-compat verified against apache-arrow 21.1.0 in
+              <code>bench/parabun-arrow-ipc-interop/</code>. Parquet, Struct / Map / FixedSizeList / Decimal pending.
             </td>
           </tr>
           <tr>
