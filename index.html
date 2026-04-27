@@ -90,17 +90,22 @@
       <p>
         Tier 0 reaches hardware directly — typed-array SIMD, persistent worker pool, raw GPU kernels via NVRTC / MSL,
         buffer pooling. Tier 1 composes those primitives into media + data modules — codecs, capture devices, on-device
-        LLM inference. Tier 2 is the application layer that sits on top of Tier 1 — vision pipelines, voice pipelines,
-        inference serving — currently in progress.
+        LLM inference. Tier 2 is the application layer on top of Tier 1 — inference serving (<span class="import"
+          >bun:serve</span
+        >), vision pipelines (<span class="import">bun:vision</span>), voice pipelines (<span class="import"
+          >bun:speech</span
+        >), analytical query (<span class="import">bun:arrow</span>). Orchestration ships in the first three; engines
+        that need vendored dependencies (Whisper / Piper / ONNX detectors) stub with documented messages until those
+        land.
       </p>
 
       <div class="tiers" aria-label="Parabun module dependency stack">
         <div class="tier">
-          <span class="tier-label">Tier 2 — apps<em>in progress</em></span>
+          <span class="tier-label">Tier 2 — apps<em>orchestration shipped, engines pending</em></span>
           <div class="tier-row">
-            <span class="mod-pill planned">bun:vision</span>
-            <span class="mod-pill planned">bun:speech</span>
-            <span class="mod-pill planned">bun:serve</span>
+            <span class="mod-pill">bun:serve</span>
+            <span class="mod-pill">bun:vision</span>
+            <span class="mod-pill">bun:speech</span>
             <span class="mod-pill planned">bun:arrow</span>
           </div>
         </div>
@@ -659,28 +664,31 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </td>
           </tr>
           <tr>
-            <td>in progress</td>
-            <td><span class="import">bun:vision</span></td>
-            <td>
-              Tier 2 — composes <span class="import">bun:camera</span> + <span class="import">bun:image</span> +
-              <span class="import">bun:gpu</span> + <span class="import">bun:llm</span> into detection, tracking, OCR.
-              Pi-camera headline.
-            </td>
-          </tr>
-          <tr>
-            <td>in progress</td>
-            <td><span class="import">bun:speech</span></td>
-            <td>
-              Tier 2 — VAD-gated mic capture (existing <span class="import">bun:audio</span> DSP), Whisper STT via
-              <span class="import">bun:llm</span>'s GGUF runtime, Piper TTS. Voice-assistant headline.
-            </td>
-          </tr>
-          <tr>
-            <td>in progress</td>
+            <td>shipped</td>
             <td><span class="import">bun:serve</span></td>
             <td>
-              Tier 2 — HTTP wrapper around <span class="import">bun:llm</span> with batching, queueing, and an
-              OpenAI-compatible API. Makes Parabun a viable Ollama alternative.
+              Tier 2 — OpenAI-compatible HTTP server against any <span class="import">bun:llm</span>-shaped engine.
+              <code>/v1/chat/completions</code> (sync + SSE streaming), <code>/v1/completions</code>,
+              <code>/v1/embeddings</code>, <code>/v1/models</code>, optional bearer auth, FIFO concurrency gate. Pure
+              orchestration, no stubs.
+            </td>
+          </tr>
+          <tr>
+            <td>partial</td>
+            <td><span class="import">bun:vision</span></td>
+            <td>
+              Tier 2 — frame stream + frame-diff motion detection ship today (<code>vision.frames</code>,
+              <code>vision.detectMotion</code>). Detector (<code>detect</code>) and OCR (<code>recognize</code>) engines
+              stub until ONNX runtime is vendored.
+            </td>
+          </tr>
+          <tr>
+            <td>partial</td>
+            <td><span class="import">bun:speech</span></td>
+            <td>
+              Tier 2 — VAD-gated utterance segmentation ships today (<code>speech.listen</code> over any audio chunk
+              iterator). Whisper STT (<code>transcribe</code>) pending encoder-decoder support in
+              <span class="import">bun:llm</span>; Piper TTS (<code>speak</code>) pending libpiper / ONNX vendor add.
             </td>
           </tr>
           <tr>
