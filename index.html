@@ -80,17 +80,15 @@
       <p>
         Three groups. Tier 0 is the primitive layer — SIMD, worker pool, GPU kernels (NVRTC / MSL), buffer pool. Tier 1
         is the codec / capture / inference layer — image, audio, camera, CSV, GGUF LLM. Tier 2 is built on Tier 1:
-        <span class="import">bun:serve</span> (HTTP), <span class="import">bun:vision</span> (frames + motion),
-        <span class="import">bun:speech</span> (VAD utterances), <span class="import">bun:arrow</span> (planned). The
-        Tier 2 modules ship the orchestration; the engines they eventually need (Whisper, Piper, ONNX detectors) throw
-        with documented errors until those vendor adds land.
+        <span class="import">bun:vision</span> (frames + motion), <span class="import">bun:speech</span> (VAD
+        utterances), <span class="import">bun:arrow</span> (planned). Engines they eventually need (Whisper, Piper, ONNX
+        detectors) throw with documented errors until those vendor adds land.
       </p>
 
       <div class="tiers" aria-label="Parabun module dependency stack">
         <div class="tier">
           <span class="tier-label">Tier 2 — apps<em>some engines stub</em></span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-serve">bun:serve</a>
             <a class="mod-pill" href="#bun-vision">bun:vision</a>
             <a class="mod-pill" href="#bun-speech">bun:speech</a>
             <a class="mod-pill planned" href="#bun-arrow">bun:arrow</a>
@@ -436,16 +434,13 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           and Mistral-Instruct are detected from the GGUF's <code>tokenizer.chat_template</code>. Only the CUDA backend
           is wired in this module today; Metal kernels are pending.
         </p>
-
-        <h3 id="bun-serve"><span class="import">bun:serve</span></h3>
         <p>
-          OpenAI-compatible HTTP server. Wraps any object with <code>.chat()</code> / <code>.generate()</code> /
-          <code>.embed()</code> methods (a <span class="import">bun:llm</span> instance, a mock, anything else
-          implementing the same shape). Routes: <code>GET /v1/models</code>,
-          <code>POST /v1/chat/completions</code> (sync and SSE streaming), <code>POST /v1/completions</code>,
-          <code>POST /v1/embeddings</code>. Optional bearer auth and a FIFO concurrency gate (default 1, because
-          llama.cpp-class engines aren't internally batched). Default port is 11434, matching ollama's, so existing
-          OpenAI clients that auto-discover a local ollama work without configuration changes.
+          <code>llm.serve({ engine, modelId, port })</code> exposes any model (or anything else implementing
+          <code>.chat()</code> / <code>.generate()</code> / <code>.embed()</code>) over an OpenAI-compatible HTTP API.
+          Routes: <code>GET /v1/models</code>, <code>POST /v1/chat/completions</code> (sync and SSE streaming),
+          <code>POST /v1/completions</code>, <code>POST /v1/embeddings</code>. Optional bearer auth and a FIFO
+          concurrency gate (default 1). Default port is 11434, matching ollama's, so OpenAI clients that auto-discover a
+          local ollama work unchanged.
         </p>
 
         <h3 id="bun-vision"><span class="import">bun:vision</span></h3>
@@ -746,16 +741,6 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td>
               CUDA <code>reduce</code> (sum / min / max) + atomic-privatized <code>histogram</code> shipped. Scan, Metal
               mirror, and the rest of the secondary primitives still on CPU until wired.
-            </td>
-          </tr>
-          <tr>
-            <td>shipped</td>
-            <td><span class="import">bun:serve</span></td>
-            <td>
-              Tier 2 — OpenAI-compatible HTTP server against any <span class="import">bun:llm</span>-shaped engine.
-              <code>/v1/chat/completions</code> (sync + SSE streaming), <code>/v1/completions</code>,
-              <code>/v1/embeddings</code>, <code>/v1/models</code>, optional bearer auth, FIFO concurrency gate. Pure
-              orchestration, no stubs.
             </td>
           </tr>
           <tr>
