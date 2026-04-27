@@ -516,12 +516,13 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on both the streaming and file paths.
         </p>
         <p>
-          <code>arrow.fromParquet(bytes)</code> reads Apache Parquet files. Hand-rolled Thrift compact-protocol decoder
-          for the metadata, hand-rolled Snappy decompressor for page bytes, dictionary + RLE + bit-pack hybrid decoders
-          for the page encodings — no npm dep. Covers <code>BOOLEAN</code> / <code>INT32</code> / <code>INT64</code> /
-          <code>FLOAT</code> / <code>DOUBLE</code> / <code>BYTE_ARRAY</code> physical types under
-          <code>UNCOMPRESSED</code>, <code>SNAPPY</code>, and <code>GZIP</code>; verified end-to-end against pyarrow on
-          10,000-row multi-row-group fixtures with nulls. Writer (<code>toParquet</code>) is pending.
+          <code>arrow.fromParquet(bytes)</code> and <code>arrow.toParquet(table, opts?)</code> read and write Apache
+          Parquet files. Hand-rolled Thrift compact-protocol codec, Snappy compressor + decompressor, dictionary + RLE +
+          bit-pack hybrid decoders, RLE writer for definition levels — no npm dep. Covers <code>BOOLEAN</code> /
+          <code>INT32</code> / <code>INT64</code> / <code>FLOAT</code> / <code>DOUBLE</code> /
+          <code>BYTE_ARRAY</code> physical types under <code>UNCOMPRESSED</code>, <code>SNAPPY</code>, and
+          <code>GZIP</code>. Verified end-to-end against pyarrow in both directions on 10,000-row multi-row-group
+          fixtures with scattered nulls; null counts match exactly across all three codecs.
         </p>
       </div>
 
@@ -813,10 +814,11 @@ gpu.<span class="fn">release</span>(held);</code></pre>
               Tier 2 — in-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile /
               median / distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
               <code>fromRows</code> / <code>toRows</code> bridges, Arrow IPC streaming + file formats (with
-              dictionary-batch decode and List&lt;T&gt;), and a Parquet reader (<code>fromParquet</code> — hand-rolled
-              Thrift / Snappy / RLE / dictionary; UNCOMPRESSED / SNAPPY / GZIP; verified against pyarrow). Wire-compat
-              verified against apache-arrow 21.1.0 in <code>bench/parabun-arrow-ipc-interop/</code>. Parquet writer +
-              nested types (Struct / Map / FixedSizeList / Decimal) pending.
+              dictionary-batch decode and List&lt;T&gt;), and Parquet read + write (<code>fromParquet</code> /
+              <code>toParquet</code> — hand-rolled Thrift / Snappy / RLE / dictionary; UNCOMPRESSED / SNAPPY / GZIP;
+              verified bit-for-bit against pyarrow in both directions). Wire-compat verified against apache-arrow 21.1.0
+              in <code>bench/parabun-arrow-ipc-interop/</code>. Dictionary write encoding + nested types (Struct / Map /
+              FixedSizeList / Decimal) pending.
             </td>
           </tr>
           <tr>

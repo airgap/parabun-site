@@ -154,27 +154,42 @@ df = feather.read_table("data.arrow")
 
 ## Parquet
 
-`fromParquet(bytes)` reads Apache Parquet files into a `Table`. Hand-rolled Thrift compact-protocol decoder for the metadata, hand-rolled Snappy decompressor for page bytes, dictionary + RLE + bit-pack hybrid decoders for encodings — no npm dep. Writer is pending.
+`fromParquet(bytes)` reads and `toParquet(source, opts?)` writes Apache Parquet files. Hand-rolled Thrift compact-protocol codec, Snappy compressor + decompressor, dictionary + RLE + bit-pack hybrid decoders, RLE writer for definition levels — no npm dep.
 
 ```ts
+// Read
 const bytes = new Uint8Array(await Bun.file("rows.parquet").arrayBuffer());
 const tbl = arrow.fromParquet(bytes);
-arrow.mean(tbl.column("score"));
+
+// Write
+const out = arrow.toParquet(tbl, { compression: "snappy" });
+await Bun.write("rows.parquet", out);
 ```
 
-| Feature | Coverage |
-| --- | --- |
-| Physical types | `BOOLEAN`, `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `BYTE_ARRAY` (utf8). `INT96` + `FIXED_LEN_BYTE_ARRAY` pending. |
-| Encodings | `PLAIN`, `PLAIN_DICTIONARY` (deprecated alias), `RLE_DICTIONARY`, `RLE` (def/rep levels + bit-packed booleans). |
-| Compression | `UNCOMPRESSED`, `SNAPPY`, `GZIP`. `LZ4`, `BROTLI`, `ZSTD` follow when wired. |
-| Pages | V1 data pages with def-level null reconstruction; dictionary pages. V2 pages pending. |
-| Schemas | Flat (top-level columns only), required + optional. Nested types need rep-level reconstruction — out of scope for v1. |
+`toParquet` options:
 
-Verified end-to-end against pyarrow output: round-trips a 6-column fixture (int32 / int64 / float32 / float64 / utf8 / bool) under both UNCOMPRESSED and SNAPPY, plus a 10,000-row fixture with nulls at 1/5, 1/7, and 1/13 ratios across 4 row groups under all three compression codecs.
+| Option | Default | Description |
+| --- | --- | --- |
+| `compression` | `"snappy"` | `"uncompressed"` \| `"snappy"` \| `"gzip"`. |
+
+| Feature | Read | Write |
+| --- | --- | --- |
+| Physical types | `BOOLEAN`, `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `BYTE_ARRAY` (utf8). `INT96` + `FIXED_LEN_BYTE_ARRAY` pending. | Same set. |
+| Encodings | `PLAIN`, `PLAIN_DICTIONARY` (alias), `RLE_DICTIONARY`, `RLE`. | `PLAIN` for values, `RLE` for def levels (no dictionary yet — strings PLAIN-encoded; less compact than pyarrow but correct). |
+| Compression | `UNCOMPRESSED`, `SNAPPY`, `GZIP`. `LZ4`, `BROTLI`, `ZSTD` follow when wired. | `UNCOMPRESSED`, `SNAPPY`, `GZIP`. |
+| Pages | V1 data pages with def-level null reconstruction; dictionary pages. V2 pages pending. | V1 data pages only. |
+| Row groups | Multi-row-group reads. | Single row group. |
+| Schemas | Flat columns, required + optional. Nested types need rep-level reconstruction — pending. | Same. |
+
+Verified end-to-end against pyarrow output:
+
+- Read: round-trips 6-column fixtures (int32 / int64 / float32 / float64 / utf8 / bool) under uncompressed + snappy, plus a 10,000-row fixture with nulls at 1/5, 1/7, 1/13 ratios across 4 row groups under all three compression codecs.
+- Write: pyarrow reads Parabun's output bit-for-bit (`uncompressed`, `snappy`, `gzip`); 100-row fixture with scattered nulls (1/7 id, 1/11 score, 1/13 name) → null counts match pyarrow's `15 / 10 / 8` exactly.
 
 ## What's not here yet
 
-- **`toParquet`** — writer. Pending an encoding-default decision that round-trips through pyarrow without quirks.
+- **Dictionary encoding on write** — strings emit as PLAIN today. pyarrow's default RLE_DICTIONARY for low-cardinality columns is an opt-in encoding pass that lands when there's a workload that needs the density.
+- **Multi-row-group writes** — large tables write as one giant row group today. Splitting at ~1M rows would match pyarrow's defaults.
 - **Struct / Map / FixedSizeList / Union / Decimal128 / FixedSizeBinary** — nested + decimal types. The `List<T>` shape proves out the recursive FieldNode + buffer walk; the others reuse it.
 - **Dictionary delta batches** (`isDelta=true`) — apache-arrow's default is non-delta, so this is a long-tail follow-up.
 - **uint64** — no lossless 64-bit unsigned representation in JS Number / BigInt without losing range.
