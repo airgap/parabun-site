@@ -81,8 +81,9 @@
         Three groups. Tier 0 is the primitive layer — SIMD, worker pool, GPU kernels (NVRTC / MSL), buffer pool. Tier 1
         is the codec / capture / inference layer — image, audio, camera, CSV, GGUF LLM. Tier 2 is built on Tier 1:
         <span class="import">bun:vision</span> (frames + motion), <span class="import">bun:speech</span> (VAD
-        utterances), <span class="import">bun:arrow</span> (planned). Engines they eventually need (Whisper, Piper, ONNX
-        detectors) throw with documented errors until those vendor adds land.
+        utterances), <span class="import">bun:arrow</span> (columnar tables + computes; IPC / Parquet pending). Engines
+        that need vendored deps (Whisper, Piper, ONNX detectors, FlatBuffers) throw with documented errors until those
+        land.
       </p>
 
       <div class="tiers" aria-label="Parabun module dependency stack">
@@ -91,7 +92,7 @@
           <div class="tier-row">
             <a class="mod-pill" href="#bun-vision">bun:vision</a>
             <a class="mod-pill" href="#bun-speech">bun:speech</a>
-            <a class="mod-pill planned" href="#bun-arrow">bun:arrow</a>
+            <a class="mod-pill" href="#bun-arrow">bun:arrow</a>
           </div>
         </div>
         <div class="tier">
@@ -474,10 +475,18 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 
         <h3 id="bun-arrow"><span class="import">bun:arrow</span></h3>
         <p>
-          Not started. Planned as a Parquet / Arrow IPC reader and writer with SIMD column operations, sharing the
-          buffer pool and worker dispatch the rest of the stack uses. Pairs with <span class="import">bun:csv</span>
-          for analytical query workloads. Listed for visibility — Apache Arrow is a substantial vendor add and isn't
-          imminent.
+          In-memory columnar tables. <code>arrow.recordBatch({ ... })</code> takes a map of typed arrays (or plain
+          arrays — types are inferred) and returns a <code>RecordBatch</code> with a <code>Schema</code>. Columns are
+          typed-array views with optional validity bitmaps; <code>arrow.table([...])</code> concatenates batches across
+          one schema. Computes today: <code>sum</code>, <code>mean</code>, <code>min</code>, <code>max</code>,
+          <code>count</code>, <code>filter</code>, plus <code>concat</code> to materialize a table-wide column into one
+          typed array.
+        </p>
+        <p>
+          <code>fromIPC</code> / <code>toIPC</code> / <code>fromParquet</code> are typed but throw — Arrow IPC needs a
+          FlatBuffers decoder before the schema messages can be read, and Parquet is its own format (thrift metadata,
+          page-level encodings) on top of that. The in-memory model already follows Arrow's layout, so adding the
+          serialization passes doesn't change the public API.
         </p>
       </div>
 
@@ -762,11 +771,13 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             </td>
           </tr>
           <tr>
-            <td>in progress</td>
+            <td>partial</td>
             <td><span class="import">bun:arrow</span></td>
             <td>
-              Tier 2 — columnar (Parquet / Arrow IPC) with SIMD column ops. The "5 GB analytical query" pair to
-              <span class="import">bun:csv</span>.
+              Tier 2 — in-memory columnar tables (<code>RecordBatch</code>, <code>Table</code>, <code>Column</code>),
+              type inference from typed arrays, validity bitmaps, computes (<code>sum</code>, <code>mean</code>,
+              <code>min</code>, <code>max</code>, <code>count</code>, <code>filter</code>) ship today. Arrow IPC reader
+              + writer pending a FlatBuffers decoder; Parquet pending after that.
             </td>
           </tr>
           <tr>
