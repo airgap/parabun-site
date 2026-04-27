@@ -103,43 +103,43 @@
         <div class="tier">
           <span class="tier-label">Tier 2 — apps<em>orchestration shipped, engines pending</em></span>
           <div class="tier-row">
-            <span class="mod-pill">bun:serve</span>
-            <span class="mod-pill">bun:vision</span>
-            <span class="mod-pill">bun:speech</span>
-            <span class="mod-pill planned">bun:arrow</span>
+            <a class="mod-pill" href="#bun-serve">bun:serve</a>
+            <a class="mod-pill" href="#bun-vision">bun:vision</a>
+            <a class="mod-pill" href="#bun-speech">bun:speech</a>
+            <a class="mod-pill planned" href="#bun-arrow">bun:arrow</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">Tier 1 — composed</span>
           <div class="tier-row">
-            <span class="mod-pill">bun:image</span>
-            <span class="mod-pill">bun:audio</span>
-            <span class="mod-pill">bun:camera</span>
-            <span class="mod-pill">bun:llm</span>
-            <span class="mod-pill">bun:csv</span>
-            <span class="mod-pill planned">bun:video</span>
+            <a class="mod-pill" href="#bun-image">bun:image</a>
+            <a class="mod-pill" href="#bun-audio">bun:audio</a>
+            <a class="mod-pill" href="#bun-camera">bun:camera</a>
+            <a class="mod-pill" href="#bun-llm">bun:llm</a>
+            <a class="mod-pill" href="#bun-csv">bun:csv</a>
+            <a class="mod-pill planned" href="#bun-video">bun:video</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">Tier 0 — primitives</span>
           <div class="tier-row">
-            <span class="mod-pill">bun:simd</span>
-            <span class="mod-pill">bun:gpu</span>
-            <span class="mod-pill">bun:parallel</span>
-            <span class="mod-pill">bun:arena</span>
-            <span class="mod-pill">bun:pipeline</span>
-            <span class="mod-pill">bun:signals</span>
-            <span class="mod-pill">bun:rtp</span>
+            <a class="mod-pill" href="#bun-simd">bun:simd</a>
+            <a class="mod-pill" href="#bun-gpu">bun:gpu</a>
+            <a class="mod-pill" href="#bun-parallel">bun:parallel</a>
+            <a class="mod-pill" href="#bun-arena">bun:arena</a>
+            <a class="mod-pill" href="#bun-pipeline">bun:pipeline</a>
+            <a class="mod-pill" href="#bun-signals">bun:signals</a>
+            <a class="mod-pill" href="#bun-rtp">bun:rtp</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">hardware</span>
           <div class="tier-row">
-            <span class="mod-pill hw">CPU cores</span>
-            <span class="mod-pill hw">CUDA / Metal</span>
-            <span class="mod-pill hw">SIMD lanes</span>
-            <span class="mod-pill hw">V4L2 / ALSA</span>
-            <span class="mod-pill hw">vendored codecs</span>
+            <a class="mod-pill hw" href="#bun-parallel">CPU cores</a>
+            <a class="mod-pill hw" href="#bun-gpu">CUDA / Metal</a>
+            <a class="mod-pill hw" href="#bun-simd">SIMD lanes</a>
+            <a class="mod-pill hw" href="#bun-camera">V4L2 / ALSA</a>
+            <a class="mod-pill hw" href="#bun-image">vendored codecs</a>
           </div>
         </div>
       </div>
@@ -147,7 +147,7 @@
       <h2 id="runtime-modules">Runtime modules</h2>
 
       <div class="modules">
-        <h3><span class="import">bun:parallel</span></h3>
+        <h3 id="bun-parallel"><span class="import">bun:parallel</span></h3>
         <p>
           <code>pmap</code> and <code>preduce</code> chunk arrays across a persistent worker pool. Functions are
           serialized via <code>fn.toString()</code>, so they must be pure — no closures, no outer references.
@@ -165,7 +165,7 @@
 <span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });</code></pre>
         </figure>
 
-        <h3><span class="import">bun:simd</span></h3>
+        <h3 id="bun-simd"><span class="import">bun:simd</span></h3>
         <p>
           WebAssembly v128 kernels for <code>Float32Array</code> (f32x4) and <code>Float64Array</code> (f64x2). Inputs
           above 4&nbsp;MiB are processed in place rather than copied into WASM memory. <code>alloc()</code> returns a
@@ -218,7 +218,7 @@
           </tbody>
         </table>
 
-        <h3><span class="import">bun:gpu</span></h3>
+        <h3 id="bun-gpu"><span class="import">bun:gpu</span></h3>
         <p>
           Metal on macOS, CUDA on Linux and Windows, CPU fallback on hosts without a GPU. A matrix passed to
           <code>gpu.hold()</code> stays resident across <code>matVec</code> calls, so only the input vector crosses the
@@ -246,7 +246,43 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           optional CUDA / Metal hooks on the same dispatch surface for follow-up device kernels.
         </p>
 
-        <h3><span class="import">bun:image</span></h3>
+        <h3 id="bun-arena"><span class="import">bun:arena</span></h3>
+        <p>
+          GC-deferred buffer pooling — a lock-free pool of <code>SharedArrayBuffer</code>-backed typed arrays that
+          worker pools (<span class="import">bun:parallel</span>) and pipeline stages (<span class="import"
+            >bun:pipeline</span
+          >) draw from. Pool entries return to the free list at deterministic boundaries (end of
+          <code>arena { }</code> block, end of <code>pmap</code> chunk) instead of waiting on V8's GC. The
+          <code>arena { }</code> language extension scopes lifetime; <code>defer</code> handles per-allocation cleanup.
+        </p>
+
+        <h3 id="bun-pipeline"><span class="import">bun:pipeline</span></h3>
+        <p>
+          Typed-array pipeline fusion — chains of <span class="import">bun:simd</span> calls (<code>mulScalar</code>,
+          <code>add</code>, <code>relu</code>, etc.) collapse to a single pass at <code>.run()</code> time, eliminating
+          intermediate buffer allocations. When the input crosses <code>gpu.winsForSize(...)</code>'s threshold the
+          fused chain promotes to a single <span class="import">bun:gpu</span> <code>simdMap</code> dispatch instead of
+          running on CPU.
+        </p>
+
+        <h3 id="bun-signals"><span class="import">bun:signals</span></h3>
+        <p>
+          Fine-grained reactivity — <code>signal()</code> creates a reactive cell, <code>computed()</code> derives one
+          signal from others, <code>effect()</code> runs side effects when its observed signals change. Reads inside an
+          <code>effect</code> register a dependency edge; writes invalidate downstream and a microtask flush re-runs
+          only the effects that observed a value that actually moved. Pairs with the <code>signal</code> /
+          <code>effect { }</code> language extensions.
+        </p>
+
+        <h3 id="bun-rtp"><span class="import">bun:rtp</span></h3>
+        <p>
+          RFC 3550 packet pack / parse plus a jitter buffer. Transport for the codec stack — designed to ride under
+          <span class="import">bun:audio</span>'s Opus encode and to receive on the other end of a WebRTC-style session.
+          <code>rtp.pack({ payloadType, sequence, timestamp, ssrc, payload })</code> emits a wire-format packet; the
+          jitter buffer reorders by sequence number with a configurable depth.
+        </p>
+
+        <h3 id="bun-image"><span class="import">bun:image</span></h3>
         <p>
           A Sharp-class image module baked into the runtime — JPEG / PNG / WebP decode and encode (libjpeg-turbo,
           libpng, libwebp + libsharpyuv vendored statically), bilinear and Lanczos resize, separable Gaussian blur,
@@ -266,7 +302,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 <span class="kw">await</span> Bun.<span class="fn">write</span>(<span class="str">"photo.webp"</span>, webp);</code></pre>
         </figure>
 
-        <h3><span class="import">bun:audio</span></h3>
+        <h3 id="bun-audio"><span class="import">bun:audio</span></h3>
         <p>
           A from-scratch audio toolkit: WAV / MP3 decode, Opus encode and decode (libopus 1.6.1), rnnoise-based
           denoiser, FFT, RBJ Audio EQ Cookbook biquads (lowpass / highpass / bandpass / notch), resample, STFT
@@ -293,7 +329,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 }</code></pre>
         </figure>
 
-        <h3><span class="import">bun:csv</span></h3>
+        <h3 id="bun-csv"><span class="import">bun:csv</span></h3>
         <p>
           Streaming RFC 4180 parser — async generator, full quote and escape handling, configurable delimiter, header
           mode that yields records keyed by column name, per-cell type inference (number / boolean / null). An opt-in
@@ -346,7 +382,29 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           bigger files to go faster. <code>bench/parabun-csv-parallel/</code> reproduces these numbers.
         </p>
 
-        <h3><span class="import">bun:llm</span></h3>
+        <h3 id="bun-camera"><span class="import">bun:camera</span></h3>
+        <p>
+          Zero-dependency camera capture. V4L2 on Linux today; AVFoundation (macOS) and Media Foundation (Windows) mount
+          on the same JS surface. <code>camera.devices()</code> walks <code>/sys/class/video4linux/</code> +
+          <code>VIDIOC_QUERYCAP</code> to filter capture devices; <code>camera.formats(path)</code> enumerates every
+          supported <code>(format, width, height, fps)</code> tuple; <code>camera.open(...)</code> mmaps the kernel ring
+          buffer and starts streaming; <code>cam.frames()</code> is an async iterator over kernel-timestamped frames.
+          Composes with <span class="import">bun:image</span>'s decoder for MJPEG paths and with
+          <span class="import">bun:vision</span>'s frame-stream orchestration for downstream CV work — no
+          <code>ffmpeg</code> subprocess, no <code>node-gyp</code> binding.
+        </p>
+
+        <h3 id="bun-video"><span class="import">bun:video</span></h3>
+        <p>
+          Video file decode + encode. JS surface is scaffolded — <code>video.probe(bytes)</code>,
+          <code>video.decode(bytes, opts)</code>, <code>video.encode(opts)</code>, <code>video.decodeAll(...)</code> —
+          with typed <code>VideoDecoder</code> / <code>VideoEncoder</code> interfaces covering codecs (H.264, H.265,
+          VP9, AV1, MJPEG), containers (MP4, MKV/WebM, MPEG-TS), and an <code>accel: "auto" | "gpu" | "cpu"</code> hint
+          for hardware decode/encode. The native binding (libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on
+          Jetson) lands together with the embedded hardware bring-up.
+        </p>
+
+        <h3 id="bun-llm"><span class="import">bun:llm</span></h3>
         <p>
           An in-tree GGUF runtime: file loader, byte-level BPE tokenizer, Llama and Qwen2 forward passes, greedy and
           nucleus sampling. Weights are <code>mmap</code>'d off disk; the residual stream and KV cache live on-device.
@@ -398,6 +456,51 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           Numbers are within run-to-run noise of ollama on this model and hardware. Chat templates for Llama-3, ChatML,
           and Mistral-Instruct are detected from the GGUF's <code>tokenizer.chat_template</code>. Only the CUDA backend
           is wired in this module today; Metal kernels are pending.
+        </p>
+
+        <h3 id="bun-serve"><span class="import">bun:serve</span></h3>
+        <p>
+          Tier 2. OpenAI-compatible HTTP server against any <span class="import">bun:llm</span>-shaped engine — drop-in
+          for tooling that auto-discovers ollama on port 11434. <code>GET /v1/models</code>,
+          <code>POST /v1/chat/completions</code> (sync + SSE streaming), <code>POST /v1/completions</code>,
+          <code>POST /v1/embeddings</code>. Optional bearer auth, FIFO concurrency gate (default 1, since
+          llama.cpp-class engines aren't internally batched). Pure orchestration over <code>Bun.serve</code> — no native
+          deps, no stubs. Engine plugged in via duck-typing: any object with <code>.chat()</code> /
+          <code>.generate()</code> / <code>.embed()</code> works (mocks, alternative backends, fakes for local dev).
+        </p>
+
+        <h3 id="bun-vision"><span class="import">bun:vision</span></h3>
+        <p>
+          Tier 2. <code>vision.frames(stream, { decodeMjpg? })</code> turns any
+          <span class="import">bun:camera</span>-shaped <code>RawFrame</code> iterator into a packed-RGBA8 frame stream
+          (yuyv / nv12 / rgb24 inline; mjpeg via injected <code>image.decode</code>).
+          <code>vision.detectMotion(...)</code> adds a downsampled-luma frame-diff motion estimator with temporal
+          smoothing. <code>vision.detect(...)</code> (object detection — YOLO / SSD / RT-DETR class) and
+          <code>vision.recognize(...)</code> (OCR — Tesseract / EasyOCR class) are typed engine surfaces that throw with
+          documented "vendor ONNX runtime first" messages today; the API contract is stable so callers can write against
+          it now.
+        </p>
+
+        <h3 id="bun-speech"><span class="import">bun:speech</span></h3>
+        <p>
+          Tier 2. <code>speech.listen(stream, { sampleRate, ... })</code> takes any audio-chunk iterator (<span
+            class="import"
+            >bun:audio</span
+          >'s capture frames, file readers, anything yielding <code>{ samples }</code>) and yields one Utterance per
+          detected speech burst. Adaptive RMS-vs-noise-floor classifier with pre-roll capture for word onsets, hangover
+          for silence-bounded sealing, and a min-utterance gate that drops clicks and breath.
+          <code>speech.transcribe(...)</code> (Whisper-class STT) and <code>speech.speak(...)</code> (Piper-class TTS)
+          are typed engine surfaces that throw with documented "lands when bun:llm gains encoder-decoder support / when
+          ONNX is vendored" messages today.
+        </p>
+
+        <h3 id="bun-arrow"><span class="import">bun:arrow</span></h3>
+        <p>
+          Tier 2 — not yet started. Planned: columnar Parquet / Arrow IPC reader + writer with SIMD column ops, sharing
+          the same buffer pool (<span class="import">bun:arena</span>) and worker dispatch (<span class="import"
+            >bun:parallel</span
+          >) the rest of the stack uses. Pairs with <span class="import">bun:csv</span> as the "5 GB analytical query"
+          path. Real engineering, multi-day vendor add — listed here for visibility, not pretending to ship soon.
         </p>
       </div>
 

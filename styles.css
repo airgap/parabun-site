@@ -502,15 +502,40 @@ footer a:hover {
   background: var(--bg-code);
   border: 1px solid var(--rule);
   color: var(--accent);
+  /* Override global a { border-bottom } and underline. */
+  text-decoration: none;
+  display: inline-block;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+a.mod-pill {
+  /* Re-state at higher specificity so the global `a` rule's border-bottom
+     doesn't bleed through. */
+  border-bottom: 1px solid var(--rule);
+}
+a.mod-pill:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-code));
 }
 .tier-row .mod-pill.planned {
   color: var(--text-faint);
   border-style: dashed;
 }
+a.mod-pill.planned {
+  border-bottom-style: dashed;
+}
 .tier-row .mod-pill.hw {
   color: var(--text-dim);
   background: transparent;
   border-style: dotted;
+}
+a.mod-pill.hw {
+  border-bottom-style: dotted;
+}
+a.mod-pill.hw:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
 }
 @media (max-width: 640px) {
   .tier {
