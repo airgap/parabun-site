@@ -82,7 +82,7 @@
         is the codec / capture / inference layer — image, audio, camera, CSV, GGUF LLM. Tier 2 is built on Tier 1:
         <span class="import">bun:vision</span> (frames + motion), <span class="import">bun:speech</span> (VAD
         utterances), <span class="import">bun:arrow</span> (columnar tables + computes + Arrow IPC reader/writer;
-        Parquet pending). Engines that need vendored deps (Whisper, Piper, ONNX detectors) throw with documented errors
+        Parquet write pending). Engines that need vendored deps (Piper, ONNX detectors) throw with documented errors
         until those land.
       </p>
 
@@ -514,7 +514,14 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           <code>bench/parabun-arrow-ipc-interop/</code> — six round-trip directions (streaming + file ×
           Parabun↔apache-arrow, plus Parabun→apache-arrow → Parabun for List). The bytes Parabun produces are the same
           wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on both the streaming and file paths.
-          Parquet, Struct / Map / FixedSizeList / Decimal types, and Dictionary delta batches remain pending.
+        </p>
+        <p>
+          <code>arrow.fromParquet(bytes)</code> reads Apache Parquet files. Hand-rolled Thrift compact-protocol decoder
+          for the metadata, hand-rolled Snappy decompressor for page bytes, dictionary + RLE + bit-pack hybrid decoders
+          for the page encodings — no npm dep. Covers <code>BOOLEAN</code> / <code>INT32</code> / <code>INT64</code> /
+          <code>FLOAT</code> / <code>DOUBLE</code> / <code>BYTE_ARRAY</code> physical types under
+          <code>UNCOMPRESSED</code>, <code>SNAPPY</code>, and <code>GZIP</code>; verified end-to-end against pyarrow on
+          10,000-row multi-row-group fixtures with nulls. Writer (<code>toParquet</code>) is pending.
         </p>
       </div>
 
@@ -805,10 +812,11 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td>
               Tier 2 — in-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile /
               median / distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
-              <code>fromRows</code> / <code>toRows</code> bridges, and Arrow IPC streaming + file formats with
-              dictionary-batch decode and List&lt;T&gt; nested types. Seven types round-trip: int32, int64, float32,
-              float64, bool, utf8, list. Wire-compat verified against apache-arrow 21.1.0 in
-              <code>bench/parabun-arrow-ipc-interop/</code>. Parquet, Struct / Map / FixedSizeList / Decimal pending.
+              <code>fromRows</code> / <code>toRows</code> bridges, Arrow IPC streaming + file formats (with
+              dictionary-batch decode and List&lt;T&gt;), and a Parquet reader (<code>fromParquet</code> — hand-rolled
+              Thrift / Snappy / RLE / dictionary; UNCOMPRESSED / SNAPPY / GZIP; verified against pyarrow). Wire-compat
+              verified against apache-arrow 21.1.0 in <code>bench/parabun-arrow-ipc-interop/</code>. Parquet writer +
+              nested types (Struct / Map / FixedSizeList / Decimal) pending.
             </td>
           </tr>
           <tr>
