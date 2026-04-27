@@ -1,6 +1,6 @@
 ---
 title: bun:video
-tagline: probe() + MJPEG-in-MP4 decode() in pure JS. Other codecs wait for libavcodec.
+tagline: probe() + MJPEG-in-MP4 decode() / encode() in pure JS. Other codecs wait for libavcodec.
 section: modules
 ---
 
@@ -8,7 +8,7 @@ section: modules
 import video from "bun:video";
 ```
 
-The video surface is staged: `probe()` (any container) and `decode()` for MJPEG-encoded MP4 ship today in pure JS. `encode()` and `decode()` for other codecs (h264 / h265 / vp9 / av1) are typed but throw — they need the native binding (libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on Jetson, VideoToolbox on macOS).
+The video surface is staged: `probe()` (any container), `decode()`, and `encode()` for MJPEG-encoded MP4 ship today in pure JS. `decode()` / `encode()` for other codecs (h264 / h265 / vp9 / av1) are typed but throw — they need the native binding (libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on Jetson, VideoToolbox on macOS).
 
 ## `probe(bytes)` — ships
 
@@ -86,21 +86,69 @@ for await (const frame of dec.frames()) {
 
 **Other codecs (h264 / h265 / vp9 / av1) still throw** with `bun:video.decode: codec "<codec>" needs the libavcodec native binding (only MJPEG-in-MP4 is unstubbed today)`. Same input shape will work once libavcodec is vendored.
 
-## `encode(frames, opts)` — pending
+## `encode(opts)` — partial
 
-Encodes a frame iterator to a video file:
+Returns a `VideoEncoder` whose `.pushFrame(frame)` queues a frame and `.finalize()` returns the muxed bytes (or writes to `opts.path` if set).
+
+**MJPEG-in-MP4 ships today** — JPEG-encode each frame via `opts.encodeJpg` (= `image.encode` from [`bun:image`](image/)) and mux into a hand-written ISOBMFF container. Output is bit-for-bit readable by ffprobe / ffmpeg.
 
 ```ts
-const out = await video.encode(frames, {
-  codec: "h264", bitrate: 4_000_000,
-  width: 1920, height: 1080, fps: 30,
-  accel: "auto",       // "gpu" | "cpu"
+import video from "bun:video";
+import image from "bun:image";
+
+await using enc = await video.encode({
+  codec: "mjpeg",
   container: "mp4",
+  width: 1280,
+  height: 720,
+  fps: 30,
+  encodeJpg: image.encode,   // dep-injected JPEG encoder
+  jpegQuality: 90,            // 0–100, default 85
 });
-await Bun.write("out.mp4", out);
+
+for (const frame of frames) await enc.pushFrame(frame);
+const bytes = await enc.finalize();
+await Bun.write("out.mp4", bytes);
 ```
 
-Same status: typed but throws.
+Frame shapes accepted by `pushFrame`:
+
+| Shape | Notes |
+| --- | --- |
+| `{ data, width, height, channels }` | bun:image-style `DecodedImage`. Channels 3 (RGB) or 4 (RGBA). |
+| `{ data, width, height, pixelFormat: "rgba" \| "rgb24" }` | Generic raw-frame shape. |
+| `{ data, width, height, format: "rgba" \| "rgb" }` | bun:camera `RawFrame`. yuyv / nv12 / mjpg need pre-conversion via [`vision.frames`](vision/). |
+
+**Other codecs (h264 / h265 / vp9 / av1) still throw** with `bun:video.encode: codec "<codec>" needs the libavcodec native binding (only "mjpeg" is unstubbed today)`.
+
+### File layout
+
+The muxer emits a minimal but spec-compliant ISOBMFF tree:
+
+```
+ftyp(isom)
+moov
+  mvhd
+  trak
+    tkhd
+    mdia
+      mdhd
+      hdlr (vide / VideoHandler)
+      minf
+        vmhd
+        dinf > dref > url
+        stbl
+          stsd → "jpeg" sample entry
+          stts (constant fps)
+          stsc (1 sample per chunk)
+          stsz (per-sample sizes)
+          stco (chunk offsets — 32-bit; >4 GiB files need co64)
+mdat (JPEG samples back-to-back)
+```
+
+The `jpeg` FourCC is the canonical sample-entry type for MJPEG-in-MP4 (not `mp4v`, which is MPEG-4 Visual Part 2).
+
+Single-pass write: the muxer builds `moov` with placeholder `stco` offsets, uses the resulting `moov` size to compute the real `mdat` start, then rebuilds `moov` with correct offsets. `stco`'s on-disk size is invariant in the sample count, so the placeholder size matches the real size.
 
 ## Hardware acceleration roadmap
 
