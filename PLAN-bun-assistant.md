@@ -117,6 +117,56 @@ Live accessors for runtime introspection / mutation. Add a tool mid-session, que
 | **Vision** | `bun:camera` + a VLM in `bun:llm` | Blocked on `bun:llm` gaining VLM architecture support (LLaVA / Qwen-VL family). Pencil in the option; implement when the loader exists. |
 | **Tools** | `bun:mcp` (new) + `m.chat({ schema })` | Tools render into the system prompt as a JSON-schema-described function list. Grammar-constrained sampling produces a structured tool call; the dispatcher routes to the matching MCP server or inline function and feeds the result back as a tool message. |
 | **Scheduled prompts** | `setInterval` / `node:timers` + the assistant's own `bot.ask()` path | Fires a self-initiated turn on the cron schedule. The user-facing turn shape includes a `scheduled: true` discriminant. |
+| **Reactive state** | `bun:signals` `Signal` instances on the bot | `bot.state`, `bot.lastTurn`, `bot.toolsActive`, etc. — see the parabun-syntax section. .ts users get plain `.subscribe()` / `.get()`; .pts users get `effect` / `~>` sugar over the same primitives. |
+
+---
+
+## Parabun syntax integration
+
+Assistant state is fundamentally reactive — it changes on every utterance, every tool call, every sensor reading flowing in via MCP. Rather than inventing a callback API, expose state as `bun:signals` `Signal` instances on the `Assistant` instance. `.ts` / `.js` users see them as plain observables; `.pts` / `.pjs` users get the `signal` / `effect` / `~>` syntax sugar for free over the same primitive.
+
+### Signals exposed on `Assistant`
+
+```ts
+bot.state:        Signal<"idle" | "listening" | "thinking" | "speaking">
+bot.lastTurn:     Signal<Turn | null>
+bot.toolsActive:  Signal<Set<string>>     // tool names currently in flight
+bot.history:      Signal<Message[]>       // full conversation, updates per turn
+bot.interrupted:  Signal<boolean>         // true while a barge-in is being processed
+```
+
+Same shape, two ergonomics:
+
+```ts
+// .ts user — never touches parabun syntax
+bot.state.subscribe(s => console.log(`bot is ${s}`));
+const current = bot.state.get();
+```
+
+```ts
+// .pts user — sugar over the same Signal instances
+effect { console.log(`bot is ${bot.state}`); }
+bot.state ~> ui.statusBadge;
+
+// MCP-fed sensor signals compose naturally with assistant signals
+signal motion = sensors.pir;
+signal temp = sensors.temperature;
+effect {
+  if (motion && temp > 28) bot.ask("Want me to turn on the AC?");
+}
+```
+
+### Other parabun extensions that compose well
+
+- **`memo` for tool dispatch.** `memo pure async function weatherFor(city)` gives you tool-result caching by argument identity — meaningful on edge devices where every roundtrip costs latency + power. Purely additive sugar; .ts users write the equivalent `Map`-cache wrapper themselves if they want it.
+- **`|>` for prompt construction.** `userText |> sanitize |> withRagContext(_) |> bot.ask` reads cleanly when chaining transforms. Pure DX win; no API impact.
+- **`..!` / `..&` / `..=`.** Standard-form async sugar over the same Promise APIs `bot.ask` etc. return. Works in .pts, irrelevant in .ts.
+- **`defer`.** Mostly subsumed by `await using bot = ...` for the bot itself. Useful inside `bot.tools` callbacks for per-call cleanup.
+- **`arena`.** Not a strong fit at the assistant layer — model lifecycles are managed by `using` on the underlying `LLM` / `WhisperModel` instances, which already free GPU buffers on dispose.
+
+### Hard rule
+
+`bun:assistant` takes a runtime dep on `bun:signals`, but **must not** require parabun syntax to be usable. Every signal-typed property must be reachable through plain `.get()` / `.subscribe()` / `.set()` JS calls. If a feature only works in .pts, it doesn't belong in this module — push it into a parabun-extension example or a separate `.pts`-only helper.
 
 ---
 
