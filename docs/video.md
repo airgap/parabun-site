@@ -1,6 +1,6 @@
 ---
 title: bun:video
-tagline: probe() ships in pure JS. decode / encode wait for libavcodec.
+tagline: probe() + MJPEG-in-MP4 decode() in pure JS. Other codecs wait for libavcodec.
 section: modules
 ---
 
@@ -8,7 +8,7 @@ section: modules
 import video from "bun:video";
 ```
 
-The video surface is staged: `probe()` ships today (pure-JS MP4 + Matroska metadata reader, no libavcodec required). `decode()`, `encode()`, and `decodeAll()` are typed but throw — they need the native binding (libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on Jetson, VideoToolbox on macOS).
+The video surface is staged: `probe()` (any container) and `decode()` for MJPEG-encoded MP4 ship today in pure JS. `encode()` and `decode()` for other codecs (h264 / h265 / vp9 / av1) are typed but throw — they need the native binding (libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on Jetson, VideoToolbox on macOS).
 
 ## `probe(bytes)` — ships
 
@@ -58,18 +58,33 @@ Verified end-to-end against `ffprobe` on h264/aac MP4 and vp9/opus WebM fixtures
 - MKV fps is reported as `0/1` — Matroska doesn't store per-frame timing in the headers, only in cluster timestamps. Computing it would require parsing into the data stream.
 - Per-stream duration uses each track's media-header (`mdhd` for MP4, `Info > Duration` × `TimecodeScale` for MKV). Audio + video can differ by a few ms depending on the encoder's tail framing.
 
-## `decode(input, opts?)` / `decodeAll(input, opts?)` — pending
+## `decode(input, opts?)` / `decodeAll(input, opts?)` — partial
 
-Async iterator over frames (`decode`) or a one-shot materialization (`decodeAll`). Frame shape matches [`bun:camera`](camera/)'s `RawFrame`, so the same `vision.frames(...)` consumer will handle both.
+Returns a `VideoDecoder` whose `.frames()` is an async iterator of `DecodedFrame`. Frame shape matches the consumer signature [`bun:vision.frames(...)`](vision/) accepts.
+
+**MJPEG-in-MP4 ships today** — UVC-webcam recordings, surveillance footage, ffmpeg `-c:v mjpeg` output. The container's sample tables (`stsz` / `stco` / `co64` / `stsc` / `stts`) are walked, each MJPEG sample's bytes are sliced, and `opts.decodeMjpg` is called per frame to lift JPEG → RGBA. Pass `image.decode` from [`bun:image`](image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here).
 
 ```ts
-// will work once the native binding lands
-for await (const frame of video.decode(Bun.file("clip.mp4"))) {
-  // frame.data ready to feed to image / vision / encode pipeline
+import video from "bun:video";
+import image from "bun:image";
+
+const bytes = new Uint8Array(await Bun.file("webcam.mp4").arrayBuffer());
+const dec = await video.decode(bytes, { decodeMjpg: image.decode });
+for await (const frame of dec.frames()) {
+  // frame.data is RGBA, frame.width × frame.height,
+  // frame.ptsMs is the decode-order timestamp,
+  // frame.keyframe is always true (every MJPEG sample is a complete JPEG)
 }
 ```
 
-Throws today with `bun:video.<fn>: bun:video is scaffolded — libavcodec native binding lands with hardware bring-up`.
+| Option | Description |
+| --- | --- |
+| `decodeMjpg` | Required for MJPEG inputs. Pass `image.decode` from `bun:image`. |
+| `streamIndex` | Stream index to decode. Default: first video stream. |
+| `startMs` | Drop frames whose PTS is below this. Default 0. |
+| `endMs` | Stop when PTS exceeds this. Default Infinity. |
+
+**Other codecs (h264 / h265 / vp9 / av1) still throw** with `bun:video.decode: codec "<codec>" needs the libavcodec native binding (only MJPEG-in-MP4 is unstubbed today)`. Same input shape will work once libavcodec is vendored.
 
 ## `encode(frames, opts)` — pending
 
