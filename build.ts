@@ -43,6 +43,285 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// ─── Syntax highlighting ─────────────────────────────────────────────────
+//
+// Purpose-built tokenizers for the four languages used in the docs (ts,
+// parabun, py, bash). Each emits `<span class="X">` tokens matching the
+// classes already styled in styles.css (.kw .str .com .num .fn .type and
+// the parabun-specific .pb-kw .pb-op .pb-signal-ref), so the rendered
+// output reads the same way as the hand-tuned blocks on the landing page.
+
+const TS_KEYWORDS = new Set([
+  "import", "from", "export", "default",
+  "const", "let", "var",
+  "function", "return",
+  "if", "else", "for", "while", "do", "switch", "case", "break", "continue",
+  "new", "class", "extends", "implements", "interface", "type",
+  "typeof", "instanceof", "in", "of", "as",
+  "async", "await", "try", "catch", "finally", "throw",
+  "null", "undefined", "true", "false", "void",
+  "this", "super", "enum",
+  "public", "private", "protected", "readonly", "static",
+  "yield", "delete", "keyof",
+]);
+
+const TS_PRIMITIVE_TYPES = new Set([
+  "number", "string", "boolean", "bigint", "symbol",
+  "any", "unknown", "never", "object",
+]);
+
+const PB_KEYWORDS = new Set([
+  "memo", "signal", "effect", "arena", "defer", "pure",
+]);
+
+const PY_KEYWORDS = new Set([
+  "def", "class", "import", "from", "as", "return",
+  "if", "elif", "else", "for", "while", "in", "not", "and", "or", "is",
+  "True", "False", "None",
+  "lambda", "with", "try", "except", "finally", "raise", "pass",
+  "break", "continue", "yield", "global", "nonlocal",
+  "async", "await", "self",
+]);
+
+function tokenSpan(cls: string, text: string): string {
+  return `<span class="${cls}">${escapeHtml(text)}</span>`;
+}
+
+function highlightTsLike(src: string, parabun: boolean): string {
+  // Pre-scan for parabun signal declarations after stripping comments and
+  // strings, so identifiers later in the same block can be tagged.
+  const signals = new Set<string>();
+  if (parabun) {
+    const stripped = src
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/\/\/[^\n]*/g, " ")
+      .replace(/"(?:\\.|[^"\\\n])*"/g, '""')
+      .replace(/'(?:\\.|[^'\\\n])*'/g, "''")
+      .replace(/`(?:\\.|[^`\\])*`/g, "``");
+    const re = /\bsignal\s+([A-Za-z_$][\w$]*)/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(stripped)) !== null) signals.add(m[1]);
+  }
+
+  const out: string[] = [];
+  const n = src.length;
+  let i = 0;
+
+  while (i < n) {
+    const c = src[i];
+    const c2 = src.slice(i, i + 2);
+
+    // Line comment.
+    if (c2 === "//") {
+      let j = i + 2;
+      while (j < n && src[j] !== "\n") j++;
+      out.push(tokenSpan("com", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    // Block comment.
+    if (c2 === "/*") {
+      let j = i + 2;
+      while (j < n - 1 && !(src[j] === "*" && src[j + 1] === "/")) j++;
+      j = Math.min(j + 2, n);
+      out.push(tokenSpan("com", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    // String literals (incl. template literals — interpolation passed
+    // through as part of the string for simplicity, since the docs don't
+    // mix language-level highlighting inside `${...}`).
+    if (c === '"' || c === "'" || c === "`") {
+      const quote = c;
+      let j = i + 1;
+      while (j < n) {
+        if (src[j] === "\\") { j += 2; continue; }
+        if (src[j] === quote) { j++; break; }
+        if (quote !== "`" && src[j] === "\n") break;
+        j++;
+      }
+      out.push(tokenSpan("str", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    // Parabun multi-char operators (longest match first).
+    if (parabun) {
+      if (src.startsWith("..=", i)) { out.push(tokenSpan("pb-op", "..=")); i += 3; continue; }
+      if (src.startsWith("..!", i)) { out.push(tokenSpan("pb-op", "..!")); i += 3; continue; }
+      if (src.startsWith("..&", i)) { out.push(tokenSpan("pb-op", "..&")); i += 3; continue; }
+      if (src.startsWith("~>", i))  { out.push(tokenSpan("pb-op", "~>"));  i += 2; continue; }
+      if (src.startsWith("|>", i))  { out.push(tokenSpan("pb-op", "|>"));  i += 2; continue; }
+    }
+    // Numbers (incl. _ separators, decimals, exponents, hex/bin/oct, BigInt n).
+    const isDigit = c >= "0" && c <= "9";
+    const isLeadingDot = c === "." && src[i + 1] >= "0" && src[i + 1] <= "9";
+    if (isDigit || isLeadingDot) {
+      let j = i;
+      if (src[i] === "0" && /[xXbBoO]/.test(src[i + 1] ?? "")) {
+        j = i + 2;
+        while (j < n && /[0-9a-fA-F_]/.test(src[j])) j++;
+      } else {
+        while (j < n && /[0-9_]/.test(src[j])) j++;
+        if (src[j] === "." && (src[j + 1] >= "0" && src[j + 1] <= "9")) {
+          j++;
+          while (j < n && /[0-9_]/.test(src[j])) j++;
+        }
+        if (j < n && (src[j] === "e" || src[j] === "E")) {
+          j++;
+          if (src[j] === "+" || src[j] === "-") j++;
+          while (j < n && /[0-9_]/.test(src[j])) j++;
+        }
+        if (src[j] === "n") j++;
+      }
+      out.push(tokenSpan("num", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    // Identifier / keyword.
+    if (/[A-Za-z_$]/.test(c)) {
+      let j = i + 1;
+      while (j < n && /[A-Za-z0-9_$]/.test(src[j])) j++;
+      const word = src.slice(i, j);
+      if (parabun && PB_KEYWORDS.has(word)) {
+        out.push(tokenSpan("pb-kw", word));
+      } else if (parabun && signals.has(word)) {
+        out.push(tokenSpan("pb-signal-ref", word));
+      } else if (TS_KEYWORDS.has(word)) {
+        out.push(tokenSpan("kw", word));
+      } else if (TS_PRIMITIVE_TYPES.has(word) || /^[A-Z]/.test(word)) {
+        out.push(tokenSpan("type", word));
+      } else {
+        let k = j;
+        while (k < n && (src[k] === " " || src[k] === "\t")) k++;
+        if (src[k] === "(") {
+          out.push(tokenSpan("fn", word));
+        } else {
+          out.push(escapeHtml(word));
+        }
+      }
+      i = j;
+      continue;
+    }
+    out.push(escapeHtml(c));
+    i++;
+  }
+  return out.join("");
+}
+
+function highlightPy(src: string): string {
+  const out: string[] = [];
+  const n = src.length;
+  let i = 0;
+  while (i < n) {
+    const c = src[i];
+    if (c === "#") {
+      let j = i + 1;
+      while (j < n && src[j] !== "\n") j++;
+      out.push(tokenSpan("com", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      const quote = c;
+      const triple = src[i + 1] === quote && src[i + 2] === quote;
+      let j = triple ? i + 3 : i + 1;
+      if (triple) {
+        while (j < n - 2 && !(src[j] === quote && src[j + 1] === quote && src[j + 2] === quote)) j++;
+        j = Math.min(j + 3, n);
+      } else {
+        while (j < n) {
+          if (src[j] === "\\") { j += 2; continue; }
+          if (src[j] === quote) { j++; break; }
+          if (src[j] === "\n") break;
+          j++;
+        }
+      }
+      out.push(tokenSpan("str", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    if (c >= "0" && c <= "9") {
+      let j = i + 1;
+      while (j < n && /[0-9_.]/.test(src[j])) j++;
+      out.push(tokenSpan("num", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    if (/[A-Za-z_]/.test(c)) {
+      let j = i + 1;
+      while (j < n && /[A-Za-z0-9_]/.test(src[j])) j++;
+      const word = src.slice(i, j);
+      if (PY_KEYWORDS.has(word)) {
+        out.push(tokenSpan("kw", word));
+      } else {
+        let k = j;
+        while (k < n && (src[k] === " " || src[k] === "\t")) k++;
+        if (src[k] === "(") {
+          out.push(tokenSpan("fn", word));
+        } else {
+          out.push(escapeHtml(word));
+        }
+      }
+      i = j;
+      continue;
+    }
+    out.push(escapeHtml(c));
+    i++;
+  }
+  return out.join("");
+}
+
+function highlightBash(src: string): string {
+  const out: string[] = [];
+  const n = src.length;
+  let i = 0;
+  while (i < n) {
+    const c = src[i];
+    // Comments — line-leading or after whitespace, never mid-token (so
+    // URLs like https://...#fragment don't get truncated).
+    if (c === "#" && (i === 0 || /\s/.test(src[i - 1]))) {
+      let j = i + 1;
+      while (j < n && src[j] !== "\n") j++;
+      out.push(tokenSpan("com", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      const quote = c;
+      let j = i + 1;
+      while (j < n) {
+        if (quote === '"' && src[j] === "\\") { j += 2; continue; }
+        if (src[j] === quote) { j++; break; }
+        if (src[j] === "\n") break;
+        j++;
+      }
+      out.push(tokenSpan("str", src.slice(i, j)));
+      i = j;
+      continue;
+    }
+    out.push(escapeHtml(c));
+    i++;
+  }
+  return out.join("");
+}
+
+function highlightCode(src: string, lang: string): string {
+  const norm = lang.toLowerCase();
+  if (norm === "ts" || norm === "tsx" || norm === "typescript" || norm === "js" || norm === "javascript") {
+    return highlightTsLike(src, false);
+  }
+  if (norm === "parabun") {
+    return highlightTsLike(src, true);
+  }
+  if (norm === "py" || norm === "python") {
+    return highlightPy(src);
+  }
+  if (norm === "bash" || norm === "sh" || norm === "shell") {
+    return highlightBash(src);
+  }
+  return escapeHtml(src);
+}
+
 // Inline rendering: code, bold, italic, links — applied after escapeHtml.
 function renderInline(input: string): string {
   // Inline code first (so its contents aren't re-processed).
@@ -98,7 +377,7 @@ function renderMarkdown(src: string, state: RenderState): string {
         ? `<figcaption class="code-header"><span class="code-lang">${escapeHtml(lang)}</span></figcaption>`
         : "";
       out.push(
-        `<figure class="code"${langAttr}>${langPill}<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre></figure>`,
+        `<figure class="code"${langAttr}>${langPill}<pre><code>${highlightCode(codeLines.join("\n"), lang)}</code></pre></figure>`,
       );
       continue;
     }
