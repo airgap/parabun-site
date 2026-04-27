@@ -168,6 +168,10 @@ effect {
 
 `bun:assistant` takes a runtime dep on `bun:signals`, but **must not** require parabun syntax to be usable. Every signal-typed property must be reachable through plain `.get()` / `.subscribe()` / `.set()` JS calls. If a feature only works in .pts, it doesn't belong in this module — push it into a parabun-extension example or a separate `.pts`-only helper.
 
+### Cross-module reactivity
+
+For `effect { ... }` blocks to compose across module boundaries — sensor reading from `bun:vision` triggering an LLM call in `bun:llm` triggering a TTS reply through `bun:speech` — the underlying modules also need to expose their state as Signals. That retrofit is tracked separately in [PLAN-module-signals.md](PLAN-module-signals.md). Build-order dependency: the audio / llm / speech signal exposure (items 1–3 in that plan) must land before `bun:assistant` core ships.
+
 ---
 
 ## MCP integration
