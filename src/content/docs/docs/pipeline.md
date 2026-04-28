@@ -1,14 +1,13 @@
 ---
 title: bun:pipeline
-tagline: Chained iterators that fuse adjacent kernels into one pass. Lifts to bun:gpu when the input is large enough.
-section: modules
+description: Chained iterators that fuse adjacent kernels into one pass. Lifts to bun:gpu when the input is large enough.
 ---
 
 ```ts
 import pipeline from "bun:pipeline";
 ```
 
-`bun:pipeline` is a small streaming-iterator toolkit shaped like RxJS / IxJS but specialized for typed arrays. The win is *fusion*: a chain of `bun:simd` kernels (`mulScalar`, `add`, `relu`, …) collapses into a single pass at `.run()` time, so the intermediate arrays don't get allocated. If the input is large enough that GPU dispatch wins (`gpu.winsForSize(...)`), the fused chain runs as one [`bun:gpu`](gpu/) `simdMap` instead.
+`bun:pipeline` is a small streaming-iterator toolkit shaped like RxJS / IxJS but specialized for typed arrays. The win is *fusion*: a chain of `bun:simd` kernels (`mulScalar`, `add`, `relu`, …) collapses into a single pass at `.run()` time, so the intermediate arrays don't get allocated. If the input is large enough that GPU dispatch wins (`gpu.winsForSize(...)`), the fused chain runs as one [`bun:gpu`](/docs/gpu/) `simdMap` instead.
 
 ## Stage operators
 
@@ -52,7 +51,7 @@ const evenSquares = pipeline.range(0, 1_000)
 
 ### Bring your own
 
-Any iterable / async iterable works as a source — typed arrays, [`bun:csv`](csv/) row streams, [`bun:audio`](audio/) capture frames, anything.
+Any iterable / async iterable works as a source — typed arrays, [`bun:csv`](/docs/csv/) row streams, [`bun:audio`](/docs/audio/) capture frames, anything.
 
 ```ts
 for (const piece of pipeline.range(0, 1000).filter(x => x % 2).map(x => x * x).chunk(100)) {
@@ -77,7 +76,7 @@ const total = pipe(
 
 ## `pipeParallel(source, ...stages)`
 
-Same shape, but the iterable is consumed across [`bun:parallel`](parallel/)'s worker pool. Each worker processes a chunk through the entire stage chain, then results are merged. Stages must be pure (same constraint as `pmap`).
+Same shape, but the iterable is consumed across [`bun:parallel`](/docs/parallel/)'s worker pool. Each worker processes a chunk through the entire stage chain, then results are merged. Stages must be pure (same constraint as `pmap`).
 
 ## Fusion + GPU lift
 
@@ -97,5 +96,5 @@ const ys = pipeline.range(0, 1_000_000)
 ## Limits
 
 - Fusion only collapses arithmetic + `Math.*` + ternary bodies. Branchy or stateful operators (`filter`, `chunk`, anything that breaks the 1-in-1-out shape) act as fusion barriers.
-- `pipeParallel` adds the worker-pool overhead — see [`bun:parallel`](parallel/) for when that pays off.
+- `pipeParallel` adds the worker-pool overhead — see [`bun:parallel`](/docs/parallel/) for when that pays off.
 - The chain executes lazily — operators don't run until a sink pulls. If you `tap(console.log)` and never call a sink, nothing prints.

@@ -1,14 +1,13 @@
 ---
 title: bun:arena
-tagline: A pool of SharedArrayBuffer typed arrays. Per-chunk work doesn't allocate a fresh buffer.
-section: modules
+description: A pool of SharedArrayBuffer typed arrays. Per-chunk work doesn't allocate a fresh buffer.
 ---
 
 ```ts
 import arena, { Pool, scope } from "bun:arena";
 ```
 
-A small allocator: a pool of `SharedArrayBuffer`-backed typed arrays drawn from a pre-warmed pool, returned at the end of an `arena { }` block (or programmatically via `release()`). Used internally by [`bun:parallel`](parallel/) and [`bun:pipeline`](pipeline/) so per-chunk work doesn't allocate a fresh buffer every time.
+A small allocator: a pool of `SharedArrayBuffer`-backed typed arrays drawn from a pre-warmed pool, returned at the end of an `arena { }` block (or programmatically via `release()`). Used internally by [`bun:parallel`](/docs/parallel/) and [`bun:pipeline`](/docs/pipeline/) so per-chunk work doesn't allocate a fresh buffer every time.
 
 ## `arena { ... }` — block form
 
@@ -21,7 +20,7 @@ arena {
 }                                       // buf freed here, no GC pressure
 ```
 
-The block desugars to a `scope()` call internally; see the [language extensions](language/#defer-and-arena) page.
+The block desugars to a `scope()` call internally; see the [language extensions](/docs/language/#defer-and-arena) page.
 
 ## `Pool` — programmatic
 

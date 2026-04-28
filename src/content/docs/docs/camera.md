@@ -1,7 +1,6 @@
 ---
 title: bun:camera
-tagline: V4L2 capture on Linux. AVFoundation (macOS) and Media Foundation (Windows) follow on the same surface.
-section: modules
+description: V4L2 capture on Linux. AVFoundation (macOS) and Media Foundation (Windows) follow on the same surface.
 ---
 
 ```ts
@@ -55,7 +54,7 @@ for await (const frame of cam.frames()) {
 }
 ```
 
-To compose with [`bun:image`](image/) / [`bun:vision`](vision/), pass the iterator through `vision.frames(...)` to convert to packed-RGBA8.
+To compose with [`bun:image`](/docs/image/) / [`bun:vision`](/docs/vision/), pass the iterator through `vision.frames(...)` to convert to packed-RGBA8.
 
 ### `cam.close()`
 
@@ -63,7 +62,7 @@ Manual close. Equivalent to `using` scope exit. Idempotent.
 
 ### Reactive signals
 
-Three [`bun:signals`](signals/) Signals on the camera handle — wire them into a UI without polling.
+Three [`bun:signals`](/docs/signals/) Signals on the camera handle — wire them into a UI without polling.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |
@@ -89,7 +88,7 @@ Single-frame converter — useful when you have a `RawFrame` from somewhere else
 
 ## Composition
 
-The end-to-end shape pairs with [`bun:vision`](vision/):
+The end-to-end shape pairs with [`bun:vision`](/docs/vision/):
 
 ```ts
 import camera from "bun:camera";

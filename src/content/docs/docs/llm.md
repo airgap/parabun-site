@@ -1,7 +1,6 @@
 ---
 title: bun:llm
-tagline: GGUF LLM inference, BERT sentence encoders, Whisper STT, and an OpenAI-compatible HTTP server — all built into the runtime.
-section: modules
+description: GGUF LLM inference, BERT sentence encoders, Whisper STT, and an OpenAI-compatible HTTP server — all built into the runtime.
 ---
 
 ```ts
@@ -75,7 +74,7 @@ Returns a `PrefixCache` — the KV cache snapshot after running `text` (or the t
 
 ### Reactive signals
 
-Each `LLM` instance exposes two [`bun:signals`](signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
+Each `LLM` instance exposes two [`bun:signals`](/docs/signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
 
 | Signal | Type | What it tracks |
 | --- | --- | --- |
@@ -135,7 +134,7 @@ Single high-level call. `audio` is mono 16 kHz `Float32Array` PCM in `[-1, 1]`. 
 
 ### `m.transcribeMel(mel, T, opts?)`
 
-Lower-level entry point. `mel` is a flat `[nMels, T]` row-major `Float32Array`. Use this when you've already computed the mel spectrogram (e.g. via [`audio.melSpectrogram(audio, { mode: "whisper" })`](audio/#mel-spectrogram)) or when integrating with a custom audio source.
+Lower-level entry point. `mel` is a flat `[nMels, T]` row-major `Float32Array`. Use this when you've already computed the mel spectrogram (e.g. via [`audio.melSpectrogram(audio, { mode: "whisper" })`](/docs/audio/#mel-spectrogram)) or when integrating with a custom audio source.
 
 ### `m.detectLanguage(mel, T)` / `m.detectLanguageFromEncoder(encoded)`
 
@@ -189,6 +188,6 @@ Use them when you want to drive the forward pass yourself, share weights across 
 ## Limits
 
 - Decoder-only LLM forward pass is single-stream (no batched generation). `maxConcurrent: 1` in `serve()` reflects this.
-- Whisper decoder is single-beam-aware but the encoder forward is one-shot — there's no streaming-aware encoder yet, so live-mic transcription works by VAD-segmenting the input ([`speech.listen`](speech/)) and transcribing each utterance independently.
+- Whisper decoder is single-beam-aware but the encoder forward is one-shot — there's no streaming-aware encoder yet, so live-mic transcription works by VAD-segmenting the input ([`speech.listen`](/docs/speech/)) and transcribing each utterance independently.
 - Q5_K, Q6_K, Q4_K, Q3_K, Q2_K matVec kernels are CUDA-only today. Metal mirrors are pending.
 - LLM tied embeddings (`output.weight` referencing the input embedding) are detected and shared. Untied embeddings work too — both load paths exist.

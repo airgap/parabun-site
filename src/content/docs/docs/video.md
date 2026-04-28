@@ -1,7 +1,6 @@
 ---
 title: bun:video
-tagline: probe() + MJPEG-in-MP4 decode() / encode() in pure JS. Other codecs wait for libavcodec.
-section: modules
+description: probe() + MJPEG-in-MP4 decode() / encode() in pure JS. Other codecs wait for libavcodec.
 ---
 
 ```ts
@@ -60,9 +59,9 @@ Verified end-to-end against `ffprobe` on h264/aac MP4 and vp9/opus WebM fixtures
 
 ## `decode(input, opts?)` / `decodeAll(input, opts?)` — partial
 
-Returns a `VideoDecoder` whose `.frames()` is an async iterator of `DecodedFrame`. Frame shape matches the consumer signature [`bun:vision.frames(...)`](vision/) accepts.
+Returns a `VideoDecoder` whose `.frames()` is an async iterator of `DecodedFrame`. Frame shape matches the consumer signature [`bun:vision.frames(...)`](/docs/vision/) accepts.
 
-**MJPEG-in-MP4 ships today** — UVC-webcam recordings, surveillance footage, ffmpeg `-c:v mjpeg` output. The container's sample tables (`stsz` / `stco` / `co64` / `stsc` / `stts`) are walked, each MJPEG sample's bytes are sliced, and `opts.decodeMjpg` is called per frame to lift JPEG → RGBA. Pass `image.decode` from [`bun:image`](image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here).
+**MJPEG-in-MP4 ships today** — UVC-webcam recordings, surveillance footage, ffmpeg `-c:v mjpeg` output. The container's sample tables (`stsz` / `stco` / `co64` / `stsc` / `stts`) are walked, each MJPEG sample's bytes are sliced, and `opts.decodeMjpg` is called per frame to lift JPEG → RGBA. Pass `image.decode` from [`bun:image`](/docs/image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here).
 
 ```ts
 import video from "bun:video";
@@ -90,7 +89,7 @@ for await (const frame of dec.frames()) {
 
 Returns a `VideoEncoder` whose `.pushFrame(frame)` queues a frame and `.finalize()` returns the muxed bytes (or writes to `opts.path` if set).
 
-**MJPEG-in-MP4 ships today** — JPEG-encode each frame via `opts.encodeJpg` (= `image.encode` from [`bun:image`](image/)) and mux into a hand-written ISOBMFF container. Output is bit-for-bit readable by ffprobe / ffmpeg.
+**MJPEG-in-MP4 ships today** — JPEG-encode each frame via `opts.encodeJpg` (= `image.encode` from [`bun:image`](/docs/image/)) and mux into a hand-written ISOBMFF container. Output is bit-for-bit readable by ffprobe / ffmpeg.
 
 ```ts
 import video from "bun:video";
@@ -117,7 +116,7 @@ Frame shapes accepted by `pushFrame`:
 | --- | --- |
 | `{ data, width, height, channels }` | bun:image-style `DecodedImage`. Channels 3 (RGB) or 4 (RGBA). |
 | `{ data, width, height, pixelFormat: "rgba" \| "rgb24" }` | Generic raw-frame shape. |
-| `{ data, width, height, format: "rgba" \| "rgb" }` | bun:camera `RawFrame`. yuyv / nv12 / mjpg need pre-conversion via [`vision.frames`](vision/). |
+| `{ data, width, height, format: "rgba" \| "rgb" }` | bun:camera `RawFrame`. yuyv / nv12 / mjpg need pre-conversion via [`vision.frames`](/docs/vision/). |
 
 **Other codecs (h264 / h265 / vp9 / av1) still throw** with `bun:video.encode: codec "<codec>" needs the libavcodec native binding (only "mjpeg" is unstubbed today)`.
 

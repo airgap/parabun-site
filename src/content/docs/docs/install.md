@@ -1,7 +1,6 @@
 ---
 title: Install
-tagline: Single-script install on Linux and macOS. Windows is in progress.
-section: guides
+description: Single-script install on Linux and macOS. Windows is in progress.
 ---
 
 ```bash

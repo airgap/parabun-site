@@ -1,14 +1,13 @@
 ---
 title: bun:assistant
-tagline: Three-line edge voice assistant. Composes bun:audio + bun:speech + bun:llm with reactive signals and persistent memory.
-section: modules
+description: Three-line edge voice assistant. Composes bun:audio + bun:speech + bun:llm with reactive signals and persistent memory.
 ---
 
 ```ts
 import assistant from "bun:assistant";
 ```
 
-A Tier 2 facade. Composes [`bun:audio`](audio/) (mic + speaker), [`bun:speech`](speech/) (VAD + STT + TTS), and [`bun:llm`](llm/) (Llama / Qwen2 inference) into a complete on-device voice loop. The 3-line case stays 3 lines; new fields unlock new capabilities, never remove defaults.
+A Tier 2 facade. Composes [`bun:audio`](/docs/audio/) (mic + speaker), [`bun:speech`](/docs/speech/) (VAD + STT + TTS), and [`bun:llm`](/docs/llm/) (Llama / Qwen2 inference) into a complete on-device voice loop. The 3-line case stays 3 lines; new fields unlock new capabilities, never remove defaults.
 
 ```ts
 import assistant from "bun:assistant";
@@ -132,7 +131,7 @@ await bot.say("Your laundry cycle is finished.");
 
 ## Reactive signals
 
-Every public signal is a [`bun:signals`](signals/) Signal — wire them into a UI without polling. Each updates synchronously when its source changes; subscribe with `.subscribe(cb)` or read with `.get()`.
+Every public signal is a [`bun:signals`](/docs/signals/) Signal — wire them into a UI without polling. Each updates synchronously when its source changes; subscribe with `.subscribe(cb)` or read with `.get()`.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |
@@ -228,7 +227,7 @@ wakeWord: {
 
 `feedThrough: false` (the default) consumes the wake utterance silently and waits for the *next* utterance — natural when users say "hey jetson \[pause\] what time is it?". `feedThrough: true` keeps the full transcription as the turn's user input — natural when users say "hey jetson, what time is it?" in one breath.
 
-Implementation note: the gate is whisper-backed (it reuses the same model already loaded for `stt`, runs only on VAD-detected speech bursts) — not a sub-watt always-on KWS. Trade-offs and details are documented under [`speech.wakeWord`](speech/#wakewordopts). For battery-powered devices a future follow-up adds a dedicated KWS engine.
+Implementation note: the gate is whisper-backed (it reuses the same model already loaded for `stt`, runs only on VAD-detected speech bursts) — not a sub-watt always-on KWS. Trade-offs and details are documented under [`speech.wakeWord`](/docs/speech/#wakewordopts). For battery-powered devices a future follow-up adds a dedicated KWS engine.
 
 ## Scheduled / proactive prompts
 
@@ -319,7 +318,7 @@ bot.memory     // MemoryStore — query / clear out of band
 bot.knowledge  // KnowledgeStore — search / reindex / introspect the RAG corpus
 ```
 
-Anything reachable via [`bun:llm`](llm/), [`bun:speech`](speech/), or [`bun:audio`](audio/) is reachable through `bot` too.
+Anything reachable via [`bun:llm`](/docs/llm/), [`bun:speech`](/docs/speech/), or [`bun:audio`](/docs/audio/) is reachable through `bot` too.
 
 ## Disposal
 

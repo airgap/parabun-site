@@ -1,12 +1,11 @@
 ---
 title: Language extensions
-tagline: Optional desugarings on .pts / .pjs files. Parse-time only — output is standard JavaScript.
-section: guides
+description: Optional desugarings on .pts / .pjs files. Parse-time only — output is standard JavaScript.
 ---
 
 Files ending in `.pts`, `.ptsx`, `.pjs`, or `.pjsx` are parsed with extra desugarings. All of them lower to standard JS at parse time; nothing in the runtime depends on the syntax. Plain `.ts` / `.js` / `.tsx` / `.jsx` files behave exactly as in upstream Bun.
 
-GitHub's TextMate grammars don't recognize `.pts` — install the [editor extension](install/#editor-extension) for syntax highlighting + LSP support.
+GitHub's TextMate grammars don't recognize `.pts` — install the [editor extension](/docs/install/#editor-extension) for syntax highlighting + LSP support.
 
 ## `pure` and `memo`
 

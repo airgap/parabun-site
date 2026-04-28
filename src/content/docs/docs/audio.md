@@ -1,14 +1,13 @@
 ---
 title: bun:audio
-tagline: WAV / MP3 / Opus codecs, biquads, FFT, mel spectrograms, voice activity detection, denoising, AGC, dynamics, and ALSA capture / playback.
-section: modules
+description: WAV / MP3 / Opus codecs, biquads, FFT, mel spectrograms, voice activity detection, denoising, AGC, dynamics, and ALSA capture / playback.
 ---
 
 ```ts
 import audio from "bun:audio";
 ```
 
-A from-scratch audio toolkit. Heavy codecs (libopus 1.6.1, minimp3, rnnoise) are vendored statically. The DSP surface is enough for a full voice-call pipeline plus the audio frontend that feeds [Whisper STT](llm/#whispermodel--speech-to-text).
+A from-scratch audio toolkit. Heavy codecs (libopus 1.6.1, minimp3, rnnoise) are vendored statically. The DSP surface is enough for a full voice-call pipeline plus the audio frontend that feeds [Whisper STT](/docs/llm/#whispermodel--speech-to-text).
 
 ## File I/O
 
@@ -39,7 +38,7 @@ const f32 = dec.decode(opus);
 
 `application` is `"voip" | "audio" | "lowdelay"`. Frame sizes are the Opus standard (2.5 / 5 / 10 / 20 / 40 / 60 ms at 48 kHz). Bitrate, complexity, FEC, DTX, in-band PLC are all knobs on the encoder constructor; see source for the full option set.
 
-Pair with [`bun:rtp`](rtp/) for a wire-format Opus / RTP stream.
+Pair with [`bun:rtp`](/docs/rtp/) for a wire-format Opus / RTP stream.
 
 ## Biquad filters (RBJ Audio EQ Cookbook)
 
@@ -120,7 +119,7 @@ const vad = audio.detectVoice(samples, { frameSize: 480, ratio: 3.0, noiseWindow
 
 Adaptive RMS-vs-noise-floor classifier. The noise floor is a sliding-window minimum of frame energies; a frame is "speech" when its RMS exceeds `noiseFloor × ratio`. Defaults track 30 ms frames (480 samples at 16 kHz) and a 3-second noise-window memory.
 
-For utterance-level segmentation (pre-roll, hangover, minimum length filtering) use [`speech.listen`](speech/) — it's a wrapper around `detectVoice` that yields one segment per speech burst.
+For utterance-level segmentation (pre-roll, hangover, minimum length filtering) use [`speech.listen`](/docs/speech/) — it's a wrapper around `detectVoice` that yields one segment per speech burst.
 
 ## Dynamics
 
@@ -179,7 +178,7 @@ await spk.write(f32Frame);
 
 - `spk.write(samples)` — queue more audio into ALSA.
 - `spk.drain()` — block until everything queued has played out.
-- `spk.stop()` — discard whatever is queued **immediately** and re-prepare the stream so subsequent `write` calls work. The barge-in cancel verb: cut the current playback short the moment a higher layer (VAD, UI button) decides the user wants to talk. `bot.interrupt()` in [`bun:assistant`](assistant/) calls this under the hood.
+- `spk.stop()` — discard whatever is queued **immediately** and re-prepare the stream so subsequent `write` calls work. The barge-in cancel verb: cut the current playback short the moment a higher layer (VAD, UI button) decides the user wants to talk. `bot.interrupt()` in [`bun:assistant`](/docs/assistant/) calls this under the hood.
 
 `spk.queuedMs: Signal<number>` reports the current depth of the kernel ring buffer in milliseconds. Updates after every `write` / `drain` / `stop` and on a low-frequency 100 ms poll while audio is queued — wire it into a UI for backpressure feedback ("can I write a few more sentences?") or into an `effect` that holds off speak() until the queue drains. The signal converges to 0 a few ms after the buffer empties; rate-limit matches `mic.peakLevel` / `listen().noiseFloor` to keep effects from thrashing.
 
