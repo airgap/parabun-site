@@ -591,6 +591,18 @@ table.bench tr.winner.pulse td {
      scroll on a wide pre block. */
   background: var(--bg);
 }
+
+/* The mobile-only disclosure trigger. Hidden on desktop; the nav is
+   shown directly. On mobile the toggle becomes a tap target labelled
+   with the current page title, and the nav is collapsed until tapped. */
+.docs-nav-toggle {
+  display: none;
+}
+.docs-nav-panel {
+  /* Default: visible on desktop. The mobile breakpoint hides this
+     unless the .open class is set by the toggle script. */
+  display: block;
+}
 .docs-side h4 {
   margin: 0 0 8px 0;
   text-transform: uppercase;
@@ -699,24 +711,77 @@ table.bench tr.winner.pulse td {
     gap: 16px;
   }
   .docs-side {
+    /* Drop sticky/scroll on mobile — the disclosure handles overflow
+       inside an explicit panel rather than via a 40vh scroll cage. */
     position: static;
-    /* 20 module pages listed makes the sidebar tall — without a cap the
-       article gets pushed half a screen down on every doc page. */
-    max-height: 40vh;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
     border-right: none;
     border-bottom: 1px solid var(--rule);
     padding-right: 0;
-    padding-bottom: 16px;
+    padding-bottom: 8px;
     margin-bottom: 8px;
     z-index: auto;
   }
   .docs-content {
     grid-column: 1;
-    /* Sidebar already occupies (1, 2) — without an explicit grid-row
-       override, the article stacks into the same cell and paints on
-       top of it. Push to row 3. */
+    /* Sidebar already occupies (1, 2) — without an explicit row override,
+       the article would stack into the same cell. Row 3 lays it cleanly
+       below the sidebar. */
     grid-row: 3;
+  }
+
+  /* Show the disclosure trigger; collapse the nav until the toggle opens it.
+     The label is a tap-friendly mono text button — flush with the brand and
+     header type to fit the rest of the chrome. */
+  .docs-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .docs-nav-toggle:hover,
+  .docs-nav-toggle:focus-visible {
+    color: var(--text);
+    outline: none;
+  }
+  .docs-nav-toggle-label {
+    /* Long module titles can elide rather than wrap the toggle. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 12px;
+  }
+  .docs-nav-toggle-caret {
+    color: var(--text-faint);
+    font-size: 11px;
+    transition: transform 140ms ease;
+    flex-shrink: 0;
+  }
+  .docs-nav-toggle[aria-expanded="true"] .docs-nav-toggle-caret {
+    transform: rotate(180deg);
+  }
+
+  .docs-nav-panel {
+    display: none;
+    padding-top: 12px;
+    /* Inline expand, capped so 20 modules don't push the article off-screen.
+       Internal scroll keeps the article reachable without leaving the page. */
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .docs-nav-panel.open {
+    display: block;
   }
 }
 

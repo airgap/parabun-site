@@ -539,7 +539,11 @@ function pageShell(opts: {
   const homeLink = pathPrefix === "" ? "./" : pathPrefix;
   const stylesHref = pathPrefix + "styles.css";
 
-  // Sidebar nav for docs pages.
+  // Sidebar nav for docs pages. Renders as a fixed sidebar on desktop and
+  // a tap-to-open disclosure on mobile (the `.docs-nav-toggle` button is
+  // hidden via CSS at >880px; `.docs-nav-panel` is always visible there).
+  // The toggle label echoes the current page title so mobile users see
+  // where they are without expanding the menu.
   let docsNav = "";
   if (isDocs) {
     const modPages = pages.filter(p => p.section === "modules");
@@ -550,9 +554,15 @@ function pageShell(opts: {
       const cls = isCurrent ? ' class="active"' : "";
       return `<li><a href="${href}"${cls}>${escapeHtml(p.title)}</a></li>`;
     };
+    const current = pages.find(p => p.slug === currentSlug);
+    const toggleLabel = current ? escapeHtml(current.title) : "menu";
     docsNav = `
       <aside class="docs-side">
-        <nav>
+        <button type="button" class="docs-nav-toggle" aria-expanded="false" aria-controls="docs-nav-panel">
+          <span class="docs-nav-toggle-label">${toggleLabel}</span>
+          <span class="docs-nav-toggle-caret" aria-hidden="true">▾</span>
+        </button>
+        <nav id="docs-nav-panel" class="docs-nav-panel">
           <h4>Guides</h4>
           <ul>${guidePages.map(linkFor).join("")}</ul>
           <h4>Modules</h4>

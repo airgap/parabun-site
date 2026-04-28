@@ -73,3 +73,16 @@
   );
   document.querySelectorAll("table.bench").forEach((t) => io.observe(t));
 })();
+
+// Mobile docs nav: tap-to-open disclosure. The CSS hides the trigger on
+// desktop, so this script is a no-op there. On narrow viewports the
+// trigger toggles the .open class on the panel and mirrors aria-expanded.
+(() => {
+  const toggle = document.querySelector(".docs-nav-toggle");
+  const panel = document.getElementById("docs-nav-panel");
+  if (!toggle || !panel) return;
+  toggle.addEventListener("click", () => {
+    const opened = panel.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", opened ? "true" : "false");
+  });
+})();
