@@ -154,6 +154,33 @@
         background: var(--accent);
         transition: width 0.15s ease-out;
       }
+
+      /* ── Mobile (≤480px) ─────────────────────────────────────────── */
+      @media (max-width: 480px) {
+        /* Stack the two summary stats — side-by-side is too cramped under
+           ~420px. */
+        .config-summary {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        /* Drop the size out of its own column so the name + desc gets the
+           full width; size sits below in the same content column. */
+        .config-row {
+          grid-template-columns: 22px 1fr;
+          row-gap: 2px;
+        }
+        .config-row .mod-size {
+          grid-column: 2;
+          text-align: left;
+        }
+        /* Description hangs off the name with a left margin on desktop;
+           on mobile that pushes it off-screen — fold it under instead. */
+        .config-row .mod-desc {
+          display: block;
+          margin-left: 0;
+          margin-top: 2px;
+        }
+      }
     </style>
   </head>
   <body>

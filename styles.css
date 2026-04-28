@@ -701,3 +701,107 @@ table.bench tr.winner.pulse td {
     grid-column: 1;
   }
 }
+
+/* ─── Mobile (≤640px) ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .page,
+  .docs-body .page.docs-layout {
+    padding: 32px 18px 96px;
+  }
+
+  /* Stack the brand above the nav — 7 nav items don't fit beside the brand
+     on a phone. Drop sticky too: a wrapped header would eat too much vertical
+     space when pinned. */
+  header {
+    position: static;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 36px;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none;
+  }
+  .nav {
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+  }
+
+  /* With sticky off, anchored headings can land right at the top edge. */
+  h2[id],
+  .docs-content h2,
+  .docs-content h3 {
+    scroll-margin-top: 16px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+  h2 {
+    margin: 48px 0 16px;
+  }
+
+  /* Install commands wrap instead of forcing horizontal scroll. break-all
+     is OK here — these are URLs and shell commands, not prose. */
+  .install {
+    white-space: normal;
+    word-break: break-all;
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+
+  pre {
+    font-size: 12px;
+    padding: 12px 14px;
+  }
+
+  /* Bench tables have rigid numeric columns that shouldn't wrap. Let the
+     table itself scroll horizontally; display: block keeps the inner
+     table semantics intact. */
+  table.bench {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  table.bench th,
+  table.bench td {
+    padding: 6px 10px;
+  }
+
+  /* Docs API tables (Option / Default / Description shape): descriptions
+     can wrap, so just tighten cells — no horizontal scroll needed. */
+  .docs-content table {
+    font-size: 13px;
+  }
+  .docs-content table th,
+  .docs-content table td {
+    padding: 6px 8px;
+  }
+
+  /* Sidebar list above the article gets long on docs pages with many
+     modules — a max-height + scroll keeps it from pushing the article
+     half a screen down. */
+  .docs-body .docs-side {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  footer {
+    margin-top: 64px;
+    gap: 12px;
+  }
+
+  /* Pull the FAB tighter to the corner so it doesn't overlap the last
+     content line. */
+  .fab {
+    right: max(10px, env(safe-area-inset-right, 10px));
+    bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
