@@ -55,6 +55,30 @@ for await (const { frame, motion } of vision.detectMotion(vision.frames(cam.fram
 | `smoothing` | `0.5` | EMA factor on the motion signal. `0` = raw, `1` = frozen. |
 | `scale` | `4` | Downsample factor for the luma image. Higher = cheaper + less sensitive to fine motion. |
 
+### Reactive signals
+
+The returned iterator carries two [`bun:signals`](signals/) Signals — wire `effect()` blocks against motion state without iterating the full stream.
+
+| Signal | Type | When it changes |
+| --- | --- | --- |
+| `m.detected` | `boolean` | Flips on rising/falling edges of `motionScore > sensitivity`. Edge-triggered, not throttled. |
+| `m.score` | `number` | Most recent smoothed motion score (fraction of luma-changed pixels, [0, 1]). Throttled to ~10 Hz so a 30 fps camera doesn't fire effects on every frame. |
+
+```ts
+import { effect } from "bun:signals";
+
+const m = vision.detectMotion(vision.frames(cam.frames()), { sensitivity: 0.05 });
+
+effect(() => {
+  if (m.detected.get()) console.log(`motion: ${(m.score.get() * 100).toFixed(1)}%`);
+});
+
+// Drain the iterator in the background — signals update as it runs.
+for await (const _ of m) void _;
+```
+
+When the input stream ends (or the consumer breaks), both signals reset to their inert state (`detected = false`, `score = 0`) so dependent effects don't show stale motion after the camera closes.
+
 ## `detect(frame, opts)` — stub
 
 Object detection — YOLO / SSD / RT-DETR. Throws:
