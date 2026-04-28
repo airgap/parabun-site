@@ -713,6 +713,10 @@ table.bench tr.winner.pulse td {
   }
   .docs-content {
     grid-column: 1;
+    /* Sidebar already occupies (1, 2) — without an explicit grid-row
+       override, the article stacks into the same cell and paints on
+       top of it. Push to row 3. */
+    grid-row: 3;
   }
 }
 
