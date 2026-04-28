@@ -73,6 +73,22 @@ Returns the model's hidden state for the last token. Most decoder-only chat mode
 
 Returns a `PrefixCache` — the KV cache snapshot after running `text` (or the templated chat prefix) through the model. Pass it as `opts.prefix` on subsequent calls to skip the prefill cost. Useful when many requests share a common system prompt.
 
+### Reactive signals
+
+Each `LLM` instance exposes two [`bun:signals`](signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
+
+| Signal | Type | What it tracks |
+| --- | --- | --- |
+| `m.busy` | `boolean` | `true` while a `chat` / `generate` / `embed` / `prefix` call is in flight. Refcounted across nested calls so it reads correctly when one method calls another internally. |
+| `m.device` | `"cuda" \| "metal" \| "cpu"` | Whichever backend the load probe selected. Stable for the life of the instance. |
+
+```ts
+import { effect } from "bun:signals";
+effect(() => console.log(m.busy.get() ? "🤔" : "✅"));
+```
+
+`WhisperModel` exposes the same `busy` signal — it flips while a `transcribe` / `transcribeMel` is running, and stays correct when nested under a higher-level call (e.g. `bun:assistant`'s turn loop).
+
 ## Encoder — BERT-family sentence embeddings
 
 ```ts

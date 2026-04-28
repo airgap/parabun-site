@@ -18,9 +18,9 @@ Three layers of dependency:
 
 - **Tier 0 — primitives.** [bun:simd](simd/), [bun:gpu](gpu/), [bun:parallel](parallel/), [bun:arena](arena/), [bun:pipeline](pipeline/), [bun:signals](signals/), [bun:rtp](rtp/). The numerical / structural / scheduling primitives the rest of the stack composes.
 - **Tier 1 — codecs & capture.** [bun:image](image/), [bun:audio](audio/), [bun:csv](csv/), [bun:llm](llm/), [bun:camera](camera/), [bun:video](video/). Statically-linked codecs and OS hardware capture, plus the GGUF inference runtime.
-- **Tier 2 — composed apps.** [bun:vision](vision/), [bun:speech](speech/), [bun:arrow](arrow/). Use-case-shaped wrappers built on Tier 1.
+- **Tier 2 — composed apps.** [bun:speech](speech/) (Whisper STT + Piper TTS + VAD), [bun:assistant](assistant/) (the 3-line edge voice assistant), [bun:arrow](arrow/) (in-memory tables + IPC streaming), [bun:vision](vision/). Use-case-shaped wrappers built on Tier 1.
 
-Modules without engines wired (Whisper *was* a stub, Piper / ONNX vision detectors / Parquet still are) throw at the engine boundary with a documented error message. Their interfaces are stable so callers can write against them now.
+Modules without engines wired (ONNX vision detectors, Parquet) throw at the engine boundary with a documented error message. Their interfaces are stable so callers can write against them now.
 
 ## Language extensions
 

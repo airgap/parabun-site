@@ -10,9 +10,11 @@ import speech from "bun:speech";
 
 A small orchestration module sitting on top of [`bun:audio`](audio/)'s capture + DSP and [`bun:llm`](llm/)'s `WhisperModel`. Three exports:
 
-- `listen(stream, opts?)` — VAD-gated utterance segmentation over any audio chunk iterator.
-- `transcribe(utterance, opts)` — speech-to-text via Whisper (real, ships).
-- `speak(text, opts)` — text-to-speech via Piper (stub — needs libpiper or ONNX vendored).
+- `listen(stream, opts?)` — VAD-gated utterance segmentation over any audio chunk iterator. The returned stream exposes reactive `active` / `noiseFloor` / `lastUtterance` signals.
+- `transcribe(utterance, opts)` — speech-to-text via Whisper.
+- `speak(text, opts)` — text-to-speech via Piper.
+
+For a full mic + STT + LLM + TTS + speaker pipeline composed in three lines, see [`bun:assistant`](assistant/).
 
 ## `listen(stream, opts?)`
 
@@ -51,6 +53,28 @@ type Utterance = {
 | `hangoverMs` | `600` | Silence duration that closes an utterance. |
 | `minUtteranceMs` | `200` | Bursts shorter than this are dropped (clicks, pops, breath sounds). |
 
+### Reactive signals on the listen stream
+
+The object `listen()` returns is the async iterator plus three [`bun:signals`](signals/) Signals — wire them straight into a UI without polling.
+
+| Signal | Type | What it tracks |
+| --- | --- | --- |
+| `active` | `boolean` | True while a speech burst is in progress, false during silence. |
+| `noiseFloor` | `number` | The current noise-floor estimate (linear RMS, same units as the input). |
+| `lastUtterance` | `Utterance \| null` | The most recently emitted utterance. Updates after `hangoverMs` of silence closes a burst. |
+
+```ts
+import { effect } from "bun:signals";
+
+const listener = speech.listen(mic.frames(), { sampleRate: 16000 });
+effect(() => console.log(listener.active.get() ? "🎤 listening" : "…"));
+effect(() => console.log(`floor=${listener.noiseFloor.get().toFixed(4)}`));
+
+for await (const utt of listener) {
+  // ...
+}
+```
+
 ## `transcribe(utterance, opts)`
 
 Dispatches to [`WhisperModel`](llm/#whispermodel--speech-to-text). Loads the model on first call and caches it per-process, so subsequent calls reuse the device-resident weights.
@@ -88,13 +112,40 @@ for await (const utt of speech.listen(mic.frames(), { sampleRate: 16000 })) {
 
 For longer-than-30-s segments, use the underlying `WhisperModel.transcribe` directly — it handles arbitrary-length input by chunking. `speech.listen`'s utterances are typically <10 s so this is rarely an issue.
 
-## `speak(text, opts)` — stub
+## `speak(text, opts)`
 
-Throws with:
+Synthesizes `text` into f32 mono PCM via Piper. Returns the samples ready for [`audio.play().write()`](audio/#playopts).
 
-> `bun:speech.speak: Piper TTS requires libpiper or ONNX runtime as a vendored dep — neither is wired yet. Tracked in the roadmap as bun:speech (Tier 2).`
+```ts
+import audio  from "bun:audio";
+import speech from "bun:speech";
 
-The interface is stable; implementation lands when the dep is vendored. The error message starts with `"bun:speech.speak:"` — match programmatically if you want to catch + skip gracefully.
+const out = await speech.speak("Hello world.", {
+  engine: "piper",
+  model: "/models/en_US-lessac-medium.onnx",
+});
+
+await using spk = await audio.play({ sampleRate: out.sampleRate, channels: out.channels });
+await spk.write(out.samples);
+```
+
+| Option | Description |
+| --- | --- |
+| `engine` | `"piper"` (only option today). |
+| `model` | Path to a Piper voice `.onnx`. Voices: <https://github.com/rhasspy/piper/blob/master/VOICES.md>. |
+| `binPath` | Optional override for the `piper` binary. Defaults to PATH lookup. |
+
+Returns:
+
+```ts
+type SpokenAudio = {
+  samples: Float32Array;       // f32 mono PCM
+  sampleRate: number;          // read from the WAV piper emits — typically 22050 Hz
+  channels: number;             // always 1 for current voices
+};
+```
+
+v1 invokes the `piper` binary as a subprocess (text in via stdin, WAV out via a tempfile). v2 will swap in a libpiper FFI binding for lower latency — the JS surface is stable across that transition. Tracked under [LYK-758](https://linear.app/lyku/issue/LYK-758).
 
 ## Limits
 
