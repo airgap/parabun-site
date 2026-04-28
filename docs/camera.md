@@ -61,6 +61,28 @@ To compose with [`bun:image`](image/) / [`bun:vision`](vision/), pass the iterat
 
 Manual close. Equivalent to `using` scope exit. Idempotent.
 
+### Reactive signals
+
+Three [`bun:signals`](signals/) Signals on the camera handle — wire them into a UI without polling.
+
+| Signal | Type | When it changes |
+| --- | --- | --- |
+| `cam.active` | `boolean` | True after the first frame is emitted, false again on `close()`. |
+| `cam.fps` | `number` | Rolling-window estimate over the last ~32 frames. Throttled to ~10 Hz so a 60 fps source doesn't fire effects 60×/sec. |
+| `cam.cameraFormat` | `{ width, height, pixelFormat }` | Initialized from `open()`. Future renegotiation on V4L2 format-change events updates this in place; today it stays static for the lifetime of the camera. |
+
+```ts
+import { effect } from "bun:signals";
+
+await using cam = await camera.open("/dev/video0", { format: "yuyv", width: 640, height: 480 });
+
+effect(() => console.log(`camera ${cam.active.get() ? "live" : "idle"} @ ${cam.fps.get().toFixed(1)} fps`));
+
+for await (const frame of cam.frames()) {
+  // frame processing — fps signal updates as you pull
+}
+```
+
 ## `toRgba(frame)`
 
 Single-frame converter — useful when you have a `RawFrame` from somewhere else (file, network) and want RGBA8 without spinning up `vision.frames`. Same pixel format coverage as `vision.frames` (yuyv, nv12, rgb24, rgba; mjpg requires `image.decode`).

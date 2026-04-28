@@ -181,6 +181,8 @@ await spk.write(f32Frame);
 - `spk.drain()` — block until everything queued has played out.
 - `spk.stop()` — discard whatever is queued **immediately** and re-prepare the stream so subsequent `write` calls work. The barge-in cancel verb: cut the current playback short the moment a higher layer (VAD, UI button) decides the user wants to talk. `bot.interrupt()` in [`bun:assistant`](assistant/) calls this under the hood.
 
+`spk.queuedMs: Signal<number>` reports the current depth of the kernel ring buffer in milliseconds. Updates after every `write` / `drain` / `stop` and on a low-frequency 100 ms poll while audio is queued — wire it into a UI for backpressure feedback ("can I write a few more sentences?") or into an `effect` that holds off speak() until the queue drains. The signal converges to 0 a few ms after the buffer empties; rate-limit matches `mic.peakLevel` / `listen().noiseFloor` to keep effects from thrashing.
+
 ## Limits
 
 - Opus encoder doesn't expose `OPUS_SET_FORCE_MODE` or `OPUS_SET_PACKET_LOSS_PERC` directly — open an issue if you need them.
