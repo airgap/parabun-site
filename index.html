@@ -78,54 +78,55 @@
 
       <h2 id="stack">Module index</h2>
       <p>
-        Three groups. Tier 0 is the primitive layer — SIMD, worker pool, GPU kernels (NVRTC / MSL), buffer pool. Tier 1
-        is the codec / capture / inference layer — image, audio, camera, CSV, GGUF LLM. Tier 2 is built on Tier 1:
-        <span class="import">bun:vision</span> (frames + motion), <span class="import">bun:speech</span> (VAD
-        utterances), <span class="import">bun:arrow</span> (columnar tables + computes + Arrow IPC reader/writer;
-        Parquet write pending). Engines that need vendored deps (Piper, ONNX detectors) throw with documented errors
-        until those land.
+        Modules grouped by what you'd reach for them to do. Click a pill for the API. Higher-level modules compose the
+        lower-level ones — <span class="import">bun:assistant</span> is built on <span class="import">bun:audio</span> +
+        <span class="import">bun:speech</span> + <span class="import">bun:llm</span>;
+        <span class="import">bun:llm</span> on <span class="import">bun:gpu</span> +
+        <span class="import">bun:simd</span>; and so on. The imports are the truth, but you don't need to know the
+        dependency graph to pick a module.
       </p>
 
-      <div class="tiers" aria-label="Parabun module dependency stack">
+      <div class="tiers" aria-label="Parabun modules by use case">
         <div class="tier">
-          <span class="tier-label">Tier 2 — apps<em>some engines stub</em></span>
-          <div class="tier-row">
-            <a class="mod-pill" href="#bun-vision">bun:vision</a>
-            <a class="mod-pill" href="#bun-speech">bun:speech</a>
-            <a class="mod-pill" href="#bun-arrow">bun:arrow</a>
-          </div>
-        </div>
-        <div class="tier">
-          <span class="tier-label">Tier 1 — composed</span>
-          <div class="tier-row">
-            <a class="mod-pill" href="#bun-image">bun:image</a>
-            <a class="mod-pill" href="#bun-audio">bun:audio</a>
-            <a class="mod-pill" href="#bun-camera">bun:camera</a>
-            <a class="mod-pill" href="#bun-llm">bun:llm</a>
-            <a class="mod-pill" href="#bun-csv">bun:csv</a>
-            <a class="mod-pill planned" href="#bun-video">bun:video</a>
-          </div>
-        </div>
-        <div class="tier">
-          <span class="tier-label">Tier 0 — primitives</span>
+          <span class="tier-label">Numerical &amp; parallel compute</span>
           <div class="tier-row">
             <a class="mod-pill" href="#bun-simd">bun:simd</a>
             <a class="mod-pill" href="#bun-gpu">bun:gpu</a>
             <a class="mod-pill" href="#bun-parallel">bun:parallel</a>
-            <a class="mod-pill" href="#bun-arena">bun:arena</a>
             <a class="mod-pill" href="#bun-pipeline">bun:pipeline</a>
-            <a class="mod-pill" href="#bun-signals">bun:signals</a>
+            <a class="mod-pill" href="#bun-arena">bun:arena</a>
+          </div>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Media — codec, capture, transport</span>
+          <div class="tier-row">
+            <a class="mod-pill" href="#bun-image">bun:image</a>
+            <a class="mod-pill" href="#bun-audio">bun:audio</a>
+            <a class="mod-pill" href="#bun-camera">bun:camera</a>
+            <a class="mod-pill planned" href="#bun-video">bun:video</a>
             <a class="mod-pill" href="#bun-rtp">bun:rtp</a>
           </div>
         </div>
         <div class="tier">
-          <span class="tier-label">hardware</span>
+          <span class="tier-label">AI &amp; inference</span>
           <div class="tier-row">
-            <a class="mod-pill hw" href="#bun-parallel">CPU cores</a>
-            <a class="mod-pill hw" href="#bun-gpu">CUDA / Metal</a>
-            <a class="mod-pill hw" href="#bun-simd">SIMD lanes</a>
-            <a class="mod-pill hw" href="#bun-camera">V4L2 / ALSA</a>
-            <a class="mod-pill hw" href="#bun-image">vendored codecs</a>
+            <a class="mod-pill" href="#bun-llm">bun:llm</a>
+            <a class="mod-pill" href="#bun-speech">bun:speech</a>
+            <a class="mod-pill" href="#bun-assistant">bun:assistant</a>
+            <a class="mod-pill" href="#bun-vision">bun:vision</a>
+          </div>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Data &amp; tabular</span>
+          <div class="tier-row">
+            <a class="mod-pill" href="#bun-csv">bun:csv</a>
+            <a class="mod-pill" href="#bun-arrow">bun:arrow</a>
+          </div>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Reactive state</span>
+          <div class="tier-row">
+            <a class="mod-pill" href="#bun-signals">bun:signals</a>
           </div>
         </div>
       </div>
@@ -250,10 +251,21 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 
         <h3 id="bun-signals"><span class="import">bun:signals</span></h3>
         <p>
-          <code>signal()</code> is a reactive cell, <code>computed()</code> derives one from others, and
+          <code>signal()</code> is a reactive cell, <code>derived()</code> derives one from others, and
           <code>effect()</code> runs side effects when something it read changes. Reads inside an effect register a
           dependency; writes invalidate downstream and a microtask flush re-runs only the effects that observed a value
-          that actually changed. Pairs with the <code>signal</code> / <code>effect { }</code> language extensions.
+          that actually changed. <code>batch()</code> coalesces multi-write transactions; <code>untrack()</code> reads
+          inside a reactive context without registering a dep. Pairs with the <code>signal</code> /
+          <code>effect { }</code> / <code>~&gt;</code> language extensions.
+        </p>
+        <p>
+          Many other modules expose their own state as Signals — <span class="import">bun:audio</span>'s capture stream
+          (<code>peakLevel</code>, <code>active</code>), <span class="import">bun:llm</span>'s <code>LLM</code> and
+          <code>WhisperModel</code> instances (<code>busy</code>, <code>device</code>),
+          <span class="import">bun:speech</span>'s <code>listen()</code> stream (<code>active</code>,
+          <code>noiseFloor</code>, <code>lastUtterance</code>), and <span class="import">bun:assistant</span>'s
+          <code>state</code> / <code>history</code> / <code>lastTurn</code> / <code>interrupted</code>. Wire any of them
+          into UI without polling.
         </p>
 
         <h3 id="bun-rtp"><span class="import">bun:rtp</span></h3>
@@ -288,10 +300,18 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         <p>
           A from-scratch audio toolkit: WAV / MP3 decode, Opus encode and decode (libopus 1.6.1), rnnoise-based
           denoiser, FFT, RBJ Audio EQ Cookbook biquads (lowpass / highpass / bandpass / notch), resample, STFT
-          spectrogram, voice-activity detection, AGC, peak / RMS / windowed envelope, mix, normalize, interleave /
-          deinterleave, and PCM type conversion. Heavy codecs (libopus, minimp3, rnnoise) ship statically; paired with
-          <span class="import">bun:rtp</span>, the surface is enough for a full voice-call capture pipeline short of OS
-          audio I/O.
+          spectrogram, mel spectrogram (Whisper-mode included for STT pipelines), voice-activity detection, AGC, peak /
+          RMS / windowed envelope, mix, normalize, interleave / deinterleave, and PCM type conversion. Heavy codecs
+          (libopus, minimp3, rnnoise) ship statically.
+        </p>
+        <p>
+          OS audio I/O is wired on Linux: <code>audio.devices()</code> enumerates ALSA capture and playback devices,
+          <code>audio.capture({ device, sampleRate, channels })</code> returns a stream whose
+          <code>.frames()</code> async-iterator yields <code>Float32Array</code> PCM straight from
+          <code>snd_pcm_readi</code>, and <code>audio.play({ ... }).write(samples)</code> pushes PCM through
+          <code>snd_pcm_writei</code>. The capture stream exposes reactive <code>peakLevel</code> and
+          <code>active</code> Signals — RMS rate-limited to 10 Hz so a level meter is one <code>effect()</code> away.
+          CoreAudio + WASAPI mount on the same surface in follow-ups.
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
@@ -451,6 +471,13 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           decoder per-token matVecs + LM head). On an RTX 4070 Ti, an 11&nbsp;s JFK clip transcribes in 1.6&nbsp;s with
           <code>tiny.en</code> — about 6.9× real-time.
         </p>
+        <p>
+          Both <code>LLM</code> and <code>WhisperModel</code> instances expose reactive
+          <span class="import">bun:signals</span> Signals: <code>m.busy</code> (refcounted, flips while a
+          <code>chat</code> / <code>generate</code> / <code>embed</code> / <code>transcribe</code> call is in flight)
+          and <code>m.device</code> (<code>"cuda" | "metal" | "cpu"</code>, stable for the life of the instance). Wire a
+          busy spinner or a backend badge with a one-liner <code>effect()</code>.
+        </p>
 
         <h3 id="bun-vision"><span class="import">bun:vision</span></h3>
         <p>
@@ -476,10 +503,35 @@ gpu.<span class="fn">release</span>(held);</code></pre>
           onsets, hangover to seal on silence, and a minimum-length filter to drop clicks and breath sounds.
         </p>
         <p>
-          <code>speech.transcribe(utt, { engine: "whisper", model })</code> is real — it dispatches to the
+          <code>speech.transcribe(utt, { engine: "whisper", model })</code> dispatches to the
           <code>WhisperModel</code> in <span class="import">bun:llm</span>, with a per-process model cache so the
-          wei&shy;ghts aren't reloaded between calls. <code>speech.speak</code> (Piper) is still typed but throws —
-          needs libpiper or an ONNX runtime vendored.
+          weights aren't reloaded between calls. <code>speech.speak(text, { engine: "piper", model })</code> drives the
+          Piper voice synthesizer (subprocess in v1, libpiper FFI v2 tracked) and returns f32 mono PCM at the voice's
+          native sample rate, ready to hand straight to <code>audio.play().write()</code>. The
+          <code>listen</code> stream also exposes reactive <code>active</code> / <code>noiseFloor</code> /
+          <code>lastUtterance</code> signals.
+        </p>
+
+        <h3 id="bun-assistant"><span class="import">bun:assistant</span></h3>
+        <p>
+          The 3-line case. Composes <span class="import">bun:audio</span> (mic + speaker),
+          <span class="import">bun:speech</span> (VAD + STT + TTS), and <span class="import">bun:llm</span> (Llama /
+          Qwen2 inference) into a complete on-device voice loop:
+          <code>await using bot = await assistant.create({ llm, stt, tts, system });</code>, then
+          <code>await bot.run()</code>. Mic captures, VAD gates, Whisper transcribes, the LLM generates, Piper
+          synthesizes, ALSA plays — fully local, no cloud round-trip. <code>bot.turns()</code> exposes the loop as an
+          async iterator; <code>bot.ask(text)</code> skips STT for text-only turns; <code>bot.say(text)</code> pushes a
+          proactive utterance.
+        </p>
+        <p>
+          Reactive surface: <code>bot.state</code> (<code>"idle" | "listening" | "thinking" | "speaking"</code>),
+          <code>bot.history</code>, <code>bot.lastTurn</code>, and <code>bot.interrupted</code> are all
+          <span class="import">bun:signals</span> Signals — wire them straight into UI without polling. Persistent
+          memory is one option away: pass <code>memory: "/path/to/memory.sqlite"</code> and the conversation transcript
+          replays into history on every <code>create</code>. Power users keep their seat — <code>bot.llm</code> exposes
+          the underlying model, so anything reachable directly via <span class="import">bun:llm</span> /
+          <span class="import">bun:speech</span> / <span class="import">bun:audio</span> is reachable through
+          <code>bot</code> too.
         </p>
 
         <h3 id="bun-arrow"><span class="import">bun:arrow</span></h3>
@@ -588,6 +640,116 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         <code>add_ms</code> is higher because rows are packed into a single SAB <code>Float32Array</code> and normalized
         in place — one-time <code>O(N·D)</code> work amortized across subsequent queries. Top-K indices and scores match
         LangChain's to four decimal places.
+      </p>
+
+      <h2 id="composition">Composition examples</h2>
+      <p>
+        Where signals and module composition pay off — wiring multiple <code>bun:*</code> modules into one program
+        without postMessage, child processes, or N-API bindings.
+      </p>
+
+      <h3 id="example-voice-tools">Voice → LLM → tool dispatch</h3>
+      <p>
+        Mic captures, Whisper transcribes, the LLM picks a tool under a JSON schema (mathematically guaranteed-valid
+        output, no parse retries), the runtime dispatches it, Piper speaks the reply. The dispatch table is plain JS
+        today; <span class="import">bun:mcp</span> (deferred follow-up) swaps the table for an MCP client without
+        changing this control flow. <code>effect()</code> over <code>mic.peakLevel</code> / <code>chat.busy</code> /
+        <code>wsp.busy</code> drives a status line — no polling, no observers, no event emitters.
+      </p>
+      <figure class="code">
+        <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
+        <pre><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
+<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+<span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
+
+<span class="com">// Dispatch table — same shape an MCP client would expose.</span>
+<span class="kw">const</span> tools = {
+  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; mqtt.<span class="fn">publish</span>(<span class="str">`home/${room}/light`</span>, { on, brightness }),
+  <span class="fn">playMusic</span>: ({ track }) =&gt; spotify.<span class="fn">play</span>(track),
+  <span class="fn">reply</span>:     ({ text }) =&gt; text,
+};
+<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
+
+<span class="kw">await using</span> mic = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
+<span class="kw">using</span>       wsp = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"/models/ggml-tiny.en.bin"</span>);
+<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
+<span class="kw">let</span> spk;
+
+<span class="com">// One reactive line drives a live UI badge.</span>
+<span class="fn">effect</span>(() =&gt; <span class="fn">render</span>(
+  <span class="str">`mic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`
+));
+
+<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
+  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
+  <span class="kw">let</span> json = <span class="str">""</span>;
+  <span class="kw">for await</span> (<span class="kw">const</span> piece <span class="kw">of</span> chat.<span class="fn">chat</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> })) {
+    json += piece;
+  }
+  <span class="kw">const</span> { tool, args } = JSON.<span class="fn">parse</span>(json);
+  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
+  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
+    <span class="kw">const</span> out = <span class="kw">await</span> speech.<span class="fn">speak</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"/models/en_US-lessac-medium.onnx"</span> });
+    spk ??= <span class="kw">await</span> audio.<span class="fn">play</span>({ sampleRate: out.sampleRate, channels: out.channels });
+    <span class="kw">await</span> spk.<span class="fn">write</span>(out.samples);
+  }
+}</code></pre>
+      </figure>
+      <p class="footnote">
+        Five modules in one process: <span class="import">bun:audio</span> for mic + speaker,
+        <span class="import">bun:speech</span> for VAD utterance segmentation,
+        <span class="import">bun:llm</span> for STT (<code>WhisperModel</code>) and grammar-constrained generation
+        (<code>LLM.chat({ schema })</code>), and <span class="import">bun:signals</span> tying their reactive state into
+        one UI line. No subprocess, no postMessage, no observer wiring.
+      </p>
+
+      <h3 id="example-motion">Webcam motion → reactive assistant</h3>
+      <p>
+        <code>vision.detectMotion</code> emits frame-by-frame motion scores; pump them into a
+        <span class="import">bun:signals</span> signal and <code>derived()</code> turns the raw score into a clean
+        "someone's in the room" boolean. An <code>effect()</code> watches that boolean — and the bot's own
+        <code>state</code> signal — and triggers a one-shot greeting on the rising edge, but only when the bot is idle.
+        No state machine, no debounce timer, no flag bookkeeping.
+      </p>
+      <figure class="code">
+        <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
+        <pre><code><span class="kw">import</span> camera    <span class="kw">from</span> <span class="str">"bun:camera"</span>;
+<span class="kw">import</span> vision    <span class="kw">from</span> <span class="str">"bun:vision"</span>;
+<span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
+<span class="kw">import</span> { signal, derived, effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
+
+<span class="kw">await using</span> cam = <span class="kw">await</span> camera.<span class="fn">open</span>(<span class="str">"/dev/video0"</span>, { format: <span class="str">"yuyv"</span>, width: <span class="num">640</span>, height: <span class="num">480</span> });
+<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
+  llm: <span class="str">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
+  tts: <span class="str">"/models/en_US-lessac-medium.onnx"</span>,
+  system: <span class="str">"You are a friendly home assistant. Keep replies short."</span>,
+});
+
+<span class="kw">const</span> motionScore = <span class="fn">signal</span>(<span class="num">0</span>);
+<span class="kw">const</span> present = <span class="fn">derived</span>(() =&gt; motionScore.<span class="fn">get</span>() &gt; <span class="num">0.04</span>);
+
+<span class="com">// Background pump: camera frames → motion estimator → reactive signal.</span>
+(<span class="kw">async</span> () =&gt; {
+  <span class="kw">for await</span> (<span class="kw">const</span> m <span class="kw">of</span> vision.<span class="fn">detectMotion</span>(vision.<span class="fn">frames</span>(cam.<span class="fn">frames</span>()))) {
+    motionScore.<span class="fn">set</span>(m.motionScore);
+  }
+})();
+
+<span class="com">// Greet on rising edge of "present", but only when the bot isn't already busy.</span>
+<span class="kw">let</span> wasPresent = <span class="kw">false</span>;
+<span class="fn">effect</span>(() =&gt; {
+  <span class="kw">const</span> now = present.<span class="fn">get</span>();
+  <span class="kw">if</span> (now &amp;&amp; !wasPresent &amp;&amp; bot.state.<span class="fn">get</span>() === <span class="str">"idle"</span>) {
+    bot.<span class="fn">say</span>(<span class="str">"Welcome back!"</span>);
+  }
+  wasPresent = now;
+});</code></pre>
+      </figure>
+      <p class="footnote">
+        Four modules, three signals, zero glue code. Replace
+        <span class="import">bun:assistant</span> with a hand-rolled <code>bun:speech</code> loop if you want barge-in
+        before that ships in core.
       </p>
 
       <h2 id="language">Language extensions — <code>.pts</code> / <code>.pjs</code></h2>
@@ -792,7 +954,7 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td>partial</td>
             <td><span class="import">bun:vision</span></td>
             <td>
-              Tier 2 — frame stream + frame-diff motion detection ship today (<code>vision.frames</code>,
+              Frame stream + frame-diff motion detection ship today (<code>vision.frames</code>,
               <code>vision.detectMotion</code>). Detector (<code>detect</code>) and OCR (<code>recognize</code>) engines
               stub until ONNX runtime is vendored.
             </td>
@@ -801,18 +963,30 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td>shipped</td>
             <td><span class="import">bun:speech</span></td>
             <td>
-              Tier 2 — VAD-gated utterance segmentation (<code>speech.listen</code>) plus Whisper STT
-              (<code>speech.transcribe</code>, dispatching to <span class="import">bun:llm</span>'s
-              <code>WhisperModel</code> — encoder-decoder, KV cache, beam search, language detection, CUDA-accelerated
-              end-to-end). Piper TTS (<code>speak</code>) still stubs pending libpiper / ONNX vendor add.
+              VAD-gated <code>speech.listen</code> (with reactive <code>active</code> / <code>noiseFloor</code> /
+              <code>lastUtterance</code> signals), Whisper STT (<code>speech.transcribe</code>, dispatching to
+              <span class="import">bun:llm</span>'s <code>WhisperModel</code> — encoder-decoder, KV cache, beam search,
+              language detection, CUDA-accelerated end-to-end), and Piper TTS (<code>speech.speak</code> — subprocess in
+              v1; libpiper FFI v2 tracked).
+            </td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td><span class="import">bun:assistant</span></td>
+            <td>
+              Three-line voice-assistant facade composing <span class="import">bun:audio</span> +
+              <span class="import">bun:speech</span> + <span class="import">bun:llm</span>. <code>bot.run</code> /
+              <code>turns</code> / <code>ask</code> / <code>say</code> + reactive <code>state</code> /
+              <code>history</code> / <code>lastTurn</code> / <code>interrupted</code> signals + sqlite-backed persistent
+              memory. Tool dispatch, wake word, barge-in, RAG, and vision (VLM) turns deferred to follow-ups.
             </td>
           </tr>
           <tr>
             <td>shipped</td>
             <td><span class="import">bun:arrow</span></td>
             <td>
-              Tier 2 — in-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile /
-              median / distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
+              In-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile / median /
+              distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
               <code>fromRows</code> / <code>toRows</code> bridges, Arrow IPC streaming + file formats (with
               dictionary-batch decode and List&lt;T&gt;), and Parquet read + write (<code>fromParquet</code> /
               <code>toParquet</code> — hand-rolled Thrift / Snappy / RLE / dictionary; UNCOMPRESSED / SNAPPY / GZIP;
@@ -825,8 +999,8 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td>in progress</td>
             <td><span class="import">bun:video</span></td>
             <td>
-              Tier 1 — JS surface scaffolded; libavcodec / V4L2 M2M / NVDEC native binding lands with hardware bring-up.
-              Decode + encode + container muxing.
+              JS surface scaffolded; libavcodec / V4L2 M2M / NVDEC native binding lands with hardware bring-up. Decode +
+              encode + container muxing.
             </td>
           </tr>
           <tr>
