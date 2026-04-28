@@ -44,6 +44,7 @@ type AssistantOptions = {
   tools?: AssistantTool[];           // inline tools or bun:mcp connections
   wakeWord?: string | WakeWordConfig;  // gate utterances on a phrase ("hey jetson")
   schedule?: ScheduledPrompt[];      // cron-driven self-initiated turns
+  knowledge?: KnowledgeOptions;      // RAG over a local doc directory
 };
 
 type WakeWordConfig = {
@@ -65,6 +66,7 @@ type WakeWordConfig = {
 | `tools` | Inline `{name,schema,run}` tools and/or `bun:mcp` connections — the model can call them mid-turn. | The bot is a pure chat surface (still very useful, just no actuators). |
 | `wakeWord` | The voice loop ignores utterances that don't carry the wake phrase. Re-arms after every turn. | The bot replies to every utterance the mic picks up. |
 | `schedule` | Cron-driven self-initiated turns. Each fire calls `bot.ask(prompt)`; the resulting `Turn` carries `scheduled: true`. | The bot only speaks when spoken to. |
+| `knowledge` | RAG over a local doc directory. Each user turn retrieves the top-K most-relevant chunks and prepends them to the prompt. `bot.knowledge.search(text, n)` and `.reindex()` exposed. | The model only knows what's in its own weights + this session's transcript. |
 
 ## `bot.run()`
 
@@ -251,6 +253,62 @@ A scheduled fire is **skipped** if the bot is mid-turn (`state ≠ "idle" / "lis
 
 `assistant.parseCron(expr)` and `assistant.cronMatches(spec, date)` are also exported for callers who want to wire their own scheduler against the same parser.
 
+## Knowledge / RAG
+
+Pass `knowledge: { dir, encoder, topK?, … }` and the bot indexes the directory at create time, then per user message retrieves the top-K most-relevant chunks and prepends them as a synthetic "Relevant context" system message inside the LLM working copy. Canonical history is **untouched** — the retrieved context is ephemeral to the turn and doesn't bias future retrievals.
+
+```ts
+const bot = await assistant.create({
+  llm: "/models/...gguf",
+  knowledge: {
+    dir: "./notes",                                  // recursively walked
+    encoder: "/models/bge-small-en-v1.5.gguf",       // sentence-embedding GGUF
+    topK: 4,                                         // default
+  },
+});
+await bot.ask("What did I write about hash maps last week?");
+```
+
+`encoder` is either a path to a sentence-embedding GGUF (BGE / E5 / MiniLM-class — anything `bun:llm.Encoder.load` can open) or a pre-loaded `Encoder` instance. Use the pre-loaded form when you want one encoder shared across multiple bots / stores in the same process.
+
+`KnowledgeOptions`:
+
+```ts
+type KnowledgeOptions = {
+  dir: string;                                  // root, recursively walked
+  encoder: string | Encoder;                    // path or pre-loaded
+  topK?: number;                                // default 4
+  chunkSize?: number;                           // default 800 chars
+  chunkOverlap?: number;                        // default 100 chars
+  extensions?: string[];                        // default [".md", ".markdown", ".txt", ".mdx"]
+  maxFileBytes?: number;                        // default 1 MB
+  watch?: boolean;                              // default true; auto-reindex on fs.watch
+};
+```
+
+The chunker splits on paragraph boundaries (blank lines). Long paragraphs are broken into overlapping windows so a relevant sentence near a window edge isn't lost. Dotfiles / dotdirs (`.git`, `.obsidian`, `.notes`) are skipped silently — vendor folders shouldn't be eaten by the indexer. Files larger than `maxFileBytes` are skipped (binary/log noise filter).
+
+`watch: true` (default) listens for changes via `fs.watch` and re-indexes after a 250 ms debounce. Set `watch: false` for ephemeral / test directories — the inotify thread can race on freed state during teardown otherwise.
+
+`bot.knowledge` exposes the underlying store for direct use:
+
+```ts
+bot.knowledge.search("hash map open addressing", 6);  // KnowledgeHit[]
+bot.knowledge.reindex();                              // force a rebuild
+bot.knowledge.count;                                  // chunk count
+bot.knowledge.dim;                                    // embedding dim
+```
+
+Each `KnowledgeHit` is `{ path, offset, text, score }` — `score` is cosine similarity in `[-1, 1]` (typically `[0, 1]` for normalized text vectors).
+
+`assistant.chunkText(text, opts?)` and `assistant.KnowledgeStore` are also exported for callers who want to use the chunker / store standalone (search a doc dir without spinning up an assistant).
+
+### Limits
+
+- Pure-JS cosine over a `Float32Array` matrix. Fine for `<10k` chunks on a Pi 5; beyond that, the per-query scan starts costing real ms. A vector-DB MCP connection (or a future `bun:vector`) is the path for larger corpora.
+- Indexing is one-shot — no persistent on-disk vector cache. A process restart re-embeds the whole corpus (and on a Pi 5 with BGE-small, a few thousand chunks is ~10–30 s). A simple sqlite-backed cache is a tracked follow-up.
+- The encoder runs on whatever device `bun:llm` picks. CPU is fine for embedding short chunks; the cost is mostly tokenization on the JS side.
+
 ## Power-user escape hatches
 
 The composed resources are reachable directly when you need to do something `bot` doesn't:
@@ -258,6 +316,7 @@ The composed resources are reachable directly when you need to do something `bot
 ```ts
 bot.llm        // bun:llm.LLM — call .chat / .generate / .embed / .prefix directly
 bot.memory     // MemoryStore — query / clear out of band
+bot.knowledge  // KnowledgeStore — search / reindex / introspect the RAG corpus
 ```
 
 Anything reachable via [`bun:llm`](llm/), [`bun:speech`](speech/), or [`bun:audio`](audio/) is reachable through `bot` too.
@@ -287,8 +346,8 @@ Per `PLAN-bun-assistant.md` build order, the core covers:
 Tracked under [LYK-760](https://linear.app/lyku/issue/LYK-760) — none of these are blocking core use cases:
 
 - **Sub-watt KWS engine** — the v1 wake word is whisper-backed, which is honest about its CPU cost (only fires on VAD-detected speech bursts) but isn't a true always-on sub-watt KWS like Picovoice Porcupine or openWakeWord. Adding a dedicated engine option is a tracked follow-up; the surface here is engine-agnostic enough to absorb it.
-- **RAG** — `knowledge: { dir, encoder, topK }` option. Pure-JS cosine over a `Float32Array` matrix is enough for corpora of <10k chunks; larger corpora wait for `bun:vector`.
 - **Vision / VLM turns** — `vision: VisionOpts` — `bun:camera` frame fed into a VLM turn. Blocked on `bun:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
+- **Persistent vector cache** — RAG re-embeds the whole corpus on process restart. A sqlite-backed vector cache keyed by `(file mtime, chunk offset, encoder hash)` would cut Pi 5 cold-start by an order of magnitude.
 
 ## Limits
 
