@@ -175,7 +175,11 @@ await using spk = await audio.play({ sampleRate: 48000, channels: 2 });
 await spk.write(f32Frame);
 ```
 
-`spk.write` returns when the frame is queued (not when it finishes playing). On scope exit, the buffer drains before close.
+`spk.write` returns when the frame is queued (not when it finishes playing). On scope exit, the buffer drains before close. Three explicit verbs:
+
+- `spk.write(samples)` — queue more audio into ALSA.
+- `spk.drain()` — block until everything queued has played out.
+- `spk.stop()` — discard whatever is queued **immediately** and re-prepare the stream so subsequent `write` calls work. The barge-in cancel verb: cut the current playback short the moment a higher layer (VAD, UI button) decides the user wants to talk. `bot.interrupt()` in [`bun:assistant`](assistant/) calls this under the hood.
 
 ## Limits
 

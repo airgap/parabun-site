@@ -89,7 +89,7 @@ type Turn = {
   toolCalls: { name: string; args: unknown; result: unknown }[];   // empty in v1
   startedAtMs: number;
   endedAtMs: number;
-  interrupted: boolean;          // always false until barge-in lands
+  interrupted: boolean;          // true if VAD or bot.interrupt() cut the turn short
 };
 ```
 
@@ -123,7 +123,7 @@ Every public signal is a [`bun:signals`](signals/) Signal — wire them into a U
 | `bot.state` | `"idle" \| "listening" \| "thinking" \| "speaking"` | The bot transitions between phases of a turn. |
 | `bot.history` | `Message[]` | Every time a turn user / assistant / system message is appended. |
 | `bot.lastTurn` | `Turn \| null` | When a turn finishes. |
-| `bot.interrupted` | `boolean` | Always `false` in v1. Flips `true` when barge-in cuts a reply short (deferred). |
+| `bot.interrupted` | `boolean` | Flips `true` when VAD-driven barge-in or a `bot.interrupt()` call cuts the in-flight turn short. Resets at the start of the next turn. |
 
 ```ts
 import { effect } from "bun:signals";
@@ -165,6 +165,26 @@ type MemoryStore = {
 
 The schema is one `turns(id, role, content, ts)` table. Auto-summarization (sliding window of raw turns + stack of summaries when context approaches `kvCacheSize`) is a tracked follow-up.
 
+## Barge-in
+
+While the bot is thinking or speaking, a rising edge on the listen stream's `vad.active` signal cuts the turn short — the chat-token loop stops pulling, the chunked-TTS loop bails out, ALSA's pending playback buffer is dropped via `spk.stop()`, and `bot.interrupted` flips `true`. The recorded `Turn` carries `interrupted: true` and whatever text the model produced before the cut.
+
+This is automatic when the voice loop (`bot.run()` / `bot.turns()`) is in use. For programmatic interruption — UI cancel button, custom barge-in source, watchdog timer, etc. — call `bot.interrupt()`:
+
+```ts
+import { effect } from "bun:signals";
+
+// Cut the bot off when the user clicks "stop":
+cancelButton.onclick = () => bot.interrupt();
+
+// Or wire any signal:
+effect(() => {
+  if (someUserSignal.get()) bot.interrupt();
+});
+```
+
+`bot.interrupt()` is idempotent within a turn — repeated calls are no-ops until the next turn starts. The flag resets when the next turn begins; subscribe to `bot.interrupted` to catch the rising edge for UX (e.g., flash a "cancelled" indicator).
+
 ## Power-user escape hatches
 
 The composed resources are reachable directly when you need to do something `bot` doesn't:
@@ -200,8 +220,7 @@ Per `PLAN-bun-assistant.md` build order, the core covers:
 
 Tracked under [LYK-760](https://linear.app/lyku/issue/LYK-760) — none of these are blocking core use cases:
 
-- **Tools / MCP** — `m.chat({ schema })`-driven tool dispatch wired to `bun:mcp` clients (stdio + ws). The user-facing unlock for IoT and smart-home automation.
-- **Wake word + barge-in** — needs an `audio.wakeWord({ model, threshold })` Tier-1 primitive. Barge-in subscribes `speech.listen` while TTS streams; on first speech frame, flushes the speaker and cancels the in-flight chat. The `bot.interrupted` signal is already wired for this.
+- **Wake word** — needs an `audio.wakeWord({ model, threshold })` Tier-1 primitive (LYK-739). Barge-in's already shipped; wake word's the second half of step 5.
 - **RAG** — `knowledge: { dir, encoder, topK }` option. Pure-JS cosine over a `Float32Array` matrix is enough for corpora of <10k chunks; larger corpora wait for `bun:vector`.
 - **Scheduled prompts** — `schedule: ScheduledPrompt[]` option. `setInterval` + `bot.ask()`, with a `scheduled: true` discriminant on `Turn`.
 - **Vision / VLM turns** — `vision: VisionOpts` — `bun:camera` frame fed into a VLM turn. Blocked on `bun:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
