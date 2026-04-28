@@ -555,7 +555,12 @@ function pageShell(opts: {
       return `<li><a href="${href}"${cls}>${escapeHtml(p.title)}</a></li>`;
     };
     const current = pages.find(p => p.slug === currentSlug);
-    const toggleLabel = current ? escapeHtml(current.title) : "menu";
+    // On the docs index the page title would just echo the h1 below ("Parabun
+    // docs ▾" next to a "Parabun docs" heading reads as a duplicate). Use a
+    // generic label there; per-module pages keep the title as the
+    // location cue.
+    const toggleLabel =
+      current && current.slug !== "index" ? escapeHtml(current.title) : "menu";
     docsNav = `
       <aside class="docs-side">
         <button type="button" class="docs-nav-toggle" aria-expanded="false" aria-controls="docs-nav-panel">
