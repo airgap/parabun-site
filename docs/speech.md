@@ -142,12 +142,22 @@ Returns:
 ```ts
 type SpokenAudio = {
   samples: Float32Array;       // f32 mono PCM
-  sampleRate: number;          // read from the WAV piper emits — typically 22050 Hz
+  sampleRate: number;          // read from the voice config — 16000 / 22050 depending on quality
   channels: number;             // always 1 for current voices
 };
 ```
 
-v1 invokes the `piper` binary as a subprocess (text in via stdin, WAV out via a tempfile). v2 will swap in a libpiper FFI binding for lower latency — the JS surface is stable across that transition. Tracked under [LYK-758](https://linear.app/lyku/issue/LYK-758).
+The first call for a given `(binPath, model)` pair pays a one-time voice-load cost (~120 ms on a Pi 5, ~15 ms on a desktop with warm caches). Subsequent calls reuse the same long-running `piper --json-input --output_raw` subprocess, so they only pay the inference + IPC cost (~30-50 ms for one short sentence). The cache lives for the process lifetime; call `speech.closePiperSessions()` to tear it down explicitly (handy for hot-reload / test cleanup) — the next `speak()` will lazily respawn.
+
+The full direct-FFI integration (skipping the subprocess entirely) is tracked under [LYK-758](https://linear.app/lyku/issue/LYK-758) for the last few ms of latency. The JS surface is stable across that transition.
+
+## `closePiperSessions()`
+
+```ts
+await speech.closePiperSessions();
+```
+
+Closes every cached Piper session and frees the underlying subprocesses. Idempotent. Subsequent `speak()` calls re-spawn lazily. The cache is also cleared automatically at process exit, so calling this is only necessary when you want to reclaim those resources mid-process (test teardown, hot-reload, voice swap).
 
 ## `wakeWord(opts)`
 
