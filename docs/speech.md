@@ -8,11 +8,13 @@ section: modules
 import speech from "bun:speech";
 ```
 
-A small orchestration module sitting on top of [`bun:audio`](audio/)'s capture + DSP and [`bun:llm`](llm/)'s `WhisperModel`. Three exports:
+A small orchestration module sitting on top of [`bun:audio`](audio/)'s capture + DSP and [`bun:llm`](llm/)'s `WhisperModel`. Five exports:
 
 - `listen(stream, opts?)` — VAD-gated utterance segmentation over any audio chunk iterator. The returned stream exposes reactive `active` / `noiseFloor` / `lastUtterance` signals.
 - `transcribe(utterance, opts)` — speech-to-text via Whisper.
 - `speak(text, opts)` — text-to-speech via Piper.
+- `wakeWord(opts)` — Whisper-backed keyword spotter. Composable trigger stream for "hey jetson"-style wake-on-phrase, with reactive `active` / `lastTrigger` signals.
+- `matchWakePhrase(text, phrase, strategy?, maxEdits?)` — pure phrase matcher. Substring / exact / fuzzy (Levenshtein) strategies; reusable outside the wake-word stream.
 
 For a full mic + STT + LLM + TTS + speaker pipeline composed in three lines, see [`bun:assistant`](assistant/).
 
@@ -146,6 +148,84 @@ type SpokenAudio = {
 ```
 
 v1 invokes the `piper` binary as a subprocess (text in via stdin, WAV out via a tempfile). v2 will swap in a libpiper FFI binding for lower latency — the JS surface is stable across that transition. Tracked under [LYK-758](https://linear.app/lyku/issue/LYK-758).
+
+## `wakeWord(opts)`
+
+Composable wake-word stream. Pipes the audio source through `listen()` for VAD-bounded utterances, transcribes each with Whisper, and emits a `WakeTrigger` whenever the transcription matches one of the configured phrases.
+
+```ts
+import audio from "bun:audio";
+import speech from "bun:speech";
+
+await using mic = await audio.capture({ sampleRate: 16000, channels: 1 });
+
+for await (const trigger of speech.wakeWord({
+  source: mic.frames(),
+  whisper: "/models/ggml-tiny.en.bin",
+  phrase: ["hey jetson", "ok parabun"],
+  match: "fuzzy",
+  maxEdits: 2,
+})) {
+  console.log(`woke on ${trigger.phrase} (confidence ${trigger.confidence.toFixed(2)})`);
+  // Now run your own listen loop, hand off to bun:assistant, etc.
+}
+```
+
+`WakeOptions`:
+
+```ts
+type WakeOptions = {
+  source: AsyncIterable<{ samples: Float32Array; timestampMs?: number }>;
+  whisper: string | WhisperModel;             // path or pre-loaded handle
+  phrase: string | string[];                   // case-insensitive
+  match?: "contains" | "exact" | "fuzzy";      // default "contains"
+  maxEdits?: number;                           // default 2 (fuzzy only)
+  sampleRate?: number;                         // default 16000
+  listenOpts?: Omit<ListenOptions, "sampleRate">;
+  language?: string;                           // whisper hint, default "en"
+};
+
+type WakeTrigger = {
+  phrase: string;                              // matched, normalized lowercase
+  transcription: string;                       // full utterance text
+  confidence: number;                          // [0, 1]
+  utterance: Utterance;                        // raw samples + timing
+};
+```
+
+The returned stream carries two reactive signals — wire them into UIs without polling:
+
+| Signal | Type | When it changes |
+| --- | --- | --- |
+| `wake.active` | `boolean` | True while a candidate utterance is being scored. Useful for a "thinking" spinner that fires only when something might be a wake. |
+| `wake.lastTrigger` | `WakeTrigger \| null` | Updates every time a phrase matches. Subscribe via `effect`/`subscribe` for boundary events. |
+
+### Why whisper-backed
+
+Wake-word detection is conventionally a separate workload from STT — Picovoice Porcupine, openWakeWord, etc. ship dedicated tiny KWS models that run continuously at sub-watt power.
+
+The v1 implementation here reuses Whisper instead. Trade-offs:
+
+- **Pro**: any phrase the user picks works — no per-keyword model file.
+- **Pro**: zero additional dependencies; the model is already loaded for STT.
+- **Pro**: VAD-gated, so an idle mic costs nothing — Whisper only fires once per detected speech burst.
+- **Con**: not a true low-power solution. Whisper-tiny on a Pi 5 is ~80 ms per second of audio; fine for a wall-powered kitchen display, marginal for a battery-powered necklace.
+
+A future follow-up adds a dedicated KWS engine option for true always-on sub-watt KWS. The surface is engine-agnostic enough to absorb it.
+
+## `matchWakePhrase(text, phrase, strategy?, maxEdits?)`
+
+The phrase-matching primitive used by `wakeWord` internally. Exposed for users who want to wire their own gate (e.g., transcribing through a different engine, or matching against an existing transcript stream).
+
+```ts
+const m = speech.matchWakePhrase("Hey, Jetson! What time is it?", "hey jetson");
+// → { phrase: "hey jetson", confidence: 1 }
+
+const fuzzy = speech.matchWakePhrase("ay jetson", "hey jetson", "fuzzy", 2);
+// → { phrase: "hey jetson", confidence: 0.5 } (1 edit / max 2)
+```
+
+Returns `{ phrase, confidence } | null`. Punctuation and case are normalized before matching. `"fuzzy"` mode tries the whole-string Levenshtein distance first, then a sliding token-window pass so the phrase can be embedded in a longer transcription.
 
 ## Limits
 

@@ -41,6 +41,15 @@ type AssistantOptions = {
   llmOpts?: { maxContext?: number };
   chatOpts?: { maxTokens?: number; temperature?: number; topK?: number; topP?: number };
   memory?: string | { path: string };  // sqlite path — opt-in persistent transcript
+  tools?: AssistantTool[];           // inline tools or bun:mcp connections
+  wakeWord?: string | WakeWordConfig;  // gate utterances on a phrase ("hey jetson")
+};
+
+type WakeWordConfig = {
+  phrase: string | string[];
+  match?: "contains" | "exact" | "fuzzy";  // default "contains"
+  maxEdits?: number;                       // default 2 (fuzzy only)
+  feedThrough?: boolean;                   // also pass the wake utterance to the LLM (default false)
 };
 ```
 
@@ -52,6 +61,8 @@ type AssistantOptions = {
 | `mic` | ALSA capture options (defaults: `default`, 16 kHz, mono, 20 ms periods). | n/a if you have `stt` — defaults are fine for Whisper. |
 | `speaker` | ALSA playback device. Sample rate is auto-negotiated from the TTS-emitted WAV. | n/a if you have `tts`. |
 | `memory` | Sqlite-backed persistent transcript that replays on next `create`. | Each process starts with an empty history (system prompt only). |
+| `tools` | Inline `{name,schema,run}` tools and/or `bun:mcp` connections — the model can call them mid-turn. | The bot is a pure chat surface (still very useful, just no actuators). |
+| `wakeWord` | The voice loop ignores utterances that don't carry the wake phrase. Re-arms after every turn. | The bot replies to every utterance the mic picks up. |
 
 ## `bot.run()`
 
@@ -185,6 +196,35 @@ effect(() => {
 
 `bot.interrupt()` is idempotent within a turn — repeated calls are no-ops until the next turn starts. The flag resets when the next turn begins; subscribe to `bot.interrupted` to catch the rising edge for UX (e.g., flash a "cancelled" indicator).
 
+## Wake word
+
+Pass `wakeWord: "hey jetson"` (or an object form for fuzzy matching / multiple phrases) and the voice loop will ignore utterances that don't carry the phrase. After a turn finishes, the gate re-arms — the user has to say "hey jetson, what's next?" rather than just "what's next?"
+
+```ts
+const bot = await assistant.create({
+  llm: "/models/...gguf",
+  stt: "/models/ggml-tiny.en.bin",
+  tts: "/models/en_US-lessac-medium.onnx",
+  wakeWord: "hey jetson",
+});
+await bot.run();
+```
+
+Object form for fuzzy matching, multiple phrases, or feed-through:
+
+```ts
+wakeWord: {
+  phrase: ["hey jetson", "ok parabun"],
+  match: "fuzzy",
+  maxEdits: 2,
+  feedThrough: true,    // pass the wake utterance to the LLM as the first turn
+}
+```
+
+`feedThrough: false` (the default) consumes the wake utterance silently and waits for the *next* utterance — natural when users say "hey jetson \[pause\] what time is it?". `feedThrough: true` keeps the full transcription as the turn's user input — natural when users say "hey jetson, what time is it?" in one breath.
+
+Implementation note: the gate is whisper-backed (it reuses the same model already loaded for `stt`, runs only on VAD-detected speech bursts) — not a sub-watt always-on KWS. Trade-offs and details are documented under [`speech.wakeWord`](speech/#wakewordopts). For battery-powered devices a future follow-up adds a dedicated KWS engine.
+
 ## Power-user escape hatches
 
 The composed resources are reachable directly when you need to do something `bot` doesn't:
@@ -220,7 +260,7 @@ Per `PLAN-bun-assistant.md` build order, the core covers:
 
 Tracked under [LYK-760](https://linear.app/lyku/issue/LYK-760) — none of these are blocking core use cases:
 
-- **Wake word** — needs an `audio.wakeWord({ model, threshold })` Tier-1 primitive (LYK-739). Barge-in's already shipped; wake word's the second half of step 5.
+- **Sub-watt KWS engine** — the v1 wake word is whisper-backed, which is honest about its CPU cost (only fires on VAD-detected speech bursts) but isn't a true always-on sub-watt KWS like Picovoice Porcupine or openWakeWord. Adding a dedicated engine option is a tracked follow-up; the surface here is engine-agnostic enough to absorb it.
 - **RAG** — `knowledge: { dir, encoder, topK }` option. Pure-JS cosine over a `Float32Array` matrix is enough for corpora of <10k chunks; larger corpora wait for `bun:vector`.
 - **Scheduled prompts** — `schedule: ScheduledPrompt[]` option. `setInterval` + `bot.ask()`, with a `scheduled: true` discriminant on `Turn`.
 - **Vision / VLM turns** — `vision: VisionOpts` — `bun:camera` frame fed into a VLM turn. Blocked on `bun:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
