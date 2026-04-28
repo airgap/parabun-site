@@ -43,6 +43,7 @@ type AssistantOptions = {
   memory?: string | { path: string };  // sqlite path — opt-in persistent transcript
   tools?: AssistantTool[];           // inline tools or bun:mcp connections
   wakeWord?: string | WakeWordConfig;  // gate utterances on a phrase ("hey jetson")
+  schedule?: ScheduledPrompt[];      // cron-driven self-initiated turns
 };
 
 type WakeWordConfig = {
@@ -63,6 +64,7 @@ type WakeWordConfig = {
 | `memory` | Sqlite-backed persistent transcript that replays on next `create`. | Each process starts with an empty history (system prompt only). |
 | `tools` | Inline `{name,schema,run}` tools and/or `bun:mcp` connections — the model can call them mid-turn. | The bot is a pure chat surface (still very useful, just no actuators). |
 | `wakeWord` | The voice loop ignores utterances that don't carry the wake phrase. Re-arms after every turn. | The bot replies to every utterance the mic picks up. |
+| `schedule` | Cron-driven self-initiated turns. Each fire calls `bot.ask(prompt)`; the resulting `Turn` carries `scheduled: true`. | The bot only speaks when spoken to. |
 
 ## `bot.run()`
 
@@ -101,6 +103,7 @@ type Turn = {
   startedAtMs: number;
   endedAtMs: number;
   interrupted: boolean;          // true if VAD or bot.interrupt() cut the turn short
+  scheduled: boolean;            // true if fired by the `schedule` option, not user / explicit ask
 };
 ```
 
@@ -225,6 +228,29 @@ wakeWord: {
 
 Implementation note: the gate is whisper-backed (it reuses the same model already loaded for `stt`, runs only on VAD-detected speech bursts) — not a sub-watt always-on KWS. Trade-offs and details are documented under [`speech.wakeWord`](speech/#wakewordopts). For battery-powered devices a future follow-up adds a dedicated KWS engine.
 
+## Scheduled / proactive prompts
+
+Pass `schedule: [{ cron, prompt }]` and the bot fires `bot.ask(prompt)` on each cron match. Standard 5-field cron syntax in local time. The resulting `Turn` carries `scheduled: true` so consumers can filter the transcript ("show me everything _I_ said") or route proactive turns differently in the UI (e.g., notification toast vs. inline log entry).
+
+```ts
+const bot = await assistant.create({
+  llm: "/models/...gguf",
+  tts: "/models/en_US-lessac-medium.onnx",
+  schedule: [
+    { cron: "0 8 * * *",       prompt: "Good morning. Tell me one thing on the news today." },
+    { cron: "*/30 9-17 * * 1-5", prompt: "Anything I should be doing right now?" },
+    { cron: "0 22 * * *",       prompt: "Wind-down summary please." },
+  ],
+});
+await bot.run();
+```
+
+Field syntax: `*` (any), `N` (exact), `N-M` (range), `N,M` (list), `*/N` (step), `N-M/P` (range with step). Day-of-week is `0`-`6` with Sunday = `0`. Invalid cron strings throw at `assistant.create()` time — you find out before the timer is armed.
+
+A scheduled fire is **skipped** if the bot is mid-turn (`state ≠ "idle" / "listening"`); the next minute retries. The schedule loop also skips if a previous scheduled prompt is still being served — proactive turns serialize on a single in-flight slot. Tear down at `bot.close()`.
+
+`assistant.parseCron(expr)` and `assistant.cronMatches(spec, date)` are also exported for callers who want to wire their own scheduler against the same parser.
+
 ## Power-user escape hatches
 
 The composed resources are reachable directly when you need to do something `bot` doesn't:
@@ -262,7 +288,6 @@ Tracked under [LYK-760](https://linear.app/lyku/issue/LYK-760) — none of these
 
 - **Sub-watt KWS engine** — the v1 wake word is whisper-backed, which is honest about its CPU cost (only fires on VAD-detected speech bursts) but isn't a true always-on sub-watt KWS like Picovoice Porcupine or openWakeWord. Adding a dedicated engine option is a tracked follow-up; the surface here is engine-agnostic enough to absorb it.
 - **RAG** — `knowledge: { dir, encoder, topK }` option. Pure-JS cosine over a `Float32Array` matrix is enough for corpora of <10k chunks; larger corpora wait for `bun:vector`.
-- **Scheduled prompts** — `schedule: ScheduledPrompt[]` option. `setInterval` + `bot.ask()`, with a `scheduled: true` discriminant on `Turn`.
 - **Vision / VLM turns** — `vision: VisionOpts` — `bun:camera` frame fed into a VLM turn. Blocked on `bun:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
 
 ## Limits
