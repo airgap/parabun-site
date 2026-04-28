@@ -575,12 +575,21 @@ table.bench tr.winner.pulse td {
   grid-row: 2;
   position: sticky;
   top: 88px;
+  /* Stay above any default-z-index article content. Wide code blocks
+     and tables sometimes establish their own stacking contexts via
+     overflow: auto + scroll snapping; without an explicit z-index the
+     sticky sidebar can paint behind them. */
+  z-index: 2;
   align-self: start;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
   font-size: 14px;
   border-right: 1px solid var(--rule);
   padding-right: 32px;
+  /* Opaque background so the sticky sidebar masks article content that
+     might horizontally overflow into column 1's track during a sideways
+     scroll on a wide pre block. */
+  background: var(--bg);
 }
 .docs-side h4 {
   margin: 0 0 8px 0;
@@ -691,11 +700,16 @@ table.bench tr.winner.pulse td {
   }
   .docs-side {
     position: static;
-    max-height: none;
+    /* 20 module pages listed makes the sidebar tall — without a cap the
+       article gets pushed half a screen down on every doc page. */
+    max-height: 40vh;
+    overflow-y: auto;
     border-right: none;
     border-bottom: 1px solid var(--rule);
     padding-right: 0;
     padding-bottom: 16px;
+    margin-bottom: 8px;
+    z-index: auto;
   }
   .docs-content {
     grid-column: 1;
@@ -781,14 +795,6 @@ table.bench tr.winner.pulse td {
   .docs-content table th,
   .docs-content table td {
     padding: 6px 8px;
-  }
-
-  /* Sidebar list above the article gets long on docs pages with many
-     modules — a max-height + scroll keeps it from pushing the article
-     half a screen down. */
-  .docs-body .docs-side {
-    max-height: 40vh;
-    overflow-y: auto;
   }
 
   footer {
