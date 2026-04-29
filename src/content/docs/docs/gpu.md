@@ -39,6 +39,22 @@ The CPU backend always returns `false` so `if (winsForSize(...))` falls through 
 
 Sweeps the real GPU kernel against bun:simd at a small set of sizes, persists the measured crossover under `~/.cache/parabun/gpu-calibrate-<hash>.json`, and rehydrates it on subsequent process starts. Intended to be called once at app boot — the sweep takes 200–500ms. Setting `BUN_PARABUN_SKIP_CALIBRATION=1` bypasses the cache read on module load.
 
+### Reactive signals
+
+| Signal | Type | When it changes |
+| --- | --- | --- |
+| `gpu.activeBackendSignal` | `"cuda" \| "metal" \| "cpu"` | Flips when `setBackend()` runs (or when lazy probing settles a backend on first use). |
+| `gpu.availableSignal` | `BackendName[]` | List of probable backends. Essentially static — backends don't hot-plug at runtime — but a Signal-shaped surface lets monitoring effects compose with the live `activeBackendSignal`. |
+
+Both signals lazy-init on first read so a CUDA-less host doesn't pay probing cost just for loading `bun:gpu`. Subscribers see the current value on subscribe.
+
+```ts
+import { effect } from "bun:signals";
+effect(() => console.log(`gpu backend: ${gpu.activeBackendSignal.get()}`));
+```
+
+`gpu.devices` and per-device `gpu.memUsed` from `PLAN-module-signals.md` need a dedicated device-enumeration native binding (cuDeviceGetCount + cuMemGetInfo on CUDA, MTLCopyAllDevices on Metal). Tracked as a follow-up.
+
 ## Residency
 
 GPU calls take typed arrays *or* device-resident handles. Wrap a `Float32Array` once with `GpuFloat32Array` and the bytes are HtoD-uploaded at construction; subsequent ops use the device buffer with no extra crossing. Disposal is GC-finalized but `using` is preferred.

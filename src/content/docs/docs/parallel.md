@@ -55,6 +55,23 @@ const result = await p.dispatch("rankBatch", { batch });   // RPC
 
 `p` is `AsyncDisposable` — `await using` triggers worker teardown on scope exit. `pool({ modulePath })` tells each worker which module to load up front, so dispatched function references resolve in worker scope.
 
+### Reactive signals
+
+| Signal | Type | When it changes |
+| --- | --- | --- |
+| `p.signals.workersCount` | `number` | Number of workers that have completed init successfully. Increments as each worker's init message returns; drops to 0 on `dispose()`. |
+| `p.signals.queued` | `number` | Number of run-requests waiting on an idle worker. Updates synchronously on `run()` dispatch and on `drainQueue` consumption. |
+| `p.signals.inflight` | `number` | Number of run-requests currently executing on workers. Updates synchronously on dispatch (incl. drain) and on message return. |
+
+```ts
+import { effect } from "bun:signals";
+effect(() => {
+  if (p.signals.queued.get() > 0) console.log(`pool backed up: ${p.signals.queued.get()} queued`);
+});
+```
+
+All three signals reset to 0 in `dispose()`.
+
 ## Concurrency primitives
 
 `Mutex` and `Semaphore` are the standard primitives, awaitable.
