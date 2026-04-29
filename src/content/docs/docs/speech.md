@@ -11,7 +11,8 @@ A small orchestration module sitting on top of [`bun:audio`](/docs/audio/)'s cap
 
 - `listen(stream, opts?)` — VAD-gated utterance segmentation over any audio chunk iterator. The returned stream exposes reactive `active` / `noiseFloor` / `lastUtterance` signals.
 - `transcribe(utterance, opts)` — speech-to-text via Whisper.
-- `speak(text, opts)` — text-to-speech via Piper.
+- `say(text, opts)` — text-to-speech straight to the speaker (the 99% case).
+- `speak(text, opts)` — text-to-speech returning raw PCM (when you need the bytes, not the speaker).
 - `wakeWord(opts)` — Whisper-backed keyword spotter. Composable trigger stream for "hey jetson"-style wake-on-phrase, with reactive `active` / `lastTrigger` signals.
 - `matchWakePhrase(text, phrase, strategy?, maxEdits?)` — pure phrase matcher. Substring / exact / fuzzy (Levenshtein) strategies; reusable outside the wake-word stream.
 
@@ -117,9 +118,24 @@ for await (const utt of speech.listen(mic.frames(), { sampleRate: 16000 })) {
 
 For longer-than-30-s segments, use the underlying `WhisperModel.transcribe` directly — it handles arbitrary-length input by chunking. `speech.listen`'s utterances are typically <10 s so this is rarely an issue.
 
+## `say(text, opts)`
+
+The 99% case: synthesize and play to the speaker in one call. Wraps `speak()` + `audio.play()` + `spk.write()` with a process-wide PlaybackStream cache keyed on `(sampleRate, channels)`, so repeated calls don't re-open the speaker.
+
+```ts
+import speech from "bun:speech";
+
+await speech.say("Hello world.", {
+  engine: "piper",
+  model: "./en_US-lessac-medium.onnx",
+});
+```
+
+Returns when the audio is queued (not when it finishes playing). For flush semantics — "wait until the user heard everything before continuing" — open the playback stream yourself with `audio.play(...)` and call `spk.drain()`.
+
 ## `speak(text, opts)`
 
-Synthesizes `text` into f32 mono PCM via Piper. Returns the samples ready for [`audio.play().write()`](/docs/audio/#playopts).
+Synthesizes `text` into f32 mono PCM via Piper. Returns the samples ready for [`audio.play().write()`](/docs/audio/#playopts). Use this when you need the raw PCM — to encode to WAV, run through an effects chain, mix with other audio — rather than send straight to the speaker; otherwise `say(...)` is the simpler call.
 
 ```ts
 import audio  from "bun:audio";
@@ -127,7 +143,7 @@ import speech from "bun:speech";
 
 const out = await speech.speak("Hello world.", {
   engine: "piper",
-  model: "/models/en_US-lessac-medium.onnx",
+  model: "./en_US-lessac-medium.onnx",
 });
 
 await using spk = await audio.play({ sampleRate: out.sampleRate, channels: out.channels });

@@ -60,6 +60,26 @@ Async iterator yielding text pieces. `messages` is an array of `{ role, content 
 
 Mutually exclusive: pass either `grammar` *or* `schema`, not both.
 
+### `m.chatJSON(messages, opts)`
+
+Single-shot grammar-constrained chat: drains the streamed result, parses it as JSON, returns a typed object. Requires `opts.schema` or `opts.grammar` (the parse is guaranteed safe by the grammar layer; a thrown `SyntaxError` here means the schema doesn't fully constrain the output, which is a caller bug). Replaces the four-line accumulate-then-`JSON.parse` pattern.
+
+```ts
+const ToolSchema = {
+  type: "object",
+  properties: {
+    tool: { type: "string", enum: ["setLight", "playMusic", "reply"] },
+    args: { type: "object" },
+  },
+  required: ["tool", "args"],
+};
+
+const { tool, args } = await m.chatJSON<{ tool: string; args: any }>(
+  [{ role: "user", content: "turn the kitchen light on" }],
+  { schema: ToolSchema, maxTokens: 80 },
+);
+```
+
 ### `m.generate(prompt, opts?)`
 
 Same options as `chat`, but takes a raw string. No template wrap — useful when you want the bare BPE-tokenizer / decoder pipeline.
