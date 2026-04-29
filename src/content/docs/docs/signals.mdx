@@ -187,23 +187,30 @@ Returns a disposer with the same semantics as `fromAsync`'s `dispose`.
 
 The signal must be a writable one (returned by `signal(...)`); passing a `derived(...)` result throws.
 
-## `onRising(signal, fn)` / `onFalling(signal, fn)`
+## `onRising(source, fn)` / `onFalling(source, fn)`
 
-Edge-detection helpers. `onRising` calls `fn` once each time `signal` transitions from a falsy to a truthy value (boolean-coerced); `onFalling` is the dual. Both take any `Signal<T>` (`signal(...)` cells, `derived(...)`, or driver-handle signals) and return a disposer with the same semantics as `effect()`.
+Edge-detection helpers. `onRising` calls `fn` once each time `source` transitions from falsy to truthy (boolean-coerced); `onFalling` is the dual.
 
-The initial value is treated as already-observed — a signal that starts truthy does **not** fire `onRising` on first run; only subsequent false→true transitions do.
+`source` can be **either** a `Signal<T>` (a `signal(...)` cell, a `derived(...)`, or any driver-handle signal) **or** a predicate function — passing `() => a.get() && b.get() === "x"` skips the explicit `derived(...)` wrapper. Reads inside the predicate are tracked the same way they would be inside an `effect`.
+
+The initial value is treated as already-observed — a source that starts truthy does **not** fire `onRising` on first run; only subsequent false→true transitions do.
 
 ```ts
-import { onRising, derived } from "bun:signals";
+import { onRising } from "bun:signals";
 
 // Greet on the rising edge of (motion present AND bot idle).
 onRising(
-  derived(() => motion.detected.get() && bot.state.get() === "idle"),
+  () => motion.detected.get() && bot.state.get() === "idle",
   () => bot.say("Welcome back!"),
 );
+
+// Or, with an existing signal:
+onRising(button.pressed, () => console.log("clicked"));
 ```
 
-Common patterns: button-press detection (`onRising(button.pressed, ...)`), arrival/departure handlers, threshold crossings, "fire once when condition becomes true" without manual `wasX = false` flag bookkeeping.
+Both forms return a disposer with the same semantics as `effect()`.
+
+Common patterns: button-press detection, arrival/departure handlers, threshold crossings, "fire once when condition becomes true" without manual `wasX = false` flag bookkeeping.
 
 ## `Signal<T>` type
 
