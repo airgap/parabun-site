@@ -65,8 +65,8 @@
       <p class="lede">
         Targets <strong>edge devices and IoT</strong> — Linux SBCs like Raspberry Pi 5 and Jetson Orin, NUCs, and
         anything else running a real OS with capable CPU/GPU. Not microcontrollers (Cortex-M / ESP32 / RP2040): those
-        need a different runtime — JavaScriptCore alone is bigger than an MCU's flash budget. The positioning is
-        "device that's basically a small computer," not "device that's basically a register file."
+        need a different runtime — JavaScriptCore alone is bigger than an MCU's flash budget. The positioning is "device
+        that's basically a small computer," not "device that's basically a register file."
       </p>
       <div class="install">
         <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
@@ -693,10 +693,10 @@ gpu.<span class="fn">release</span>(held);</code></pre>
       <p>
         Mic captures, Whisper transcribes, the LLM picks a tool under a JSON schema (mathematically guaranteed-valid
         output, no parse retries), the runtime dispatches it, Piper speaks the reply. The dispatch table is plain JS
-        below; <span class="import">bun:mcp</span> (now shipped — stdio + WebSocket transports) lets you swap the
-        table for a Model Context Protocol client without changing this control flow. <code>effect()</code> over
-        <code>mic.peakLevel</code> / <code>chat.busy</code> / <code>wsp.busy</code> drives a status line — no
-        polling, no observers, no event emitters.
+        below; <span class="import">bun:mcp</span> (now shipped — stdio + WebSocket transports) lets you swap the table
+        for a Model Context Protocol client without changing this control flow. <code>effect()</code> over
+        <code>mic.peakLevel</code> / <code>chat.busy</code> / <code>wsp.busy</code> drives a status line — no polling,
+        no observers, no event emitters.
       </p>
       <figure class="code lang-tabs">
         <div class="code-header">
@@ -705,88 +705,56 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
-<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
-<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+        <pre
+          data-lang="ts"
+        ><code><span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
 <span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
 
-<span class="com">// Dispatch table — same shape an MCP client would expose. Replace</span>
-<span class="com">// the console.log calls with your real smart-home / media bridge.</span>
-<span class="kw">const</span> tools: <span class="type">Record</span>&lt;<span class="type">string</span>, (args: <span class="kw">any</span>) =&gt; <span class="kw">any</span>&gt; = {
-  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
-  <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
-  <span class="fn">reply</span>:     ({ text }) =&gt; text,
-};
-<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
+<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
+  llm: <span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
+  stt: <span class="str">"./ggml-tiny.en.bin"</span>,
+  tts: <span class="str">"./en_US-lessac-medium.onnx"</span>,
+  system: <span class="str">"You are a helpful home assistant. Keep replies short."</span>,
+  tools: {
+    <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
+    <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
+  },
+});
 
-<span class="kw">await using</span> mic = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
-<span class="kw">using</span>       wsp = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"./ggml-tiny.en.bin"</span>);
-<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
-<span class="kw">let</span> spk: <span class="kw">any</span>;
+<span class="com">// One reactive line redraws a live status line in place.</span>
+<span class="fn">effect</span>(() =&gt; process.stdout.<span class="fn">write</span>(<span class="str">`\r${bot.state.get()}`</span>));
 
-<span class="com">// One reactive line drives a live status line redrawn in place.</span>
-<span class="fn">effect</span>(() =&gt; process.stdout.<span class="fn">write</span>(
-  <span class="str">`\rmic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`
-));
+<span class="kw">await</span> bot.<span class="fn">run</span>();   <span class="com">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></code></pre>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
 
-<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
-  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
-  <span class="kw">let</span> json = <span class="str">""</span>;
-  <span class="kw">for await</span> (<span class="kw">const</span> piece <span class="kw">of</span> chat.<span class="fn">chat</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> })) {
-    json += piece;
-  }
-  <span class="kw">const</span> { tool, args } = JSON.<span class="fn">parse</span>(json);
-  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
-  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
-    <span class="kw">const</span> out = <span class="kw">await</span> speech.<span class="fn">speak</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"/models/en_US-lessac-medium.onnx"</span> });
-    spk ??= <span class="kw">await</span> audio.<span class="fn">play</span>({ sampleRate: out.sampleRate, channels: out.channels });
-    <span class="kw">await</span> spk.<span class="fn">write</span>(out.samples);
-  }
-}</code></pre>
-        <pre data-lang="parabun" hidden><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
-<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
-<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
+  llm: <span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
+  stt: <span class="str">"./ggml-tiny.en.bin"</span>,
+  tts: <span class="str">"./en_US-lessac-medium.onnx"</span>,
+  system: <span class="str">"You are a helpful home assistant. Keep replies short."</span>,
+  tools: {
+    <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
+    <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
+  },
+});
 
-<span class="com">// Dispatch table — same shape an MCP client would expose. Replace</span>
-<span class="com">// the console.log calls with your real smart-home / media bridge.</span>
-<span class="kw">const</span> tools: <span class="type">Record</span>&lt;<span class="type">string</span>, (args: <span class="kw">any</span>) =&gt; <span class="kw">any</span>&gt; = {
-  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
-  <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
-  <span class="fn">reply</span>:     ({ text }) =&gt; text,
-};
-<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
-
-<span class="kw">await using</span> mic = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
-<span class="kw">using</span>       wsp = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"./ggml-tiny.en.bin"</span>);
-<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
-<span class="kw">let</span> spk: <span class="kw">any</span>;
-
-<span class="com">// One reactive line drives a live status line redrawn in place.</span>
+<span class="com">// One reactive line redraws a live status line in place.</span>
 <span class="pb-kw">effect</span> {
-  process.stdout.<span class="fn">write</span>(<span class="str">`\rmic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`);
+  process.stdout.<span class="fn">write</span>(<span class="str">`\r${bot.state.get()}`</span>);
 }
 
-<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
-  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
-  <span class="kw">let</span> json = <span class="str">""</span>;
-  <span class="kw">for await</span> (<span class="kw">const</span> piece <span class="kw">of</span> chat.<span class="fn">chat</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> })) {
-    json += piece;
-  }
-  <span class="kw">const</span> { tool, args } = JSON.<span class="fn">parse</span>(json);
-  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
-  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
-    <span class="kw">const</span> out = <span class="kw">await</span> speech.<span class="fn">speak</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"/models/en_US-lessac-medium.onnx"</span> });
-    spk ??= <span class="kw">await</span> audio.<span class="fn">play</span>({ sampleRate: out.sampleRate, channels: out.channels });
-    <span class="kw">await</span> spk.<span class="fn">write</span>(out.samples);
-  }
-}</code></pre>
+<span class="kw">await</span> bot.<span class="fn">run</span>();   <span class="com">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></code></pre>
       </figure>
       <p class="footnote">
-        Five modules in one process: <span class="import">bun:audio</span> for mic + speaker,
-        <span class="import">bun:speech</span> for VAD utterance segmentation,
-        <span class="import">bun:llm</span> for STT (<code>WhisperModel</code>) and grammar-constrained generation
-        (<code>LLM.chat({ schema })</code>), and <span class="import">bun:signals</span> tying their reactive state into
-        one UI line. No subprocess, no postMessage, no observer wiring.
+        <span class="import">bun:assistant</span> composes <span class="import">bun:audio</span> +
+        <span class="import">bun:speech</span> + <span class="import">bun:llm</span> +
+        <span class="import">bun:signals</span> internally. <code>bot.state</code> is a Signal that cycles through
+        <code>"idle" | "listening" | "thinking" | "speaking"</code>; the tools dispatch table works the same as an
+        <span class="import">bun:mcp</span> client. <a href="#example-underneath">What's underneath</a> shows the same
+        loop hand-rolled — same five modules, no facade.
       </p>
 
       <h3 id="example-motion">Webcam motion → reactive assistant</h3>
@@ -825,9 +793,54 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 }</code></pre>
       </figure>
       <p class="footnote">
-        Four modules, three signals, zero glue code. Barge-in is built into <span class="import">bun:assistant</span>
-        now (rising edge on <code>vad.active</code> drops the queued TTS via <code>spk.stop()</code> and stamps
-        <code>turn.interrupted</code>); programmatic cancel is <code>bot.interrupt()</code>.
+        Four modules, three signals, zero glue code. Barge-in is built into
+        <span class="import">bun:assistant</span> now (rising edge on <code>vad.active</code> drops the queued TTS via
+        <code>spk.stop()</code> and stamps <code>turn.interrupted</code>); programmatic cancel is
+        <code>bot.interrupt()</code>.
+      </p>
+
+      <h3 id="example-underneath">What's underneath</h3>
+      <p>
+        <code>bun:assistant</code> isn't magic — it stitches the same five modules a user could call directly. The
+        version below is the loop the home-assistant facade performs for you. Useful when you want a non-default flow
+        (custom VAD threshold, separate transcribe + chat sessions, your own JSON dispatch). Routine smart-home or
+        IoT cases should still pick the <a href="#example-voice-tools">facade</a>; this one's longer.
+      </p>
+      <figure class="code">
+        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
+        <pre><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
+<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+
+<span class="kw">const</span> tools: <span class="type">Record</span>&lt;<span class="type">string</span>, (args: <span class="kw">any</span>) =&gt; <span class="kw">any</span>&gt; = {
+  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
+  <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
+  <span class="fn">reply</span>:     ({ text }) =&gt; text,
+};
+<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
+
+<span class="kw">await using</span> mic  = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
+<span class="kw">using</span>       wsp  = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"./ggml-tiny.en.bin"</span>);
+<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
+
+<span class="pb-kw">effect</span> {
+  process.stdout.<span class="fn">write</span>(<span class="str">`\rmic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`);
+}
+
+<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
+  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
+  <span class="kw">const</span> { tool, args } = <span class="kw">await</span> chat.<span class="fn">chatJSON</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> });
+  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
+  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
+    <span class="kw">await</span> speech.<span class="fn">say</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"./en_US-lessac-medium.onnx"</span> });
+  }
+}</code></pre>
+      </figure>
+      <p class="footnote">
+        <code>chat.chatJSON({ schema })</code> drains the streamed grammar-constrained chat and parses the result in one
+        call; <code>speech.say(text)</code> wraps <code>speak()</code> + <code>audio.play()</code> +
+        <code>spk.write()</code> with a process-wide cached PlaybackStream keyed on (sampleRate, channels). Both
+        ergonomic shortcuts shipped alongside the assistant facade.
       </p>
 
       <h2 id="language">Language extensions — <code>.pts</code> / <code>.pjs</code></h2>
@@ -1063,9 +1076,10 @@ gpu.<span class="fn">release</span>(held);</code></pre>
               <span class="import">bun:mcp</span>. <code>bot.run</code> / <code>turns</code> / <code>ask</code> /
               <code>say</code> / <code>interrupt</code> + reactive <code>state</code> / <code>history</code> /
               <code>lastTurn</code> / <code>interrupted</code> / <code>toolsActive</code> signals + sqlite-backed
-              persistent memory + tool dispatch (inline + MCP) + VAD-driven barge-in + wake word
-              (<code>wakeWord: "hey jetson"</code>) + cron-driven scheduled prompts +
-              RAG (<code>knowledge: { dir, encoder }</code>). Vision (VLM) turns deferred to follow-up.
+              persistent memory + tool dispatch (inline + MCP) + VAD-driven barge-in + wake word (<code
+                >wakeWord: "hey jetson"</code
+              >) + cron-driven scheduled prompts + RAG (<code>knowledge: { dir, encoder }</code>). Vision (VLM) turns
+              deferred to follow-up.
             </td>
           </tr>
           <tr>
