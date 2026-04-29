@@ -58,6 +58,12 @@
           >import gpu from "bun:gpu"</code
         >). Plain <code>.ts</code> / <code>.js</code> files behave the same as upstream Bun.
       </p>
+      <p class="lede">
+        Targets <strong>edge devices and IoT</strong> — Linux SBCs like Raspberry Pi 5 and Jetson Orin, NUCs, and
+        anything else running a real OS with capable CPU/GPU. Not microcontrollers (Cortex-M / ESP32 / RP2040): those
+        need a different runtime — JavaScriptCore alone is bigger than an MCU's flash budget. The positioning is
+        "device that's basically a small computer," not "device that's basically a register file."
+      </p>
       <div class="install">
         <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
       </div>
