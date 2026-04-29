@@ -158,7 +158,9 @@
               <button data-lang="parabun" type="button">Parabun</button>
             </div>
           </div>
-          <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
+          <pre
+            data-lang="ts"
+          ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> rows</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Array.</span><span style="color:#B392F0">from</span><span style="color:#E1E4E8">({ length: </span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8"> }, (</span><span style="color:#FFAB70">_</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">i</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#9ECBFF"> `record-${</span><span style="color:#E1E4E8">i</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"></span>
@@ -170,7 +172,10 @@
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> scores</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> pmap</span><span style="color:#E1E4E8">(score, rows, { concurrency: </span><span style="color:#79B8FF">8</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"scored"</span><span style="color:#E1E4E8">, scores.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"rows; first ="</span><span style="color:#E1E4E8">, scores[</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">]);</span></span></code></pre>
-          <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
+          <pre
+            data-lang="parabun"
+            hidden
+          ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> rows</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Array.</span><span style="color:#B392F0">from</span><span style="color:#E1E4E8">({ length: </span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8"> }, (</span><span style="color:#FFAB70">_</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">i</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#9ECBFF"> `record-${</span><span style="color:#E1E4E8">i</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"></span>
@@ -774,23 +779,19 @@
 
       <h3 id="example-motion">Webcam motion → reactive assistant</h3>
       <p>
-        <code>vision.detectMotion</code> emits frame-by-frame motion scores; pump them into a
-        <span class="import">bun:signals</span> signal and <code>derived()</code> turns the raw score into a clean
-        "someone's in the room" boolean. An <code>effect()</code> watches that boolean — and the bot's own
-        <code>state</code> signal — and triggers a one-shot greeting on the rising edge, but only when the bot is idle.
-        No state machine, no debounce timer, no flag bookkeeping.
+        Module composition: <span class="import">bun:camera</span> + <span class="import">bun:vision</span> +
+        <span class="import">bun:assistant</span> over <span class="import">bun:signals</span>.
+        <code>vision.detectMotion</code> emits frame-by-frame scores; <code>derived()</code> distils raw motion AND
+        bot-idle into one boolean; <code>onRising()</code> fires a greeting once per false→true transition. No state
+        machine, no debounce timer, no flag bookkeeping. There is no parabun-syntax tab here on purpose — the ergonomic
+        win all comes from the runtime modules, and the call shape is already as compact as it gets.
       </p>
-      <figure class="code lang-tabs">
-        <div class="code-header">
-          <div class="lang-toggle" role="tablist">
-            <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
-          </div>
-        </div>
-        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
+      <figure class="code">
+        <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
+        <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising, derived } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
@@ -799,43 +800,15 @@
 <span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
 <span class="line"><span style="color:#E1E4E8">});</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A737D">// .run() drains the iterator in the background; motion.score / motion.detected</span></span>
-<span class="line"><span style="color:#6A737D">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span></span>
+<span class="line"><span style="color:#6A737D">// motion.score / motion.detected auto-fill as frames flow.</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> motion</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> vision.</span><span style="color:#B392F0">detectMotion</span><span style="color:#E1E4E8">(vision.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(cam.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()), { sensitivity: </span><span style="color:#79B8FF">0.04</span><span style="color:#E1E4E8"> }).</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A737D">// Rising edge of motion.detected, only when the bot isn't already busy.</span></span>
-<span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> wasPresent </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> false</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> {</span></span>
-<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> now</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">();</span></span>
-<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (now </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#F97583"> !</span><span style="color:#E1E4E8">wasPresent </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">) {</span></span>
-<span class="line"><span style="color:#E1E4E8">    bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">);</span></span>
-<span class="line"><span style="color:#E1E4E8">  }</span></span>
-<span class="line"><span style="color:#E1E4E8">  wasPresent </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> now;</span></span>
-<span class="line"><span style="color:#E1E4E8">});</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
-<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
-<span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#E1E4E8">  tts: </span><span style="color:#9ECBFF">"/models/en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#E1E4E8">});</span></span>
-<span class="line"></span>
-<span class="line"><span style="color:#6A737D">// .run() drains the iterator in the background; motion.score / motion.detected</span></span>
-<span class="line"><span style="color:#6A737D">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span></span>
-<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> motion</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> vision.</span><span style="color:#B392F0">detectMotion</span><span style="color:#E1E4E8">(vision.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(cam.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()), { sensitivity: </span><span style="color:#79B8FF">0.04</span><span style="color:#E1E4E8"> }).</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();</span></span>
-<span class="line"></span>
-<span class="line"><span style="color:#6A737D">// Rising edge of motion.detected, only when the bot isn't already busy.</span></span>
-<span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> wasPresent </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> false</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">effect</span><span style="color:#E1E4E8"> {</span></span>
-<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> now</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">();</span></span>
-<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (now </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#F97583"> !</span><span style="color:#E1E4E8">wasPresent </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">) {</span></span>
-<span class="line"><span style="color:#E1E4E8">    bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">);</span></span>
-<span class="line"><span style="color:#E1E4E8">  }</span></span>
-<span class="line"><span style="color:#E1E4E8">  wasPresent </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> now;</span></span>
-<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<span class="line"><span style="color:#6A737D">// Greet whenever motion appears AND the bot is idle. onRising fires</span></span>
+<span class="line"><span style="color:#6A737D">// once per false→true transition — no flag bookkeeping needed.</span></span>
+<span class="line"><span style="color:#B392F0">onRising</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#B392F0">  derived</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">);</span></span></code></pre>
       </figure>
       <p class="footnote">
         Four modules, three signals, zero glue code. Barge-in is built into
@@ -848,8 +821,8 @@
       <p>
         <code>bun:assistant</code> isn't magic — it stitches the same five modules a user could call directly. The
         version below is the loop the home-assistant facade performs for you. Useful when you want a non-default flow
-        (custom VAD threshold, separate transcribe + chat sessions, your own JSON dispatch). Routine smart-home or
-        IoT cases should still pick the <a href="#example-voice-tools">facade</a>; this one's longer.
+        (custom VAD threshold, separate transcribe + chat sessions, your own JSON dispatch). Routine smart-home or IoT
+        cases should still pick the <a href="#example-voice-tools">facade</a>; this one's longer.
       </p>
       <figure class="code lang-tabs">
         <div class="code-header">
@@ -858,7 +831,9 @@
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="ts"
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:speech"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
@@ -886,7 +861,10 @@
 <span class="line"><span style="color:#F97583">    await</span><span style="color:#E1E4E8"> speech.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(result, { engine: </span><span style="color:#9ECBFF">"piper"</span><span style="color:#E1E4E8">, model: </span><span style="color:#9ECBFF">"./en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#E1E4E8">  }</span></span>
 <span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:speech"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
@@ -945,7 +923,9 @@
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="line"><span style="color:#6A737D">// Hand-rolled memoization. `memo` is sugar over this Map-keyed pattern.</span></span>
+        <pre
+          data-lang="ts"
+        ><code><span class="line"><span style="color:#6A737D">// Hand-rolled memoization. `memo` is sugar over this Map-keyed pattern.</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> fibCache</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Map</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">number</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">number</span><span style="color:#E1E4E8">>();</span></span>
 <span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">n</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8"> {</span></span>
 <span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> hit</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> fibCache.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(n);</span></span>
@@ -976,7 +956,10 @@
 <span class="line"><span style="color:#E1E4E8">  p.</span><span style="color:#B392F0">catch</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> profileCache.</span><span style="color:#B392F0">delete</span><span style="color:#E1E4E8">(id));</span></span>
 <span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> p;</span></span>
 <span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#6A737D">// declarator form — `memo` implies pure + function</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#6A737D">// declarator form — `memo` implies pure + function</span></span>
 <span class="line"><span style="color:#F97583">memo</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n: number): number {</span></span>
 <span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 2</span><span style="color:#F97583"> ?</span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">:</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">+</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"><span style="color:#E1E4E8">}</span></span>
@@ -989,7 +972,10 @@
 <span class="line"><span style="color:#F97583">memo</span><span style="color:#F97583"> async</span><span style="color:#B392F0"> fetchProfile</span><span style="color:#E1E4E8">(id: string) { return await db.users.get(id); }</span></span></code></pre>
       </figure>
 
-      <h3><span class="pb-kw">signal</span>, <span class="pb-kw">effect</span>, <span class="pb-op">~&gt;</span>, <span class="pb-op">-&gt;</span></h3>
+      <h3>
+        <span class="pb-kw">signal</span>, <span class="pb-kw">effect</span>, <span class="pb-op">~&gt;</span>,
+        <span class="pb-op">-&gt;</span>
+      </h3>
       <p>
         <code>signal NAME = &lt;rhs&gt;</code> desugars to a <code>Signal</code> binding; bare reads rewrite to
         <code>.get()</code>, assignments to <code>.set()</code>. If the RHS references another in-scope signal, the
@@ -1007,7 +993,9 @@
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { signal, derived, effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="ts"
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { signal, derived, effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> count</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> signal</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> doubled</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> derived</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">);</span></span>
@@ -1022,7 +1010,10 @@
 <span class="line"></span>
 <span class="line"><span style="color:#6A737D">// function/method sink — bind into a writer</span></span>
 <span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> { console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">()); });</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">signal</span><span style="color:#E1E4E8"> count </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">signal</span><span style="color:#E1E4E8"> count </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">signal</span><span style="color:#E1E4E8"> doubled </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> count </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">;   </span><span style="color:#6A737D">// auto-derived</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">effect</span><span style="color:#E1E4E8"> { console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(count, doubled); }</span></span>
@@ -1055,7 +1046,9 @@
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">x</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8">) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
+        <pre
+          data-lang="ts"
+        ><code><span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">x</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8">) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">sq</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">5</span><span style="color:#E1E4E8">));   </span><span style="color:#6A737D">// 625</span></span>
 <span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(result);</span></span>
@@ -1065,7 +1058,10 @@
 <span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">finally</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"done"</span><span style="color:#E1E4E8">));</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;=</span><span style="color:#79B8FF"> 9</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(i);   </span><span style="color:#6A737D">// 0,1,2,…,9</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 5</span><span style="color:#F97583"> |></span><span style="color:#E1E4E8"> sq </span><span style="color:#F97583">|></span><span style="color:#E1E4E8"> sq;   </span><span style="color:#6A737D">// 625 — both calls inlined</span></span>
 <span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(result);</span></span>
@@ -1091,7 +1087,9 @@
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="ts"
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> arena </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:arena"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> readConfig</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">path</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) {</span></span>
@@ -1108,7 +1106,10 @@
 <span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8"> buf.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) buf[i] </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> Math.</span><span style="color:#B392F0">sin</span><span style="color:#E1E4E8">(i </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 0.001</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"sum:"</span><span style="color:#E1E4E8">, buf.</span><span style="color:#B392F0">reduce</span><span style="color:#E1E4E8">((</span><span style="color:#FFAB70">a</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">b</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> a </span><span style="color:#F97583">+</span><span style="color:#E1E4E8"> b, </span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">));</span></span>
 <span class="line"><span style="color:#E1E4E8">});                                          </span><span style="color:#6A737D">// buf freed here, no GC pressure</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> readConfig</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">path</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) {</span></span>
 <span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> fd</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> fs.</span><span style="color:#B392F0">openSync</span><span style="color:#E1E4E8">(path, </span><span style="color:#9ECBFF">"r"</span><span style="color:#E1E4E8">);</span></span>

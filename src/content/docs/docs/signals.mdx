@@ -187,6 +187,24 @@ Returns a disposer with the same semantics as `fromAsync`'s `dispose`.
 
 The signal must be a writable one (returned by `signal(...)`); passing a `derived(...)` result throws.
 
+## `onRising(signal, fn)` / `onFalling(signal, fn)`
+
+Edge-detection helpers. `onRising` calls `fn` once each time `signal` transitions from a falsy to a truthy value (boolean-coerced); `onFalling` is the dual. Both take any `Signal<T>` (`signal(...)` cells, `derived(...)`, or driver-handle signals) and return a disposer with the same semantics as `effect()`.
+
+The initial value is treated as already-observed — a signal that starts truthy does **not** fire `onRising` on first run; only subsequent false→true transitions do.
+
+```ts
+import { onRising, derived } from "bun:signals";
+
+// Greet on the rising edge of (motion present AND bot idle).
+onRising(
+  derived(() => motion.detected.get() && bot.state.get() === "idle"),
+  () => bot.say("Welcome back!"),
+);
+```
+
+Common patterns: button-press detection (`onRising(button.pressed, ...)`), arrival/departure handlers, threshold crossings, "fire once when condition becomes true" without manual `wasX = false` flag bookkeeping.
+
 ## `Signal<T>` type
 
 Exported for type annotations. `signal(0)` returns a `Signal<number>`; `derived(...)` returns a `Signal<T>` (read-only — TypeScript marks `.set` / `.update` as never).
