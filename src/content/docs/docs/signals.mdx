@@ -11,7 +11,7 @@ import { signal, derived, effect, batch, untrack, Signal } from "bun:signals";
 
 `bun:signals` is a small reactive primitive. `signal(v)` is a cell, `derived(fn)` is a read-only signal computed from others, and `effect(fn)` runs side effects when something it read changes. Reads inside an effect register a dependency; writes invalidate downstream and a microtask flush re-runs only the effects whose observed values actually changed.
 
-Pairs with the `signal` / `effect { }` / `~>` [language extensions](/docs/language/#signal-effect) — those desugar to calls into this module. Plain `.ts` / `.js` files use the function form below; `.pts` / `.pjs` files can use either form.
+Pairs with the `signal` / `effect { }` / `~>` / `->` [language extensions](/docs/language/#signal-effect---) — those desugar to calls into this module. Plain `.ts` / `.js` files use the function form below; `.pts` / `.pjs` files can use either form.
 
 ## `signal(initial)`
 
@@ -193,7 +193,7 @@ Exported for type annotations. `signal(0)` returns a `Signal<number>`; `derived(
 
 ## Composing with the rest of the stack
 
-- **DOM-ish updates**: pair with `~>` ([reactive binding](/docs/language/#signal-effect)) to keep DOM elements / canvas state in step with signal values.
+- **DOM-ish updates**: pair with `~>` ([reactive assignment](/docs/language/#signal-effect---)) to keep DOM elements / canvas state in step with signal values, or `->` ([reactive call-binding](/docs/language/#signal-effect---)) to push each new value into a sink function (`process.stdout.write`, `socket.send`, …).
 - **Background work**: an `effect` can dispatch a [`bun:parallel`](/docs/parallel/) `pmap` and write the result back into a signal — the next read picks it up.
 - **Server-rendered fragments**: `derived(() => render(...))` recomputes only when inputs change.
 - **IoT control loops**: `fromInterval` for any periodic source ([`bun:i2c`](/docs/i2c/) sensors, HTTP polls), `pollHz` on [`bun:gpio`](/docs/gpio/) lines for hardware-backed value signals.

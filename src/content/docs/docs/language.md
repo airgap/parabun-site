@@ -30,13 +30,15 @@ const normalize = memo (s: string) => s.trim().toLowerCase();
 memo async fetchProfile(id: string) { return await db.users.get(id); }
 ```
 
-## `signal`, `effect`, `~>`
+## `signal`, `effect`, `~>`, `->`
 
 `signal NAME = <rhs>` declares a reactive cell. Bare reads desugar to `.get()`, assignments to `.set()`. If the RHS references another in-scope signal, the binding auto-promotes to a read-only `derived()`. `effect { ... }` tracks every signal it reads and re-runs on change.
 
-`A ~> B` is a reactive binding. It desugars to `effect(() => { B = A; })`, so `B` stays in step with `A` and whatever signals `A` reads from.
+`A ~> B` is a reactive **assignment** binding. It desugars to `effect(() => { B = A; })`, so `B` stays in step with `A` and whatever signals `A` reads from.
 
-`A ~> B when C` adds a guard. The desugar becomes `effect(() => { if (C) B = A; })` — `C` is read inside the effect so signal reads in the predicate are tracked too. Flipping `C` re-fires the effect, the body re-evaluates the guard, and only assigns when the guard passes.
+`A -> fn` is a reactive **call** binding — the call-sink complement to `~>`. It desugars to `effect(() => { fn(A); })`, so `fn` is called with the latest value of `A` whenever its tracked deps change. RHS must be a callable target (identifier, `obj.method`, or `arr[i]`) — bare calls, literals, and arrows are rejected.
+
+`A ~> B when C` (and `A -> fn when C`) adds a guard. The desugar wraps the body in `if (C)` — `C` is read inside the effect so signal reads in the predicate are tracked too. Flipping `C` re-fires the effect, the body re-evaluates the guard, and only emits when it passes.
 
 ```parabun
 signal count = 0;
@@ -46,8 +48,11 @@ effect { console.log(count, doubled); }
 
 count++;                      // effect re-runs: 1, 2
 
-// bind signal value into a DOM-ish sink — updates track dep changes
+// reactive ASSIGNMENT — el.innerHTML mirrors count
 count ~> el.innerHTML;
+
+// reactive CALL — process.stdout.write is invoked on every change
+`count=${count}\n` -> process.stdout.write;
 
 // guarded bind — only updates while `enabled` is truthy
 signal enabled = true;
