@@ -66,17 +66,21 @@ The returned iterator carries two [`bun:signals`](/docs/signals/) Signals — wi
 ```ts
 import { effect } from "bun:signals";
 
-const m = vision.detectMotion(vision.frames(cam.frames()), { sensitivity: 0.05 });
+const m = vision.detectMotion(vision.frames(cam.frames()), { sensitivity: 0.05 }).run();
 
 effect(() => {
   if (m.detected.get()) console.log(`motion: ${(m.score.get() * 100).toFixed(1)}%`);
 });
 
-// Drain the iterator in the background — signals update as it runs.
-for await (const _ of m) void _;
+// Stop the drainer when you're done; signals reset to inert state.
+// (Or just close the underlying camera; the generator's finally block fires.)
+// m.run() returned a disposer:
+// stop();
 ```
 
-When the input stream ends (or the consumer breaks), both signals reset to their inert state (`detected = false`, `score = 0`) so dependent effects don't show stale motion after the camera closes.
+`.run()` drains the iterator in the background so the signals auto-fill without a hand-rolled `for await` IIFE. It returns an idempotent disposer; calling `.run()` again returns the same one. If you also want each `MotionFrame` value (not just the reactive view), iterate explicitly with `for await (...)` instead of calling `.run()`.
+
+When the input stream ends (or the disposer fires), both signals reset to their inert state (`detected = false`, `score = 0`) so dependent effects don't show stale motion after the camera closes.
 
 ## `detect(frame, opts)` — stub
 

@@ -732,23 +732,18 @@ gpu.<span class="fn">release</span>(held);</code></pre>
   system: <span class="str">"You are a friendly home assistant. Keep replies short."</span>,
 });
 
-<span class="kw">signal</span> motionScore = <span class="num">0</span>;
-<span class="kw">signal</span> present = motionScore &gt; <span class="num">0.04</span>;   <span class="com">// auto-derive — RHS reads a signal</span>
+<span class="com">// .run() drains the iterator in the background; motion.score / motion.detected</span>
+<span class="com">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span>
+<span class="kw">const</span> motion = vision.<span class="fn">detectMotion</span>(vision.<span class="fn">frames</span>(cam.<span class="fn">frames</span>()), { sensitivity: <span class="num">0.04</span> }).<span class="fn">run</span>();
 
-<span class="com">// Background pump: camera frames → motion estimator → reactive signal.</span>
-(<span class="kw">async</span> () =&gt; {
-  <span class="kw">for await</span> (<span class="kw">const</span> m <span class="kw">of</span> vision.<span class="fn">detectMotion</span>(vision.<span class="fn">frames</span>(cam.<span class="fn">frames</span>()))) {
-    motionScore = m.motionScore;
-  }
-})();
-
-<span class="com">// Greet on rising edge of "present", but only when the bot isn't already busy.</span>
+<span class="com">// Rising edge of motion.detected, only when the bot isn't already busy.</span>
 <span class="kw">let</span> wasPresent = <span class="kw">false</span>;
 <span class="kw">effect</span> {
-  <span class="kw">if</span> (present &amp;&amp; !wasPresent &amp;&amp; bot.state.<span class="fn">get</span>() === <span class="str">"idle"</span>) {
+  <span class="kw">const</span> now = motion.detected.<span class="fn">get</span>();
+  <span class="kw">if</span> (now &amp;&amp; !wasPresent &amp;&amp; bot.state.<span class="fn">get</span>() === <span class="str">"idle"</span>) {
     bot.<span class="fn">say</span>(<span class="str">"Welcome back!"</span>);
   }
-  wasPresent = present;
+  wasPresent = now;
 }</code></pre>
       </figure>
       <p class="footnote">

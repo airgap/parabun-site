@@ -67,14 +67,18 @@ The object `listen()` returns is the async iterator plus three [`bun:signals`](/
 ```ts
 import { effect } from "bun:signals";
 
-const listener = speech.listen(mic.frames(), { sampleRate: 16000 });
+// Reactive-only — call .run() to drain in the background; signals auto-fill.
+const listener = speech.listen(mic.frames(), { sampleRate: 16000 }).run();
 effect(() => console.log(listener.active.get() ? "🎤 listening" : "…"));
 effect(() => console.log(`floor=${listener.noiseFloor.get().toFixed(4)}`));
 
-for await (const utt of listener) {
-  // ...
+// — or — iterate when you also want each Utterance object:
+for await (const utt of speech.listen(mic.frames(), { sampleRate: 16000 })) {
+  // ... — signals update too as you iterate.
 }
 ```
+
+`.run()` returns an idempotent disposer; closing the underlying mic (or the disposer) ends the loop and resets `active` to false.
 
 ## `transcribe(utterance, opts)`
 
