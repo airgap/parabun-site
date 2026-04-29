@@ -79,6 +79,40 @@ effect(() => {
 });
 ```
 
+## `fromAsync(iterable, mapFn?, init?)`
+
+Creates a signal driven by an async iterable. Saves the IIFE+for-await dance for "I want the most recent value as a Signal".
+
+```ts
+import sigs from "bun:signals";
+
+// Most recent value from a websocket-like source, exposed as a signal.
+const { signal: msg, dispose } = sigs.fromAsync(socket.messages(), m => m.body, "");
+
+effect(() => console.log("latest:", msg.get()));
+
+// Clean up when you're done.
+dispose();
+```
+
+Returns `{ signal, dispose }`. `signal` is read-only (the pump owns writes); `dispose` breaks the loop via the iterator's `return()` and fires any generator finally block. Calling `dispose` twice is a no-op.
+
+If `mapFn` is omitted, raw yielded values flow through unchanged. If `init` is omitted, the signal starts at `undefined`.
+
+## `pump(iterable, signal, mapFn?)`
+
+Drive an existing signal from an async iterable — useful when the signal pre-exists, or when you want to switch sources at runtime.
+
+```ts
+const score = sigs.signal(0);
+const stop = sigs.pump(motionFrames, score, f => f.motionScore);
+// later: stop();
+```
+
+Returns a disposer with the same semantics as `fromAsync`'s `dispose`.
+
+The signal must be a writable one (returned by `signal(...)`); passing a `derived(...)` result throws.
+
 ## `Signal<T>` type
 
 Exported for type annotations. `signal(0)` returns a `Signal<number>`; `derived(...)` returns a `Signal<T>` (read-only — TypeScript marks `.set` / `.update` as never).
