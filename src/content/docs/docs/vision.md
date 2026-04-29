@@ -1,7 +1,6 @@
 ---
 title: bun:vision
-tagline: Frame stream conversion + motion detection. Detector / OCR engines stub until ONNX runtime is vendored.
-section: modules
+description: Frame stream conversion + motion detection. Detector / OCR engines stub until ONNX runtime is vendored.
 ---
 
 ```ts
@@ -12,7 +11,7 @@ Tier 2 wrapper that turns any camera frame iterator into packed RGBA8 frames, pl
 
 ## `frames(stream, opts?)`
 
-Takes a `RawFrame` iterator (e.g. from [`bun:camera`](camera/)) and yields `{ width, height, data: Uint8Array }` packed-RGBA8 frames.
+Takes a `RawFrame` iterator (e.g. from [`bun:camera`](/docs/camera/)) and yields `{ width, height, data: Uint8Array }` packed-RGBA8 frames.
 
 ```ts
 import camera from "bun:camera";
@@ -33,7 +32,7 @@ Supported pixel formats:
 | `nv12` | YUV 4:2:0 → RGBA |
 | `rgb24` | RGB → RGBA (alpha=255) |
 | `rgba` | passthrough |
-| `mjpg` | passes through `decodeMjpg(frame.data)`. Required: caller passes `image.decode` from [`bun:image`](image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here). |
+| `mjpg` | passes through `decodeMjpg(frame.data)`. Required: caller passes `image.decode` from [`bun:image`](/docs/image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here). |
 
 ## `detectMotion(stream, opts?)`
 
@@ -57,7 +56,7 @@ for await (const { frame, motion } of vision.detectMotion(vision.frames(cam.fram
 
 ### Reactive signals
 
-The returned iterator carries two [`bun:signals`](signals/) Signals — wire `effect()` blocks against motion state without iterating the full stream.
+The returned iterator carries two [`bun:signals`](/docs/signals/) Signals — wire `effect()` blocks against motion state without iterating the full stream.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |
@@ -98,5 +97,5 @@ The shape of `vision.frames` is also the shape `detectMotion`, `detect`, and `re
 ## Limits
 
 - Detector / OCR engines: pending ONNX vendor add. The interfaces are typed and stable; bodies throw.
-- No GPU path on the converters yet — `frames` pixel conversions run on CPU. Big surface for a [`bun:gpu`](gpu/) `simdMap` lift.
+- No GPU path on the converters yet — `frames` pixel conversions run on CPU. Big surface for a [`bun:gpu`](/docs/gpu/) `simdMap` lift.
 - Motion detection's downsampler is a simple stride sample — Gaussian-prefilter would suppress aliasing on high-detail backgrounds. Currently not exposed; happy to expose `prefilter: true` if needed.

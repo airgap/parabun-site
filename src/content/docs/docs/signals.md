@@ -1,7 +1,6 @@
 ---
 title: bun:signals
-tagline: Reactive cells with auto-derived computations and microtask-flushed effects.
-section: modules
+description: Reactive cells with auto-derived computations and microtask-flushed effects.
 ---
 
 ```ts
@@ -10,7 +9,7 @@ import { signal, derived, effect, batch, untrack, Signal } from "bun:signals";
 
 `bun:signals` is a small reactive primitive. `signal(v)` is a cell, `derived(fn)` is a read-only signal computed from others, and `effect(fn)` runs side effects when something it read changes. Reads inside an effect register a dependency; writes invalidate downstream and a microtask flush re-runs only the effects whose observed values actually changed.
 
-Pairs with the `signal` / `effect { }` / `~>` [language extensions](language/#signal-effect) — those desugar to calls into this module. Plain `.ts` / `.js` files use the function form below.
+Pairs with the `signal` / `effect { }` / `~>` [language extensions](/docs/language/#signal-effect) — those desugar to calls into this module. Plain `.ts` / `.js` files use the function form below.
 
 ## `signal(initial)`
 
@@ -86,12 +85,12 @@ Exported for type annotations. `signal(0)` returns a `Signal<number>`; `derived(
 
 ## Composing with the rest of the stack
 
-- **DOM-ish updates**: pair with `~>` ([reactive binding](language/#signal-effect)) to keep DOM elements / canvas state in step with signal values.
-- **Background work**: an `effect` can dispatch a [`bun:parallel`](parallel/) `pmap` and write the result back into a signal — the next read picks it up.
+- **DOM-ish updates**: pair with `~>` ([reactive binding](/docs/language/#signal-effect)) to keep DOM elements / canvas state in step with signal values.
+- **Background work**: an `effect` can dispatch a [`bun:parallel`](/docs/parallel/) `pmap` and write the result back into a signal — the next read picks it up.
 - **Server-rendered fragments**: `derived(() => render(...))` recomputes only when inputs change.
 
 ## Limits
 
 - Effects are async (microtask-flushed). For synchronous "see the new value right now" you need `batch(...)` and a synchronous read.
 - Cycle detection is best-effort — a `derived(() => sigA())` where `sigA` is itself a `derived` of the first will throw at registration time, but more elaborate cycles can stack-overflow on flush.
-- No ownership / scope — effects live forever unless `dispose()`d. Wrap with [`bun:arena`](arena/)-style scoping in long-lived loops.
+- No ownership / scope — effects live forever unless `dispose()`d. Wrap with [`bun:arena`](/docs/arena/)-style scoping in long-lived loops.

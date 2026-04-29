@@ -1,7 +1,6 @@
 ---
 title: bun:image
-tagline: Sharp-class image module — JPEG / PNG / WebP, resize, blur, sharpen, edges, rotate, crop, color adjust, alpha compositing.
-section: modules
+description: Sharp-class image module — JPEG / PNG / WebP, resize, blur, sharpen, edges, rotate, crop, color adjust, alpha compositing.
 ---
 
 ```ts

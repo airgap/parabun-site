@@ -1,14 +1,13 @@
 ---
 title: bun:speech
-tagline: VAD-segmented utterance streams + Whisper STT. Compose with bun:audio for a full mic-to-text pipeline.
-section: modules
+description: VAD-segmented utterance streams + Whisper STT. Compose with bun:audio for a full mic-to-text pipeline.
 ---
 
 ```ts
 import speech from "bun:speech";
 ```
 
-A small orchestration module sitting on top of [`bun:audio`](audio/)'s capture + DSP and [`bun:llm`](llm/)'s `WhisperModel`. Five exports:
+A small orchestration module sitting on top of [`bun:audio`](/docs/audio/)'s capture + DSP and [`bun:llm`](/docs/llm/)'s `WhisperModel`. Five exports:
 
 - `listen(stream, opts?)` — VAD-gated utterance segmentation over any audio chunk iterator. The returned stream exposes reactive `active` / `noiseFloor` / `lastUtterance` signals.
 - `transcribe(utterance, opts)` — speech-to-text via Whisper.
@@ -16,7 +15,7 @@ A small orchestration module sitting on top of [`bun:audio`](audio/)'s capture +
 - `wakeWord(opts)` — Whisper-backed keyword spotter. Composable trigger stream for "hey jetson"-style wake-on-phrase, with reactive `active` / `lastTrigger` signals.
 - `matchWakePhrase(text, phrase, strategy?, maxEdits?)` — pure phrase matcher. Substring / exact / fuzzy (Levenshtein) strategies; reusable outside the wake-word stream.
 
-For a full mic + STT + LLM + TTS + speaker pipeline composed in three lines, see [`bun:assistant`](assistant/).
+For a full mic + STT + LLM + TTS + speaker pipeline composed in three lines, see [`bun:assistant`](/docs/assistant/).
 
 ## `listen(stream, opts?)`
 
@@ -57,7 +56,7 @@ type Utterance = {
 
 ### Reactive signals on the listen stream
 
-The object `listen()` returns is the async iterator plus three [`bun:signals`](signals/) Signals — wire them straight into a UI without polling.
+The object `listen()` returns is the async iterator plus three [`bun:signals`](/docs/signals/) Signals — wire them straight into a UI without polling.
 
 | Signal | Type | What it tracks |
 | --- | --- | --- |
@@ -79,7 +78,7 @@ for await (const utt of listener) {
 
 ## `transcribe(utterance, opts)`
 
-Dispatches to [`WhisperModel`](llm/#whispermodel--speech-to-text). Loads the model on first call and caches it per-process, so subsequent calls reuse the device-resident weights.
+Dispatches to [`WhisperModel`](/docs/llm/#whispermodel--speech-to-text). Loads the model on first call and caches it per-process, so subsequent calls reuse the device-resident weights.
 
 ```ts
 const text = await speech.transcribe(utt, {
@@ -116,7 +115,7 @@ For longer-than-30-s segments, use the underlying `WhisperModel.transcribe` dire
 
 ## `speak(text, opts)`
 
-Synthesizes `text` into f32 mono PCM via Piper. Returns the samples ready for [`audio.play().write()`](audio/#playopts).
+Synthesizes `text` into f32 mono PCM via Piper. Returns the samples ready for [`audio.play().write()`](/docs/audio/#playopts).
 
 ```ts
 import audio  from "bun:audio";
@@ -240,5 +239,5 @@ Returns `{ phrase, confidence } | null`. Punctuation and case are normalized bef
 ## Limits
 
 - `listen` is single-stream (mono). Multi-channel hot-mic detection is doable but not implemented.
-- `transcribe`'s model cache is per-process and per-path, not shared across processes. For high-churn deployments (lots of short-lived workers), preload models in a single long-running process and route requests there ([`llm.serve`](llm/#llmserve--openai-compatible-http-server) is one path).
+- `transcribe`'s model cache is per-process and per-path, not shared across processes. For high-churn deployments (lots of short-lived workers), preload models in a single long-running process and route requests there ([`llm.serve`](/docs/llm/#llmserve--openai-compatible-http-server) is one path).
 - Live transcription latency = utterance duration + Whisper wall-clock. With `tiny.en` on CUDA at ~7× real-time, an 8-second utterance transcribes in ~1.1 s — acceptable for most use cases, but not "as you speak" streaming.

@@ -1,7 +1,6 @@
 ---
 title: bun:arrow
-tagline: In-memory columnar tables, computes, and Arrow IPC reader/writer — wire-compatible with apache-arrow, pyarrow, polars, duckdb.
-section: modules
+description: In-memory columnar tables, computes, and Arrow IPC reader/writer — wire-compatible with apache-arrow, pyarrow, polars, duckdb.
 ---
 
 ```ts
@@ -39,7 +38,7 @@ Concatenates batches sharing a schema. `Table` has a `.column(name)` that return
 
 ### `fromRows(rows, opts?)` / `toRows(source)`
 
-Bridge between row-shaped JS data and the columnar form. `fromRows` is the typical entry point from [`bun:csv`](csv/) output:
+Bridge between row-shaped JS data and the columnar form. `fromRows` is the typical entry point from [`bun:csv`](/docs/csv/) output:
 
 ```ts
 import csv from "bun:csv";

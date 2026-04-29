@@ -2,7 +2,12 @@
   "name": "parabun-site",
   "private": true,
   "scripts": {
-    "dev": "bun build.ts && bun --hot dist/index.html",
-    "build": "bun build.ts"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.38.4",
+    "astro": "^6.1.10"
   }
 }

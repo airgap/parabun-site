@@ -1,7 +1,6 @@
 ---
 title: bun:parallel
-tagline: pmap / preduce over a persistent worker pool. SharedArrayBuffer typed arrays cross the wire by handle, not copy.
-section: modules
+description: pmap / preduce over a persistent worker pool. SharedArrayBuffer typed arrays cross the wire by handle, not copy.
 ---
 
 ```ts
@@ -89,7 +88,7 @@ It loses when:
 - The function is cheap arithmetic — JS scalar loops on the main thread are faster than crossing process / worker boundaries.
 - Inputs aren't SAB-backed; per-chunk `structuredClone` of plain typed arrays makes the pool's overhead grow with input size.
 
-For small payloads or trivial functions, [`bun:simd`](simd/) on the main thread is almost always the right choice.
+For small payloads or trivial functions, [`bun:simd`](/docs/simd/) on the main thread is almost always the right choice.
 
 ## Limits
 

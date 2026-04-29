@@ -1,7 +1,6 @@
 ---
 title: bun:csv
-tagline: Streaming RFC 4180 CSV parser. Async generator, full quote / escape handling, optional parallel mode.
-section: modules
+description: Streaming RFC 4180 CSV parser. Async generator, full quote / escape handling, optional parallel mode.
 ---
 
 ```ts
@@ -40,7 +39,7 @@ Without `header`, every row is an array of strings (no inference — keeps fast-
 
 ## Parallel mode
 
-`parallel: true` chunks the input across [`bun:parallel`](parallel/)'s worker pool when the input has no quoted cells (the byte-boundary heuristic doesn't work otherwise). It runs the parse off the main thread.
+`parallel: true` chunks the input across [`bun:parallel`](/docs/parallel/)'s worker pool when the input has no quoted cells (the byte-boundary heuristic doesn't work otherwise). It runs the parse off the main thread.
 
 ```ts
 for await (const row of csv.parseCsv(Bun.file("data.csv"), { header: true, parallel: true })) {
@@ -60,7 +59,7 @@ Use `parallel: true` to keep the event loop responsive while parsing (parsing N 
 
 ## Bridging to columnar
 
-`bun:csv` rows pair naturally with [`bun:arrow`](arrow/)'s `fromRows`:
+`bun:csv` rows pair naturally with [`bun:arrow`](/docs/arrow/)'s `fromRows`:
 
 ```ts
 import csv from "bun:csv";

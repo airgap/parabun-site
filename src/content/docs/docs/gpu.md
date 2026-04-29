@@ -1,14 +1,13 @@
 ---
 title: bun:gpu
-tagline: GPU-accelerated vector + matrix primitives. Metal on macOS, CUDA on Linux + Windows, CPU fallback everywhere.
-section: modules
+description: GPU-accelerated vector + matrix primitives. Metal on macOS, CUDA on Linux + Windows, CPU fallback everywhere.
 ---
 
 ```ts
 import gpu from "bun:gpu";
 ```
 
-`bun:gpu` is the device-dispatch layer. The same API works on Metal, CUDA, and CPU — backends register themselves via probe + capability, and `bun:gpu` picks the best one available. The CPU backend forwards to [`bun:simd`](simd/), so unsupported hosts still get vectorized routes.
+`bun:gpu` is the device-dispatch layer. The same API works on Metal, CUDA, and CPU — backends register themselves via probe + capability, and `bun:gpu` picks the best one available. The CPU backend forwards to [`bun:simd`](/docs/simd/), so unsupported hosts still get vectorized routes.
 
 ## Backend
 
@@ -62,7 +61,7 @@ gpu.matVec(handle, vector, M, K);
 gpu.release(handle);
 ```
 
-`holdQ4K` / `holdQ6K` accept raw quantized weight bytes — the device buffer holds the Q4_K / Q6_K super-block layout and dispatches an on-chip dequant kernel inside `matVec`. Used by [`bun:llm`](llm/) for the `Q4_K_M` / `Q6_K` Llama paths.
+`holdQ4K` / `holdQ6K` accept raw quantized weight bytes — the device buffer holds the Q4_K / Q6_K super-block layout and dispatches an on-chip dequant kernel inside `matVec`. Used by [`bun:llm`](/docs/llm/) for the `Q4_K_M` / `Q6_K` Llama paths.
 
 ## Vector ops
 
@@ -72,7 +71,7 @@ Vector dot product. Accepts typed arrays or handles for either side.
 
 ### `matVec(matrix, vector, nRows, nCols)`
 
-`matrix` is `[nRows, nCols]` row-major, `vector` is length `nCols`. Returns `[nRows]`. The hot path inside [`bun:llm`](llm/)'s decoder step — every Q/K/V/O projection plus the LM head goes through here.
+`matrix` is `[nRows, nCols]` row-major, `vector` is length `nCols`. Returns `[nRows]`. The hot path inside [`bun:llm`](/docs/llm/)'s decoder step — every Q/K/V/O projection plus the LM head goes through here.
 
 ### `matmul(A, B, m, k, n, out?)`
 
@@ -106,7 +105,7 @@ CUDA `reduce` (sum/min/max) and atomic-privatized `histogram` ship as device ker
 
 ### `conv2D(input, kernel, iH, iW, kH, kW)`
 
-2D valid-mode correlation. Used by [`bun:image`](image/) for blur / sharpen / edge-detect. f32 only for v1.
+2D valid-mode correlation. Used by [`bun:image`](/docs/image/) for blur / sharpen / edge-detect. f32 only for v1.
 
 ### `imageBlurRGBA(input, width, height, sigma)`
 
@@ -134,7 +133,7 @@ Obj-C FFI to `MTLDevice` + `MTLComputePipelineState`. Zero-copy via Apple's unif
 
 ### CPU
 
-Forwards every op to [`bun:simd`](simd/). Always available — useful for tests and CI hosts without a GPU.
+Forwards every op to [`bun:simd`](/docs/simd/). Always available — useful for tests and CI hosts without a GPU.
 
 ## Limits
 
