@@ -151,9 +151,26 @@
           TypedArrays are passed through a <code>SharedArrayBuffer</code>, so <code>postMessage</code> transfers a
           handle rather than a copy.
         </p>
-        <figure class="code">
-          <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-          <pre><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
+        <figure class="code lang-tabs">
+          <div class="code-header">
+            <div class="lang-toggle" role="tablist">
+              <button data-lang="ts" type="button">TypeScript</button>
+              <button data-lang="parabun" type="button">Parabun</button>
+            </div>
+          </div>
+          <pre data-lang="ts"><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
+
+<span class="kw">const</span> rows = <span class="type">Array</span>.<span class="fn">from</span>({ length: <span class="num">1_000_000</span> }, (_, i) => <span class="str">`record-${i}`</span>);
+
+<span class="kw">function</span> <span class="fn">score</span>(row: <span class="type">string</span>): <span class="type">number</span> {
+  <span class="kw">let</span> h = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; row.length; i++) h = (h * <span class="num">31</span> + row.<span class="fn">charCodeAt</span>(i)) | <span class="num">0</span>;
+  <span class="kw">return</span> h * h;
+}
+
+<span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });
+<span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"scored"</span>, scores.length, <span class="str">"rows; first ="</span>, scores[<span class="num">0</span>]);</code></pre>
+          <pre data-lang="parabun" hidden><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
 
 <span class="kw">const</span> rows = <span class="type">Array</span>.<span class="fn">from</span>({ length: <span class="num">1_000_000</span> }, (_, i) => <span class="str">`record-${i}`</span>);
 
@@ -765,9 +782,39 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         <code>state</code> signal — and triggers a one-shot greeting on the rising edge, but only when the bot is idle.
         No state machine, no debounce timer, no flag bookkeeping.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-        <pre><code><span class="kw">import</span> camera    <span class="kw">from</span> <span class="str">"bun:camera"</span>;
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="kw">import</span> camera    <span class="kw">from</span> <span class="str">"bun:camera"</span>;
+<span class="kw">import</span> vision    <span class="kw">from</span> <span class="str">"bun:vision"</span>;
+<span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
+<span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
+
+<span class="kw">await using</span> cam = <span class="kw">await</span> camera.<span class="fn">open</span>(<span class="str">"/dev/video0"</span>, { format: <span class="str">"yuyv"</span>, width: <span class="num">640</span>, height: <span class="num">480</span> });
+<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
+  llm: <span class="str">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
+  tts: <span class="str">"/models/en_US-lessac-medium.onnx"</span>,
+  system: <span class="str">"You are a friendly home assistant. Keep replies short."</span>,
+});
+
+<span class="com">// .run() drains the iterator in the background; motion.score / motion.detected</span>
+<span class="com">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span>
+<span class="kw">const</span> motion = vision.<span class="fn">detectMotion</span>(vision.<span class="fn">frames</span>(cam.<span class="fn">frames</span>()), { sensitivity: <span class="num">0.04</span> }).<span class="fn">run</span>();
+
+<span class="com">// Rising edge of motion.detected, only when the bot isn't already busy.</span>
+<span class="kw">let</span> wasPresent = <span class="kw">false</span>;
+<span class="fn">effect</span>(() =&gt; {
+  <span class="kw">const</span> now = motion.detected.<span class="fn">get</span>();
+  <span class="kw">if</span> (now &amp;&amp; !wasPresent &amp;&amp; bot.state.<span class="fn">get</span>() === <span class="str">"idle"</span>) {
+    bot.<span class="fn">say</span>(<span class="str">"Welcome back!"</span>);
+  }
+  wasPresent = now;
+});</code></pre>
+        <pre data-lang="parabun" hidden><code><span class="kw">import</span> camera    <span class="kw">from</span> <span class="str">"bun:camera"</span>;
 <span class="kw">import</span> vision    <span class="kw">from</span> <span class="str">"bun:vision"</span>;
 <span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
 
@@ -806,9 +853,42 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         (custom VAD threshold, separate transcribe + chat sessions, your own JSON dispatch). Routine smart-home or
         IoT cases should still pick the <a href="#example-voice-tools">facade</a>; this one's longer.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-        <pre><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
+<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+<span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
+
+<span class="kw">const</span> tools: <span class="type">Record</span>&lt;<span class="type">string</span>, (args: <span class="kw">any</span>) =&gt; <span class="kw">any</span>&gt; = {
+  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
+  <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
+  <span class="fn">reply</span>:     ({ text }) =&gt; text,
+};
+<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
+
+<span class="kw">await using</span> mic  = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
+<span class="kw">using</span>       wsp  = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"./ggml-tiny.en.bin"</span>);
+<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
+
+<span class="fn">effect</span>(() =&gt; {
+  process.stdout.<span class="fn">write</span>(<span class="str">`\rmic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`);
+});
+
+<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
+  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
+  <span class="kw">const</span> { tool, args } = <span class="kw">await</span> chat.<span class="fn">chatJSON</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> });
+  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
+  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
+    <span class="kw">await</span> speech.<span class="fn">say</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"./en_US-lessac-medium.onnx"</span> });
+  }
+}</code></pre>
+        <pre data-lang="parabun" hidden><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
 <span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
 <span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
 
@@ -861,9 +941,45 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         self-references route through the outer wrapper, so <code>fib</code> below runs the body 21 times for
         <code>fib(20)</code>, not 21,891.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-        <pre><code><span class="com">// declarator form — `memo` implies pure + function</span>
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="com">// Hand-rolled memoization. `memo` is sugar over this Map-keyed pattern.</span>
+<span class="kw">const</span> fibCache = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">number</span>, <span class="type">number</span>&gt;();
+<span class="kw">function</span> <span class="fn">fib</span>(n: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="kw">const</span> hit = fibCache.<span class="fn">get</span>(n);
+  <span class="kw">if</span> (hit !== <span class="kw">undefined</span>) <span class="kw">return</span> hit;
+  <span class="kw">const</span> v = n &lt; <span class="num">2</span> ? n : <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
+  fibCache.<span class="fn">set</span>(n, v);
+  <span class="kw">return</span> v;
+}
+
+<span class="com">// Single-arg form — same Map-keyed cache, simpler API.</span>
+<span class="kw">const</span> normCache = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;();
+<span class="kw">const</span> <span class="fn">normalize</span> = (s: <span class="type">string</span>) =&gt; {
+  <span class="kw">const</span> hit = normCache.<span class="fn">get</span>(s);
+  <span class="kw">if</span> (hit !== <span class="kw">undefined</span>) <span class="kw">return</span> hit;
+  <span class="kw">const</span> v = s.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
+  normCache.<span class="fn">set</span>(s, v);
+  <span class="kw">return</span> v;
+};
+
+<span class="com">// Async-dedupe: cache the in-flight Promise, evict on reject.</span>
+<span class="kw">const</span> db = { users: { <span class="fn">get</span>: <span class="kw">async</span> (id: <span class="type">string</span>) =&gt; ({ id, name: <span class="str">"alice"</span> }) };
+<span class="kw">const</span> profileCache = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">Promise</span>&lt;<span class="kw">any</span>&gt;&gt;();
+<span class="kw">async function</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) {
+  <span class="kw">const</span> hit = profileCache.<span class="fn">get</span>(id);
+  <span class="kw">if</span> (hit) <span class="kw">return</span> hit;
+  <span class="kw">const</span> p = db.users.<span class="fn">get</span>(id);
+  profileCache.<span class="fn">set</span>(id, p);
+  p.<span class="fn">catch</span>(() =&gt; profileCache.<span class="fn">delete</span>(id));
+  <span class="kw">return</span> p;
+}</code></pre>
+        <pre data-lang="parabun" hidden><code><span class="com">// declarator form — `memo` implies pure + function</span>
 <span class="pb-kw">memo</span> <span class="fn">fib</span>(n: <span class="type">number</span>): <span class="type">number</span> {
   <span class="kw">return</span> n &lt; <span class="num">2</span> ? n : <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
 }
@@ -885,9 +1001,26 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         <code>effect(() =&gt; { B = A; })</code>, so <code>B</code> stays in step with <code>A</code> and whatever
         signals <code>A</code> reads from.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-        <pre><code><span class="pb-kw">signal</span> <span class="pb-signal-ref">count</span> = <span class="num">0</span>;
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="kw">import</span> { signal, derived, effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
+
+<span class="kw">const</span> count = <span class="fn">signal</span>(<span class="num">0</span>);
+<span class="kw">const</span> doubled = <span class="fn">derived</span>(() =&gt; count.<span class="fn">get</span>() * <span class="num">2</span>);
+
+<span class="fn">effect</span>(() =&gt; { console.<span class="fn">log</span>(count.<span class="fn">get</span>(), doubled.<span class="fn">get</span>()); });
+
+count.<span class="fn">update</span>(n =&gt; n + <span class="num">1</span>);          <span class="com">// effect re-runs: 1, 2</span>
+
+<span class="com">// bind signal value into a DOM-ish sink — updates track dep changes</span>
+<span class="kw">const</span> el = { innerHTML: <span class="str">""</span> };   <span class="com">// pretend DOM element</span>
+<span class="fn">effect</span>(() =&gt; { el.innerHTML = <span class="kw">String</span>(count.<span class="fn">get</span>()); });</code></pre>
+        <pre data-lang="parabun" hidden><code><span class="pb-kw">signal</span> <span class="pb-signal-ref">count</span> = <span class="num">0</span>;
 <span class="pb-kw">signal</span> <span class="pb-signal-ref">doubled</span> = <span class="pb-signal-ref">count</span> * <span class="num">2</span>;   <span class="com">// auto-derived</span>
 
 <span class="pb-kw">effect</span> { console.<span class="fn">log</span>(<span class="pb-signal-ref">count</span>, <span class="pb-signal-ref">doubled</span>); }
@@ -910,9 +1043,24 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         disambiguates to an inclusive-range literal otherwise (<code>0..5</code> excludes 5, <code>0..=5</code> includes
         it).
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-        <pre><code><span class="pb-kw">pure</span> <span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
+
+<span class="kw">const</span> result = <span class="fn">sq</span>(<span class="fn">sq</span>(<span class="num">5</span>));   <span class="com">// 625</span>
+<span class="kw">console</span>.<span class="fn">log</span>(result);
+
+<span class="kw">const</span> json = <span class="kw">await</span> fetch(<span class="str">"https://api.github.com"</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>())
+  .<span class="fn">catch</span>(err =&gt; console.<span class="fn">error</span>(err))
+  .<span class="fn">finally</span>(() =&gt; console.<span class="fn">log</span>(<span class="str">"done"</span>));
+
+<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt;= <span class="num">9</span>; i++) <span class="kw">console</span>.<span class="fn">log</span>(i);   <span class="com">// 0,1,2,…,9</span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="pb-kw">pure</span> <span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
 
 <span class="kw">const</span> result = <span class="num">5</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span>;   <span class="com">// 625 — both calls inlined</span>
 <span class="kw">console</span>.<span class="fn">log</span>(result);
@@ -931,9 +1079,31 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         awaits the cleanup. <code>arena { ... }</code> runs the block with the GC paused, then frees everything
         allocated inside on exit — useful for tight numeric loops with short-lived intermediate allocations.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">parabun</span></figcaption>
-        <pre><code><span class="kw">import</span> * <span class="kw">as</span> fs <span class="kw">from</span> <span class="str">"node:fs"</span>;
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="kw">import</span> * <span class="kw">as</span> fs <span class="kw">from</span> <span class="str">"node:fs"</span>;
+<span class="kw">import</span> arena <span class="kw">from</span> <span class="str">"bun:arena"</span>;
+
+<span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
+  <span class="kw">const</span> fd = fs.<span class="fn">openSync</span>(path, <span class="str">"r"</span>);
+  <span class="kw">try</span> {
+    <span class="kw">return</span> <span class="type">JSON</span>.<span class="fn">parse</span>(fs.<span class="fn">readFileSync</span>(fd, <span class="str">"utf8"</span>));
+  } <span class="kw">finally</span> {
+    fs.<span class="fn">closeSync</span>(fd);             <span class="com">// runs on every exit path</span>
+  }
+}
+
+arena.<span class="fn">scope</span>(() =&gt; {
+  <span class="kw">const</span> buf = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="num">1_000_000</span>);
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; buf.length; i++) buf[i] = <span class="type">Math</span>.<span class="fn">sin</span>(i * <span class="num">0.001</span>);
+  <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"sum:"</span>, buf.<span class="fn">reduce</span>((a, b) =&gt; a + b, <span class="num">0</span>));
+});                                          <span class="com">// buf freed here, no GC pressure</span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="kw">import</span> * <span class="kw">as</span> fs <span class="kw">from</span> <span class="str">"node:fs"</span>;
 
 <span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
   <span class="kw">const</span> fd = fs.<span class="fn">openSync</span>(path, <span class="str">"r"</span>);
