@@ -18,7 +18,9 @@ const modules = [
   "audio",
   "camera",
   "csv",
+  "gpio",
   "gpu",
+  "i2c",
   "image",
   "llm",
   "mcp",
@@ -28,6 +30,7 @@ const modules = [
   "signals",
   "simd",
   "speech",
+  "spi",
   "video",
   "vision",
 ].map(slug => ({ label: `bun:${slug}`, link: `${docsRoot}/${slug}/` }));

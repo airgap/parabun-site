@@ -1,0 +1,101 @@
+---
+title: bun:i2c
+description: Linux i2c-dev wrapper. Combined-message transactions + SMBus shortcuts. Same surface on RPi 4/5, Jetson, and any Linux SBC.
+---
+
+```ts
+import i2c from "bun:i2c";
+```
+
+A small module wrapping the Linux i2c-dev character device (`/dev/i2c-N`). Combined-message transactions go through `I2C_RDWR`; SMBus shortcuts (Read/Write Byte/Word/Block) go through `I2C_SMBUS`. No vendored libi2c; pure ioctl on the kernel character device.
+
+`bun:i2c` is currently Linux-only.
+
+## `buses()`
+
+Synchronously enumerates `/dev/i2c-N` entries with the driver-supplied bus name and decoded capability flags.
+
+```ts
+i2c.buses();
+// [
+//   { path: "/dev/i2c-1",  name: "bcm2835 (i2c@7e804000)",
+//     capabilities: ["i2c", "smbus_quick", "smbus_read_byte_data", ...] },
+//   ...
+// ]
+```
+
+The `name` is read from `/sys/class/i2c-dev/<dev>/name`. Capabilities are decoded from the kernel's `I2C_FUNCS` bitmap — useful for verifying that the controller exposes the SMBus subset your sensor needs before you try to talk to it.
+
+## `open(path)`
+
+Opens a bus. Returns a `Bus`.
+
+```ts
+await using bus = i2c.open("/dev/i2c-1");
+bus.path;          // "/dev/i2c-1"
+bus.name;          // driver name from sysfs
+bus.capabilities;  // decoded I2C_FUNCS flags
+```
+
+`Bus` is `AsyncDisposable` — `await using` releases the fd at scope exit.
+
+### `bus.scan()`
+
+Probe the bus for device addresses that ack. Returns the 7-bit addresses present, matching `i2cdetect -y N`'s "Quick" probe mode.
+
+```ts
+const present = await bus.scan();
+// [0x40, 0x76]
+```
+
+Skips the reserved 0x00–0x02 + 0x78–0x7F ranges. Some sensors latch on data byte writes — `scan()` uses Quick (no data byte) everywhere to avoid corrupting them.
+
+### `bus.device(addr)`
+
+Bind to a 7-bit address. Cheap — no syscall. Returns a `Device` you can read/write from.
+
+```ts
+const dev = bus.device(0x76);
+
+await dev.write(Uint8Array.of(0xF7));      // raw write
+const buf = await dev.read(6);             // raw read
+```
+
+### `dev.transact(segments)`
+
+Combined-message transaction — the right shape for most chip protocols. Each segment is `{ write: Uint8Array }` or `{ read: number }`. The kernel issues all segments back-to-back with a repeated start (no STOP between segments), so register-access patterns work correctly without the device closing the bus state mid-transaction.
+
+```ts
+const [, payload] = await dev.transact([
+  { write: Uint8Array.of(0xF7) },   // register address
+  { read: 6 },                      // 6-byte payload
+]);
+// payload: Uint8Array(6) — the read result
+```
+
+Returns one slot per segment: read segments yield a `Uint8Array`, write segments yield `undefined` (so indices stay aligned with the input array).
+
+### `dev.smbus`
+
+SMBus shortcuts. Most chips speak a strict SMBus subset; these helpers are an ergonomic wrapper over `ioctl(I2C_SMBUS)`.
+
+```ts
+const id = await dev.smbus.readByte(0xD0);          // read byte at register
+const t  = await dev.smbus.readWord(0xFA);          // read word at register
+await dev.smbus.writeByte(0xF4, 0x27);              // write byte to register
+await dev.smbus.writeWord(0xF4, 0x0327);            // write word to register
+const ack = await dev.smbus.quick(true);            // SMBus Quick — true = write-direction probe
+
+// Variable-length block read / write:
+const block = await dev.smbus.readBlock(0xC2);
+await dev.smbus.writeBlock(0xC2, Uint8Array.of(0x01, 0x02, 0x03));
+```
+
+## Pi 5 note
+
+On stock Pi 5, the user header's i2c-1 isn't enabled by default. Add `dtparam=i2c_arm=on` to `/boot/firmware/config.txt` and reboot. The internal buses (`/dev/i2c-11`, `/dev/i2c-12`) are always present but route to non-header peripherals (HDMI, camera CSI, etc.).
+
+## See also
+
+- [`bun:gpio`](/docs/gpio/) — character-device GPIO on the same Linux SBCs.
+- [`bun:spi`](/docs/spi/) — spidev wrapper.
