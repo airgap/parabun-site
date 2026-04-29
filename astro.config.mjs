@@ -12,9 +12,24 @@ const guides = [
   { label: "Language extensions", link: `${docsRoot}/language/` },
 ];
 const modules = [
-  "arena", "arrow", "assistant", "audio", "camera", "csv",
-  "gpu", "image", "llm", "parallel", "pipeline", "rtp",
-  "signals", "simd", "speech", "video", "vision",
+  "arena",
+  "arrow",
+  "assistant",
+  "audio",
+  "camera",
+  "csv",
+  "gpu",
+  "image",
+  "llm",
+  "mcp",
+  "parallel",
+  "pipeline",
+  "rtp",
+  "signals",
+  "simd",
+  "speech",
+  "video",
+  "vision",
 ].map(slug => ({ label: `bun:${slug}`, link: `${docsRoot}/${slug}/` }));
 
 export default defineConfig({

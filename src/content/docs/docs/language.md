@@ -36,6 +36,8 @@ memo async fetchProfile(id: string) { return await db.users.get(id); }
 
 `A ~> B` is a reactive binding. It desugars to `effect(() => { B = A; })`, so `B` stays in step with `A` and whatever signals `A` reads from.
 
+`A ~> B when C` adds a guard. The desugar becomes `effect(() => { if (C) B = A; })` — `C` is read inside the effect so signal reads in the predicate are tracked too. Flipping `C` re-fires the effect, the body re-evaluates the guard, and only assigns when the guard passes.
+
 ```parabun
 signal count = 0;
 signal doubled = count * 2;   // auto-derived
@@ -46,6 +48,11 @@ count++;                      // effect re-runs: 1, 2
 
 // bind signal value into a DOM-ish sink — updates track dep changes
 count ~> el.innerHTML;
+
+// guarded bind — only updates while `enabled` is truthy
+signal enabled = true;
+doubled ~> el.innerHTML when enabled;
+enabled = false;              // future doubled changes don't reach el
 ```
 
 ## `|>`, `..!`, `..&`, `..=`

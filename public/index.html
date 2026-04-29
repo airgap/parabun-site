@@ -658,9 +658,10 @@ gpu.<span class="fn">release</span>(held);</code></pre>
       <p>
         Mic captures, Whisper transcribes, the LLM picks a tool under a JSON schema (mathematically guaranteed-valid
         output, no parse retries), the runtime dispatches it, Piper speaks the reply. The dispatch table is plain JS
-        today; <span class="import">bun:mcp</span> (deferred follow-up) swaps the table for an MCP client without
-        changing this control flow. <code>effect()</code> over <code>mic.peakLevel</code> / <code>chat.busy</code> /
-        <code>wsp.busy</code> drives a status line — no polling, no observers, no event emitters.
+        below; <span class="import">bun:mcp</span> (now shipped — stdio + WebSocket transports) lets you swap the
+        table for a Model Context Protocol client without changing this control flow. <code>effect()</code> over
+        <code>mic.peakLevel</code> / <code>chat.busy</code> / <code>wsp.busy</code> drives a status line — no
+        polling, no observers, no event emitters.
       </p>
       <figure class="code">
         <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
@@ -753,9 +754,9 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 });</code></pre>
       </figure>
       <p class="footnote">
-        Four modules, three signals, zero glue code. Replace
-        <span class="import">bun:assistant</span> with a hand-rolled <code>bun:speech</code> loop if you want barge-in
-        before that ships in core.
+        Four modules, three signals, zero glue code. Barge-in is built into <span class="import">bun:assistant</span>
+        now (rising edge on <code>vad.active</code> drops the queued TTS via <code>spk.stop()</code> and stamps
+        <code>turn.interrupted</code>); programmatic cancel is <code>bot.interrupt()</code>.
       </p>
 
       <h2 id="language">Language extensions — <code>.pts</code> / <code>.pjs</code></h2>
@@ -981,10 +982,13 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <td><span class="import">bun:assistant</span></td>
             <td>
               Three-line voice-assistant facade composing <span class="import">bun:audio</span> +
-              <span class="import">bun:speech</span> + <span class="import">bun:llm</span>. <code>bot.run</code> /
-              <code>turns</code> / <code>ask</code> / <code>say</code> + reactive <code>state</code> /
-              <code>history</code> / <code>lastTurn</code> / <code>interrupted</code> signals + sqlite-backed persistent
-              memory. Tool dispatch, wake word, barge-in, RAG, and vision (VLM) turns deferred to follow-ups.
+              <span class="import">bun:speech</span> + <span class="import">bun:llm</span> +
+              <span class="import">bun:mcp</span>. <code>bot.run</code> / <code>turns</code> / <code>ask</code> /
+              <code>say</code> / <code>interrupt</code> + reactive <code>state</code> / <code>history</code> /
+              <code>lastTurn</code> / <code>interrupted</code> / <code>toolsActive</code> signals + sqlite-backed
+              persistent memory + tool dispatch (inline + MCP) + VAD-driven barge-in + wake word
+              (<code>wakeWord: "hey jetson"</code>) + cron-driven scheduled prompts +
+              RAG (<code>knowledge: { dir, encoder }</code>). Vision (VLM) turns deferred to follow-up.
             </td>
           </tr>
           <tr>

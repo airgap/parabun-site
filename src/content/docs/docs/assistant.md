@@ -139,6 +139,7 @@ Every public signal is a [`bun:signals`](/docs/signals/) Signal — wire them in
 | `bot.history` | `Message[]` | Every time a turn user / assistant / system message is appended. |
 | `bot.lastTurn` | `Turn \| null` | When a turn finishes. |
 | `bot.interrupted` | `boolean` | Flips `true` when VAD-driven barge-in or a `bot.interrupt()` call cuts the in-flight turn short. Resets at the start of the next turn. |
+| `bot.toolsActive` | `Set<string>` | Names of tool calls currently in flight. Synchronous transitions on dispatch start and end. |
 
 ```ts
 import { effect } from "bun:signals";
@@ -179,6 +180,47 @@ type MemoryStore = {
 ```
 
 The schema is one `turns(id, role, content, ts)` table. Auto-summarization (sliding window of raw turns + stack of summaries when context approaches `kvCacheSize`) is a tracked follow-up.
+
+## Tools
+
+Pass `tools: [...]` to give the model actuators. Each turn runs schema-constrained generation: the model picks a tool (or `null` for "I'm done"), supplies args, the runtime parses + dispatches, and the result is fed back as a synthetic message. The loop continues until the model emits a final reply. `Turn.toolCalls` records every dispatch.
+
+Two tool shapes are accepted, mixed freely in the same array:
+
+**Inline** — a `{ name, description?, schema, run }` descriptor:
+
+```ts
+const bot = await assistant.create({
+  llm: "/models/...gguf",
+  tools: [
+    {
+      name: "add",
+      description: "Returns a + b.",
+      schema: { type: "object", properties: { a: { type: "number" }, b: { type: "number" } }, required: ["a", "b"] },
+      run({ a, b }) { return a + b; },
+    },
+  ],
+});
+```
+
+`run` returns any JSON-serializable value. Async returns are awaited. Schema is the JSON Schema fed to grammar-constrained sampling; only structures the schema lib supports work (no recursive `oneOf`, no recursive `object`).
+
+**MCP connections** — an object with `tools: ToolDescriptor[]` + `call(name, args)`. Every [`bun:mcp`](/docs/mcp/) connection matches structurally:
+
+```ts
+import mcp from "bun:mcp";
+await using conn = await mcp.connect("stdio", "home-assistant-mcp");
+await using bot = await assistant.create({
+  llm: "/models/...gguf",
+  tools: [conn],   // every tool the server exposes is callable mid-turn
+});
+```
+
+The assistant flattens the MCP connection's tool list into its own catalog; calls route back through `conn.call`. Mix MCP connections with inline tools in the same `tools:` array.
+
+Add or remove tools mid-session with `bot.addTool(tool)` / `bot.removeTool(name)`. `bot.tools` returns a snapshot of the current catalog (each entry tagged `source: "inline" | "mcp"`). `bot.toolsActive` is a `Signal<Set<string>>` carrying tool names currently in flight — wire it into a UI to show "calling get_weather…" badges.
+
+The schema-constrained generator runs up to **8 iterations per turn** before forcing a final reply without the schema constraint, so a tool that keeps demanding more tool calls can't loop indefinitely.
 
 ## Barge-in
 
@@ -335,9 +377,14 @@ try { await bot.run(); } finally { await bot.close(); }
 
 Per `PLAN-bun-assistant.md` build order, the core covers:
 
-- `assistant.create` + `bot.run` / `turns` / `ask` / `say` / `close`
-- The four reactive signals
+- `assistant.create` + `bot.run` / `turns` / `ask` / `say` / `close` / `interrupt`
+- Reactive signals: `state`, `history`, `lastTurn`, `interrupted`, `toolsActive`
 - In-memory + sqlite-backed transcript
+- Tool dispatch: inline `{name,schema,run}` tools and `bun:mcp` connections
+- VAD-driven barge-in (and programmatic `bot.interrupt()`)
+- Wake-word gate (whisper-backed; substring / exact / fuzzy matching)
+- Cron-driven scheduled / proactive prompts
+- RAG over a local doc directory (`KnowledgeStore` + `chunkText`)
 - Composition of every Tier-1 voice primitive (mic capture, VAD, STT, LLM, TTS, speaker)
 
 ## Deferred follow-ups
