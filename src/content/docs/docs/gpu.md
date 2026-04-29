@@ -62,9 +62,17 @@ GPU calls take typed arrays *or* device-resident handles. Wrap a `Float32Array` 
 ```ts
 import gpu from "bun:gpu";
 
+const M = 1024, K = 768;
+const weights = Float32Array.from({ length: M * K }, () => Math.random());
+const queries = [
+  new Float32Array(K).fill(0.1),
+  new Float32Array(K).fill(0.2),
+];
+
 using mat = new gpu.GpuFloat32Array(weights);     // HtoD on construction
 for (const q of queries) {
   const scores = gpu.matVec(mat, q, M, K);        // q HtoDs, mat is already there
+  console.log("top:", Math.max(...scores));
 }
 // `mat` released at scope exit
 ```

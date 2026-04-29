@@ -86,6 +86,7 @@ Combined with [`bun:audio`](/docs/audio/):
 import audio from "bun:audio";
 import rtp from "bun:rtp";
 
+await using mic = await audio.capture({ sampleRate: 48000, channels: 1 });
 const enc = new audio.OpusEncoder({ sampleRate: 48000, channels: 1, application: "voip" });
 const den = new audio.Denoiser();
 const agc = new audio.Gain({ targetLevel: 0.1 });
@@ -93,11 +94,10 @@ const agc = new audio.Gain({ targetLevel: 0.1 });
 let sequence = 0, timestamp = 0;
 const ssrc = (Math.random() * 0xFFFFFFFF) | 0;
 
-for (const i16Frame of micFrames) {
-  const f32 = audio.i16ToF32(i16Frame);
-  den.process(f32);
-  agc.process(f32);
-  const opus = enc.encode(f32);
+for await (const frame of mic.frames()) {
+  den.process(frame.samples);
+  agc.process(frame.samples);
+  const opus = enc.encode(frame.samples);
 
   const packet = rtp.pack({
     payloadType: 111,
@@ -106,9 +106,10 @@ for (const i16Frame of micFrames) {
     ssrc,
     payload: opus,
   });
-  send(packet);
+  // send `packet` over your transport (UDP, WebRTC, etc.).
+  console.log("packet bytes:", packet.byteLength);
 
-  timestamp += f32.length;       // advance by sample count
+  timestamp += frame.samples.length;       // advance by sample count
 }
 ```
 
