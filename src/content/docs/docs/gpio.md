@@ -111,6 +111,16 @@ for await (const _ of button.edges()) {
 }
 ```
 
+## Performance
+
+Measured on a Pi 5 RP1 (`bench/parabun-gpio-toggle`):
+
+- Single-line `write()` — ~2.1 M writes/s, ~470 ns per ioctl
+- Single-line `toggle()` — ~2.0 M toggles/s, ~490 ns per call
+- 4-line `bank.write()` — ~920 k writes/s = ~3.7 M pin-writes/s (1.1 µs covers 4 lines atomically)
+
+uAPI v2 is ioctl-bound at ~1 MHz toggle rate per pin (two writes per toggle cycle). For sustained > 1 MHz toggle rates or DMA-driven PWM, see `bun:mmio` (off by default — bypasses the kernel and pokes the controller's GPIO registers directly).
+
 ## See also
 
 - [`bun:i2c`](/docs/i2c/) — i2c-dev character device on the same Linux SBCs.
