@@ -3,6 +3,8 @@ title: bun:i2c
 description: Linux i2c-dev wrapper. Combined-message transactions + SMBus shortcuts. Same surface on RPi 4/5, Jetson, and any Linux SBC.
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ```ts
 import i2c from "bun:i2c";
 ```
@@ -94,6 +96,57 @@ await dev.smbus.writeBlock(0xC2, Uint8Array.of(0x01, 0x02, 0x03));
 ## Pi 5 note
 
 On stock Pi 5, the user header's i2c-1 isn't enabled by default. Add `dtparam=i2c_arm=on` to `/boot/firmware/config.txt` and reboot. The internal buses (`/dev/i2c-11`, `/dev/i2c-12`) are always present but route to non-header peripherals (HDMI, camera CSI, etc.).
+
+## Reactive sensor reads
+
+Pair with [`bun:signals`](/docs/signals/)' `fromInterval` to turn any periodic register read into a reactive Signal. The shape is identical for any chip — replace the register address and decoding with whatever the sensor's datasheet says.
+
+<Tabs syncKey="lang">
+  <TabItem label="TypeScript">
+    ```ts
+    import i2c from "bun:i2c";
+    import sigs from "bun:signals";
+
+    await using bus = i2c.open("/dev/i2c-1");
+    const sensor = bus.device(0x76);
+
+    // Poll a temperature register every 500 ms.
+    const temp = sigs.fromInterval(
+      () => sensor.smbus.readWord(0xFA),
+      500,
+    );
+
+    // Threshold-derived state — auto-recomputes when temp updates.
+    const isHot = sigs.derived(() => (temp.signal.get() ?? 0) > 30);
+
+    sigs.effect(() => {
+      if (isHot.get()) console.log("HOT:", temp.signal.get());
+    });
+    ```
+  </TabItem>
+  <TabItem label="Parabun">
+    ```parabun
+    import i2c from "bun:i2c";
+    import sigs from "bun:signals";
+
+    await using bus = i2c.open("/dev/i2c-1");
+    const sensor = bus.device(0x76);
+
+    const temp = sigs.fromInterval(
+      () => sensor.smbus.readWord(0xFA),
+      500,
+    );
+
+    const isHot = sigs.derived(() => (temp.signal.get() ?? 0) > 30);
+
+    effect {
+      if (isHot.get()) console.log("HOT:", temp.signal.get());
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+`fromInterval` returns `{ signal, dispose }`. Disposing stops the polling — useful when switching between sensors at runtime.
 
 ## See also
 

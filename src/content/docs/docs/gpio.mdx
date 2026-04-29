@@ -3,6 +3,8 @@ title: bun:gpio
 description: Linux GPIO character device wrapper (uAPI v2). Same surface across RPi 4/5, Jetson, and any Linux SBC.
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ```ts
 import gpio from "bun:gpio";
 ```
@@ -43,26 +45,50 @@ chip.lines;  // 54
 
 Acquire a single line on this chip. Returns a `Line` you can `read()` / `write()` / `toggle()` / `edges()`.
 
-```ts
-// Output:
-const led = chip.line(17, { mode: "out", initial: 0 });
-led.write(1);
-led.toggle();
-led.value.get();   // 0 | 1 — Signal of the most recent observed value
+<Tabs syncKey="lang">
+  <TabItem label="TypeScript">
+    ```ts
+    // Output:
+    const led = chip.line(17, { mode: "out", initial: 0 });
+    led.write(1);
+    led.toggle();
+    led.value.get();   // 0 | 1 — Signal of the most recent observed value
 
-// Input with hardware debounce + edge events:
-const button = chip.line(27, {
-  mode: "in",
-  pull: "up",
-  debounceMs: 5,
-  edge: "falling",
-});
-for await (const e of button.edges()) {
-  // e.kind: "rising" | "falling"
-  // e.timestampNs: bigint (kernel monotonic)
-  // e.value: 0 | 1
-}
-```
+    // Input with hardware debounce + edge events:
+    const button = chip.line(27, {
+      mode: "in",
+      pull: "up",
+      debounceMs: 5,
+      edge: "falling",
+    });
+    for await (const e of button.edges()) {
+      // e.kind: "rising" | "falling"
+      // e.timestampNs: bigint (kernel monotonic)
+      // e.value: 0 | 1
+    }
+    ```
+  </TabItem>
+  <TabItem label="Parabun">
+    ```parabun
+    // Output:
+    const led = chip.line(17, { mode: "out", initial: 0 });
+    led.write(1);
+    led.toggle();
+    led.value;          // 0 | 1 — Signal, bare reads desugar to .get()
+
+    // Input with hardware debounce + edge events:
+    const button = chip.line(27, {
+      mode: "in",
+      pull: "up",
+      debounceMs: 5,
+      edge: "falling",
+    });
+    for await (const e of button.edges()) {
+      // e.kind / e.timestampNs / e.value
+    }
+    ```
+  </TabItem>
+</Tabs>
 
 Options:
 
@@ -91,25 +117,49 @@ bank.write(0b0001n, 0b0001n);  // values + mask: only modify bit 0
 
 Named `bank` rather than `lines` because `chip.lines` is already the chip's line count.
 
-## Quick example: blinking LED + button
+## Quick example: button → LED, reactive
 
-```ts
-import gpio from "bun:gpio";
+The full IoT control loop in one effect block. `chip.line({ pollHz: 50 })` updates `button.value` from the kernel; `effect { ... }` re-runs on every change and writes the LED — no manual `setInterval`, no callback wiring.
 
-await using chip = gpio.open("/dev/gpiochip4");
-const led = chip.line(17, { mode: "out", initial: 0 });
-const button = chip.line(27, { mode: "in", pull: "up", edge: "falling", debounceMs: 5 });
+<Tabs syncKey="lang">
+  <TabItem label="TypeScript">
+    ```ts
+    import gpio from "bun:gpio";
+    import { effect } from "bun:signals";
 
-// Blink in the background.
-const blinker = setInterval(() => led.toggle(), 500);
+    await using chip = gpio.open("/dev/gpiochip4");
+    await using button = chip.line(27, {
+      mode: "in", pull: "up", debounceMs: 5, pollHz: 50,
+    });
+    await using led = chip.line(17, { mode: "out", initial: 0 });
 
-// Stop on first button press.
-for await (const _ of button.edges()) {
-  clearInterval(blinker);
-  led.write(0);
-  break;
-}
-```
+    effect(() => {
+      const pressed = button.value.get() === 0;
+      led.write(pressed ? 1 : 0);
+    });
+
+    await new Promise(() => {});   // keep alive
+    ```
+  </TabItem>
+  <TabItem label="Parabun">
+    ```parabun
+    import gpio from "bun:gpio";
+
+    await using chip = gpio.open("/dev/gpiochip4");
+    await using button = chip.line(27, {
+      mode: "in", pull: "up", debounceMs: 5, pollHz: 50,
+    });
+    await using led = chip.line(17, { mode: "out", initial: 0 });
+
+    effect {
+      const pressed = button.value.get() === 0;
+      led.write(pressed ? 1 : 0);
+    }
+
+    await new Promise(() => {});   // keep alive
+    ```
+  </TabItem>
+</Tabs>
 
 ## Performance
 
