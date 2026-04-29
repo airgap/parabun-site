@@ -58,6 +58,26 @@ for (const ordered of buf.drain()) {
 
 `drain()` yields packets in sequence order until it would have to wait for a missing one. Subsequent `push` calls + `drain` cycles continue from where it stopped.
 
+### Reactive signals
+
+Three [`bun:signals`](/docs/signals/) Signals on the buffer instance — wire them into a UI without polling.
+
+| Signal | Type | When it changes |
+| --- | --- | --- |
+| `jb.pendingSignal` | `number` | Number of packets buffered, waiting on the next-expected slot. Updates synchronously on every `push` / `pop`. |
+| `jb.lossCountSignal` | `number` | Cumulative count of packets declared lost since construction. Increments when a missing slot ages out past `maxLag`. |
+| `jb.lossRateSignal` | `number` | Lifetime loss ratio: `lossCount / (lossCount + delivered)`. Recomputes on every delivered or lost transition. |
+
+```ts
+import { effect } from "bun:signals";
+
+effect(() => {
+  if (jb.lossRateSignal.get() > 0.05) console.warn("packet loss > 5%");
+});
+```
+
+`session.connected` and `session.jitterMs` from `PLAN-module-signals.md` need a future Session abstraction (RTP / RTCP correlation, source-arrival timestamp differencing) — neither exists in `bun:rtp` v1. When a Session class lands, those signals will join the surface there.
+
 ## A full audio pipeline
 
 Combined with [`bun:audio`](/docs/audio/):
