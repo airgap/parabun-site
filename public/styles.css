@@ -254,47 +254,24 @@ pre code {
   font-size: inherit;
 }
 
-.kw {
-  color: #c678dd;
-}
-.str {
-  color: #98c379;
-}
-.com {
-  color: var(--text-faint);
-  font-style: italic;
-}
-.num {
-  color: #d19a66;
-}
-.fn {
-  color: #61afef;
-}
-.type {
-  color: #e5c07b;
-}
+/* Code blocks inside <pre> are rendered through Shiki + the parabun
+   TextMate grammar at build time (scripts/highlight-landing.ts) — every
+   colour comes through inline `style="color:#…"` on per-token <span>s,
+   so this stylesheet only owns layout. The classes below are still used
+   for inline decoration in prose: `pb-kw` / `pb-op` highlight Parabun
+   tokens called out in section headings, `import` italicises `bun:*`
+   module names referenced in body text. */
 .pure,
 .pb-kw {
   color: var(--accent);
   font-weight: 500;
-}
-.op,
-.pb-op {
-  color: var(--accent);
-}
-/* Parabun keywords — memo / signal / effect / arena / defer / fun — share the
-   pure accent since they're all purity/lifecycle modifiers; weight + italic
-   distinguishes them from the surrounding TypeScript keyword color. */
-.pb-kw {
   font-style: italic;
 }
-/* Parabun operators — ~>, |>, ..=, ..!, ..& — use a dimmer variant of the
-   accent so they read as operators, not keywords. */
+.op,
 .pb-op {
   color: var(--accent-dim);
   font-weight: 600;
 }
-/* Highlight for a declared signal-bound identifier name. */
 .pb-signal-ref {
   color: var(--accent);
 }

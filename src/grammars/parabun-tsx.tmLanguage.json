@@ -1,0 +1,124 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "displayName": "Parabun TSX",
+  "name": "parabun-tsx",
+  "scopeName": "source.ptsx",
+  "embeddedLangs": ["tsx"],
+  "patterns": [
+    { "include": "#parabun-keywords" },
+    { "include": "#parabun-fun" },
+    { "include": "#parabun-pure" },
+    { "include": "#parabun-operators" },
+    { "include": "source.tsx" }
+  ],
+  "repository": {
+    "parabun-keywords": {
+      "patterns": [
+        {
+          "match": "\\b(signal)\\b(?=\\s+[A-Za-z_$][\\w$]*\\s*[=,;:!])",
+          "captures": { "1": { "name": "storage.type.signal.parabun" } }
+        },
+        {
+          "match": "\\b(effect)\\b(?=\\s*\\{)",
+          "captures": { "1": { "name": "keyword.control.effect.parabun" } }
+        },
+        {
+          "match": "\\b(arena)\\b(?=\\s*\\{)",
+          "captures": { "1": { "name": "keyword.control.arena.parabun" } }
+        },
+        {
+          "match": "\\b(memo)\\s+(async)\\s+(?=[A-Za-z_$][\\w$]*\\s*(?:<|\\())",
+          "captures": {
+            "1": { "name": "keyword.other.memo.parabun" },
+            "2": { "name": "storage.modifier.async.tsx" }
+          }
+        },
+        {
+          "match": "\\b(memo)\\s+(?!async\\b)(?=[A-Za-z_$][\\w$]*\\s*(?:<|\\())",
+          "captures": { "1": { "name": "keyword.other.memo.parabun" } }
+        },
+        {
+          "match": "\\b(memo)\\s+(async)\\s+(?=\\(|[A-Za-z_$][\\w$]*\\s*=>)",
+          "captures": {
+            "1": { "name": "keyword.other.memo.parabun" },
+            "2": { "name": "storage.modifier.async.tsx" }
+          }
+        },
+        {
+          "match": "\\b(memo)\\s+(?=\\(|<[\\w\\s,=]+>\\s*\\(|[A-Za-z_$][\\w$]*\\s*=>)",
+          "captures": { "1": { "name": "keyword.other.memo.parabun" } }
+        },
+        {
+          "match": "\\b(defer)\\b(?=\\s+[A-Za-z_$])",
+          "captures": { "1": { "name": "keyword.control.defer.parabun" } }
+        }
+      ]
+    },
+    "parabun-fun": {
+      "patterns": [
+        {
+          "match": "\\b(fun)\\b(?=\\s*[a-zA-Z_$*(<])",
+          "captures": { "1": { "name": "storage.type.function.tsx" } }
+        }
+      ]
+    },
+    "parabun-pure": {
+      "patterns": [
+        {
+          "match": "\\b(export)\\s+(pure)\\s+(async)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.export.tsx" },
+            "2": { "name": "keyword.other.pure.parabun" },
+            "3": { "name": "storage.modifier.async.tsx" },
+            "4": { "name": "storage.type.function.tsx" }
+          }
+        },
+        {
+          "match": "\\b(export)\\s+(pure)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.export.tsx" },
+            "2": { "name": "keyword.other.pure.parabun" },
+            "3": { "name": "storage.type.function.tsx" }
+          }
+        },
+        {
+          "match": "\\b(pure)\\s+(async)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" },
+            "2": { "name": "storage.modifier.async.tsx" },
+            "3": { "name": "storage.type.function.tsx" }
+          }
+        },
+        {
+          "match": "\\b(pure)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" },
+            "2": { "name": "storage.type.function.tsx" }
+          }
+        },
+        {
+          "match": "\\b(pure)\\s+(async)\\b(?=\\s*(?:\\(|\\w+\\s*=>))",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" },
+            "2": { "name": "storage.modifier.async.tsx" }
+          }
+        },
+        {
+          "match": "\\b(pure)\\b(?=\\s*(?:\\(|\\w+\\s*=>))",
+          "captures": { "1": { "name": "keyword.other.pure.parabun" } }
+        }
+      ]
+    },
+    "parabun-operators": {
+      "patterns": [
+        { "name": "keyword.operator.await-assign.parabun", "match": "\\.\\.=" },
+        { "name": "keyword.operator.catch.parabun", "match": "\\.\\.!" },
+        { "name": "keyword.operator.finally.parabun", "match": "\\.\\.&" },
+        { "name": "keyword.operator.range.parabun", "match": "\\.\\." },
+        { "name": "keyword.operator.pipeline.parabun", "match": "\\|>" },
+        { "name": "keyword.operator.rbind.parabun", "match": "~>" },
+        { "name": "keyword.operator.callbind.parabun", "match": "(?<![\\-=<])->" }
+      ]
+    }
+  }
+}

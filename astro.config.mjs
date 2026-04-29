@@ -1,5 +1,14 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import shikiTypescript from "@shikijs/langs/typescript";
+import shikiTsx from "@shikijs/langs/tsx";
+import shikiJavascript from "@shikijs/langs/javascript";
+import shikiJsx from "@shikijs/langs/jsx";
+import parabunTsGrammar from "./src/grammars/parabun-ts.tmLanguage.json" with { type: "json" };
+import parabunTsxGrammar from "./src/grammars/parabun-tsx.tmLanguage.json" with { type: "json" };
+import parabunJsGrammar from "./src/grammars/parabun-js.tmLanguage.json" with { type: "json" };
+import parabunJsxGrammar from "./src/grammars/parabun-jsx.tmLanguage.json" with { type: "json" };
+import parabunInjectGrammar from "./src/grammars/parabun-inject.tmLanguage.json" with { type: "json" };
 
 // Hand-curated sidebar — the docs sit flat under src/content/docs/docs/* to
 // preserve existing /docs/<slug>/ URLs, so autogen-from-directory isn't a
@@ -49,12 +58,31 @@ export default defineConfig({
         { label: "Modules", items: modules },
       ],
       expressiveCode: {
-        // Alias the existing ```parabun fences to TypeScript so they highlight.
-        // Parabun-specific tokens (memo / signal / effect / arena / defer / |> ~>
-        // ..= ..! ..&) render as plain identifiers / operators for now — the
-        // custom TextMate grammar is a follow-up tracked in PLAN-bun-assistant.md
-        // section "Where the line is".
-        shiki: { langAlias: { parabun: "typescript" } },
+        // Custom TextMate grammars for `.pts` / `.ptsx` / `.pjs` / `.pjsx`.
+        // Each grammar embeds the matching base TS/TSX/JS/JSX grammar via
+        // `embeddedLangs`, then layers Parabun keywords (memo / pure / fun /
+        // signal / effect / arena / defer) and operators (|> ~> -> ..= ..! ..&)
+        // on top.
+        shiki: {
+          langs: [
+            shikiTypescript,
+            shikiTsx,
+            shikiJavascript,
+            shikiJsx,
+            parabunTsGrammar,
+            parabunTsxGrammar,
+            parabunJsGrammar,
+            parabunJsxGrammar,
+            parabunInjectGrammar,
+          ],
+          langAlias: {
+            parabun: "parabun-ts",
+            pts: "parabun-ts",
+            ptsx: "parabun-tsx",
+            pjs: "parabun-js",
+            pjsx: "parabun-jsx",
+          },
+        },
         themes: ["github-dark"],
       },
     }),

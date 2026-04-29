@@ -158,30 +158,30 @@
               <button data-lang="parabun" type="button">Parabun</button>
             </div>
           </div>
-          <pre data-lang="ts"><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
-
-<span class="kw">const</span> rows = <span class="type">Array</span>.<span class="fn">from</span>({ length: <span class="num">1_000_000</span> }, (_, i) => <span class="str">`record-${i}`</span>);
-
-<span class="kw">function</span> <span class="fn">score</span>(row: <span class="type">string</span>): <span class="type">number</span> {
-  <span class="kw">let</span> h = <span class="num">0</span>;
-  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; row.length; i++) h = (h * <span class="num">31</span> + row.<span class="fn">charCodeAt</span>(i)) | <span class="num">0</span>;
-  <span class="kw">return</span> h * h;
-}
-
-<span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });
-<span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"scored"</span>, scores.length, <span class="str">"rows; first ="</span>, scores[<span class="num">0</span>]);</code></pre>
-          <pre data-lang="parabun" hidden><code><span class="kw">import</span> { pmap } <span class="kw">from</span> <span class="str">"bun:parallel"</span>;
-
-<span class="kw">const</span> rows = <span class="type">Array</span>.<span class="fn">from</span>({ length: <span class="num">1_000_000</span> }, (_, i) => <span class="str">`record-${i}`</span>);
-
-<span class="pure">pure</span> <span class="kw">function</span> <span class="fn">score</span>(row: <span class="type">string</span>): <span class="type">number</span> {
-  <span class="kw">let</span> h = <span class="num">0</span>;
-  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; row.length; i++) h = (h * <span class="num">31</span> + row.<span class="fn">charCodeAt</span>(i)) | <span class="num">0</span>;
-  <span class="kw">return</span> h * h;
-}
-
-<span class="kw">const</span> scores = <span class="kw">await</span> <span class="fn">pmap</span>(score, rows, { concurrency: <span class="num">8</span> });
-<span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"scored"</span>, scores.length, <span class="str">"rows; first ="</span>, scores[<span class="num">0</span>]);</code></pre>
+          <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> rows</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Array.</span><span style="color:#B392F0">from</span><span style="color:#E1E4E8">({ length: </span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8"> }, (</span><span style="color:#FFAB70">_</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">i</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#9ECBFF"> `record-${</span><span style="color:#E1E4E8">i</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> score</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">row</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#E1E4E8"> h </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8"> row.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) h </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> (h </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 31</span><span style="color:#F97583"> +</span><span style="color:#E1E4E8"> row.</span><span style="color:#B392F0">charCodeAt</span><span style="color:#E1E4E8">(i)) </span><span style="color:#F97583">|</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> h </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> h;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> scores</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> pmap</span><span style="color:#E1E4E8">(score, rows, { concurrency: </span><span style="color:#79B8FF">8</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"scored"</span><span style="color:#E1E4E8">, scores.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"rows; first ="</span><span style="color:#E1E4E8">, scores[</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">]);</span></span></code></pre>
+          <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> rows</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Array.</span><span style="color:#B392F0">from</span><span style="color:#E1E4E8">({ length: </span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8"> }, (</span><span style="color:#FFAB70">_</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">i</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#9ECBFF"> `record-${</span><span style="color:#E1E4E8">i</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> score</span><span style="color:#E1E4E8">(row: string): number {</span></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#E1E4E8"> h </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8"> row.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) h </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> (h </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 31</span><span style="color:#F97583"> +</span><span style="color:#E1E4E8"> row.</span><span style="color:#B392F0">charCodeAt</span><span style="color:#E1E4E8">(i)) </span><span style="color:#F97583">|</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> h </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> h;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> scores</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> pmap</span><span style="color:#E1E4E8">(score, rows, { concurrency: </span><span style="color:#79B8FF">8</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"scored"</span><span style="color:#E1E4E8">, scores.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"rows; first ="</span><span style="color:#E1E4E8">, scores[</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">]);</span></span></code></pre>
         </figure>
 
         <h3 id="bun-simd"><span class="import">bun:simd</span></h3>
@@ -192,15 +192,15 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="kw">import</span> { mulScalar, add, dot, sum } <span class="kw">from</span> <span class="str">"bun:simd"</span>;
-
-<span class="kw">const</span> a = <span class="kw">new</span> <span class="type">Float32Array</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]);
-<span class="kw">const</span> b = <span class="kw">new</span> <span class="type">Float32Array</span>([<span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">8</span>]);
-
-<span class="kw">const</span> y = <span class="fn">mulScalar</span>(a, <span class="num">3</span>);     <span class="com">// [3, 6, 9, 12]</span>
-<span class="kw">const</span> z = <span class="fn">add</span>(a, b);          <span class="com">// [6, 8, 10, 12]</span>
-<span class="kw">const</span> d = <span class="fn">dot</span>(a, b);          <span class="com">// 70</span>
-<span class="kw">const</span> s = <span class="fn">sum</span>(a);             <span class="com">// 10</span></code></pre>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { mulScalar, add, dot, sum } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:simd"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> a</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">([</span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">2</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">3</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">4</span><span style="color:#E1E4E8">]);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> b</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">([</span><span style="color:#79B8FF">5</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">6</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">7</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">8</span><span style="color:#E1E4E8">]);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> y</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> mulScalar</span><span style="color:#E1E4E8">(a, </span><span style="color:#79B8FF">3</span><span style="color:#E1E4E8">);     </span><span style="color:#6A737D">// [3, 6, 9, 12]</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> z</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> add</span><span style="color:#E1E4E8">(a, b);          </span><span style="color:#6A737D">// [6, 8, 10, 12]</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> d</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> dot</span><span style="color:#E1E4E8">(a, b);          </span><span style="color:#6A737D">// 70</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> s</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> sum</span><span style="color:#E1E4E8">(a);             </span><span style="color:#6A737D">// 10</span></span></code></pre>
         </figure>
 
         <table class="bench" aria-label="SIMD benchmark, N=100,000">
@@ -250,22 +250,22 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="kw">import</span> gpu <span class="kw">from</span> <span class="str">"bun:gpu"</span>;
-
-<span class="kw">const</span> M = <span class="num">1024</span>, K = <span class="num">768</span>;
-<span class="kw">const</span> mat = gpu.<span class="fn">alloc</span>(M * K, <span class="str">"f32"</span>);
-<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; mat.length; i++) mat[i] = <span class="type">Math</span>.<span class="fn">random</span>();
-
-<span class="kw">const</span> held = gpu.<span class="fn">hold</span>(mat);                          <span class="com">// uploaded once</span>
-<span class="kw">const</span> queries = [
-  <span class="kw">new</span> <span class="type">Float32Array</span>(K).<span class="fn">fill</span>(<span class="num">0.1</span>),
-  <span class="kw">new</span> <span class="type">Float32Array</span>(K).<span class="fn">fill</span>(<span class="num">0.2</span>),
-];
-<span class="kw">for</span> (<span class="kw">const</span> q <span class="kw">of</span> queries) {
-  <span class="kw">const</span> scores = gpu.<span class="fn">matVec</span>(held, q, M, K);        <span class="com">// no copy</span>
-  <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"top score:"</span>, <span class="type">Math</span>.<span class="fn">max</span>(...scores));
-}
-gpu.<span class="fn">release</span>(held);</code></pre>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> gpu </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:gpu"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> M</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 1024</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">K</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 768</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> mat</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> gpu.</span><span style="color:#B392F0">alloc</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">M</span><span style="color:#F97583"> *</span><span style="color:#79B8FF"> K</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"f32"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8"> mat.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) mat[i] </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> Math.</span><span style="color:#B392F0">random</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> held</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> gpu.</span><span style="color:#B392F0">hold</span><span style="color:#E1E4E8">(mat);                          </span><span style="color:#6A737D">// uploaded once</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> queries</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> [</span></span>
+<span class="line"><span style="color:#F97583">  new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">K</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">fill</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0.1</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#F97583">  new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">K</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">fill</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0.2</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">];</span></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> q</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> queries) {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> scores</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> gpu.</span><span style="color:#B392F0">matVec</span><span style="color:#E1E4E8">(held, q, </span><span style="color:#79B8FF">M</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">K</span><span style="color:#E1E4E8">);        </span><span style="color:#6A737D">// no copy</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"top score:"</span><span style="color:#E1E4E8">, Math.</span><span style="color:#B392F0">max</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">...</span><span style="color:#E1E4E8">scores));</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"><span style="color:#E1E4E8">gpu.</span><span style="color:#B392F0">release</span><span style="color:#E1E4E8">(held);</span></span></code></pre>
         </figure>
 
         <p class="footnote">
@@ -328,14 +328,14 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="kw">import</span> image <span class="kw">from</span> <span class="str">"bun:image"</span>;
-
-<span class="kw">const</span> bytes = <span class="kw">await</span> Bun.<span class="fn">file</span>(<span class="str">"photo.jpg"</span>).<span class="fn">bytes</span>();
-<span class="kw">const</span> img = image.<span class="fn">decode</span>(bytes);
-<span class="kw">const</span> small = image.<span class="fn">resize</span>(img, { width: <span class="num">800</span>, height: <span class="num">600</span>, kernel: <span class="str">"lanczos"</span> });
-<span class="kw">const</span> sharp = image.<span class="fn">sharpen</span>(small, { amount: <span class="num">1.5</span> });
-<span class="kw">const</span> webp = image.<span class="fn">encode</span>(sharp, { format: <span class="str">"webp"</span>, quality: <span class="num">85</span> });
-<span class="kw">await</span> Bun.<span class="fn">write</span>(<span class="str">"photo.webp"</span>, webp);</code></pre>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> image </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:image"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> bytes</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> Bun.</span><span style="color:#B392F0">file</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"photo.jpg"</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">bytes</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> img</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> image.</span><span style="color:#B392F0">decode</span><span style="color:#E1E4E8">(bytes);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> small</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> image.</span><span style="color:#B392F0">resize</span><span style="color:#E1E4E8">(img, { width: </span><span style="color:#79B8FF">800</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">600</span><span style="color:#E1E4E8">, kernel: </span><span style="color:#9ECBFF">"lanczos"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> sharp</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> image.</span><span style="color:#B392F0">sharpen</span><span style="color:#E1E4E8">(small, { amount: </span><span style="color:#79B8FF">1.5</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> webp</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> image.</span><span style="color:#B392F0">encode</span><span style="color:#E1E4E8">(sharp, { format: </span><span style="color:#9ECBFF">"webp"</span><span style="color:#E1E4E8">, quality: </span><span style="color:#79B8FF">85</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> Bun.</span><span style="color:#B392F0">write</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"photo.webp"</span><span style="color:#E1E4E8">, webp);</span></span></code></pre>
         </figure>
 
         <h3 id="bun-audio"><span class="import">bun:audio</span></h3>
@@ -357,25 +357,25 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="kw">import</span> audio <span class="kw">from</span> <span class="str">"bun:audio"</span>;
-<span class="kw">import</span> rtp <span class="kw">from</span> <span class="str">"bun:rtp"</span>;
-
-<span class="kw">await using</span> mic = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">48000</span>, channels: <span class="num">1</span> });
-<span class="kw">const</span> enc = <span class="kw">new</span> audio.<span class="fn">OpusEncoder</span>({ sampleRate: <span class="num">48000</span>, channels: <span class="num">1</span>, application: <span class="str">"voip"</span> });
-<span class="kw">const</span> den = <span class="kw">new</span> audio.<span class="fn">Denoiser</span>();
-<span class="kw">const</span> agc = <span class="kw">new</span> audio.<span class="fn">Gain</span>({ targetLevel: <span class="num">0.1</span> });
-
-<span class="kw">const</span> ssrc = <span class="num">0x12345678</span>;
-<span class="kw">let</span> sequence = <span class="num">0</span>, timestamp = <span class="num">0</span>;
-
-<span class="kw">for await</span> (<span class="kw">const</span> frame <span class="kw">of</span> mic.<span class="fn">frames</span>()) {
-  den.<span class="fn">process</span>(frame.samples);                                       <span class="com">// suppress noise (in place)</span>
-  agc.<span class="fn">process</span>(frame.samples);                                       <span class="com">// normalize loudness</span>
-  <span class="kw">const</span> opus = enc.<span class="fn">encode</span>(frame.samples);
-  <span class="kw">const</span> packet = rtp.<span class="fn">pack</span>({ payloadType: <span class="num">111</span>, sequence: sequence++, timestamp, ssrc, payload: opus });
-  <span class="com">// send `packet` over your transport (UDP, WebRTC, …)</span>
-  timestamp += frame.samples.length;
-}</code></pre>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> rtp </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:rtp"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> mic</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">capture</span><span style="color:#E1E4E8">({ sampleRate: </span><span style="color:#79B8FF">48000</span><span style="color:#E1E4E8">, channels: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> enc</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">OpusEncoder</span><span style="color:#E1E4E8">({ sampleRate: </span><span style="color:#79B8FF">48000</span><span style="color:#E1E4E8">, channels: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">, application: </span><span style="color:#9ECBFF">"voip"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> den</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">Denoiser</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> agc</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">Gain</span><span style="color:#E1E4E8">({ targetLevel: </span><span style="color:#79B8FF">0.1</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> ssrc</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 0x12345678</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> sequence </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">, timestamp </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> frame</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> mic.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()) {</span></span>
+<span class="line"><span style="color:#E1E4E8">  den.</span><span style="color:#B392F0">process</span><span style="color:#E1E4E8">(frame.samples);                                       </span><span style="color:#6A737D">// suppress noise (in place)</span></span>
+<span class="line"><span style="color:#E1E4E8">  agc.</span><span style="color:#B392F0">process</span><span style="color:#E1E4E8">(frame.samples);                                       </span><span style="color:#6A737D">// normalize loudness</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> opus</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> enc.</span><span style="color:#B392F0">encode</span><span style="color:#E1E4E8">(frame.samples);</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> packet</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> rtp.</span><span style="color:#B392F0">pack</span><span style="color:#E1E4E8">({ payloadType: </span><span style="color:#79B8FF">111</span><span style="color:#E1E4E8">, sequence: sequence</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">, timestamp, ssrc, payload: opus });</span></span>
+<span class="line"><span style="color:#6A737D">  // send `packet` over your transport (UDP, WebRTC, …)</span></span>
+<span class="line"><span style="color:#E1E4E8">  timestamp </span><span style="color:#F97583">+=</span><span style="color:#E1E4E8"> frame.samples.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
         </figure>
 
         <h3 id="bun-csv"><span class="import">bun:csv</span></h3>
@@ -387,11 +387,11 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="kw">import</span> csv <span class="kw">from</span> <span class="str">"bun:csv"</span>;
-
-<span class="kw">for await</span> (<span class="kw">const</span> row <span class="kw">of</span> csv.<span class="fn">parseCsv</span>(Bun.<span class="fn">file</span>(<span class="str">"rows.csv"</span>), { header: <span class="kw">true</span> })) {
-  <span class="kw">console</span>.<span class="fn">log</span>(row.id, row.name, row.score);
-}</code></pre>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> csv </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:csv"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> row</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> csv.</span><span style="color:#B392F0">parseCsv</span><span style="color:#E1E4E8">(Bun.</span><span style="color:#B392F0">file</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"rows.csv"</span><span style="color:#E1E4E8">), { header: </span><span style="color:#79B8FF">true</span><span style="color:#E1E4E8"> })) {</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(row.id, row.name, row.score);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
         </figure>
         <table class="bench" aria-label="bun:csv parallel-vs-serial sweep on a 16-core x86 release build">
           <thead>
@@ -460,16 +460,16 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="kw">import</span> llm <span class="kw">from</span> <span class="str">"bun:llm"</span>;
-
-<span class="kw">using</span> m = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
-
-<span class="kw">for await</span> (<span class="kw">const</span> piece <span class="kw">of</span> m.<span class="fn">chat</span>([
-  { role: <span class="str">"system"</span>, content: <span class="str">"You are helpful and concise."</span> },
-  { role: <span class="str">"user"</span>, content: <span class="str">"What is the capital of France?"</span> },
-])) {
-  process.stdout.<span class="fn">write</span>(piece);
-}</code></pre>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">using</span><span style="color:#79B8FF"> m</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> llm.</span><span style="color:#79B8FF">LLM</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">load</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> piece</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> m.</span><span style="color:#B392F0">chat</span><span style="color:#E1E4E8">([</span></span>
+<span class="line"><span style="color:#E1E4E8">  { role: </span><span style="color:#9ECBFF">"system"</span><span style="color:#E1E4E8">, content: </span><span style="color:#9ECBFF">"You are helpful and concise."</span><span style="color:#E1E4E8"> },</span></span>
+<span class="line"><span style="color:#E1E4E8">  { role: </span><span style="color:#9ECBFF">"user"</span><span style="color:#E1E4E8">, content: </span><span style="color:#9ECBFF">"What is the capital of France?"</span><span style="color:#E1E4E8"> },</span></span>
+<span class="line"><span style="color:#E1E4E8">])) {</span></span>
+<span class="line"><span style="color:#E1E4E8">  process.stdout.</span><span style="color:#B392F0">write</span><span style="color:#E1E4E8">(piece);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
         </figure>
 
         <table class="bench" aria-label="LLM decode throughput, Llama-3.2-1B-Instruct Q4_K_M on RTX 4070 Ti">
@@ -635,37 +635,37 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 
       <figure class="code">
         <figcaption class="code-header"><span class="code-lang">setup (shared)</span></figcaption>
-        <pre><code><span class="kw">import</span> { OpenAIEmbeddings } <span class="kw">from</span> <span class="str">"@langchain/openai"</span>;
-
-<span class="kw">const</span> emb = <span class="kw">new</span> <span class="fn">OpenAIEmbeddings</span>({ modelName: <span class="str">"text-embedding-3-small"</span> });
-<span class="kw">const</span> docs = [<span class="str">"hello world"</span>, <span class="str">"good morning"</span>, <span class="str">"see you later"</span>];
-<span class="kw">const</span> vectors = <span class="kw">await</span> emb.<span class="fn">embedDocuments</span>(docs);
-<span class="kw">const</span> q = <span class="kw">await</span> emb.<span class="fn">embedQuery</span>(<span class="str">"greetings"</span>);</code></pre>
+        <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { OpenAIEmbeddings } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "@langchain/openai"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> emb</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> OpenAIEmbeddings</span><span style="color:#E1E4E8">({ modelName: </span><span style="color:#9ECBFF">"text-embedding-3-small"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> docs</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> [</span><span style="color:#9ECBFF">"hello world"</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"good morning"</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"see you later"</span><span style="color:#E1E4E8">];</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> vectors</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> emb.</span><span style="color:#B392F0">embedDocuments</span><span style="color:#E1E4E8">(docs);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> q</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> emb.</span><span style="color:#B392F0">embedQuery</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"greetings"</span><span style="color:#E1E4E8">);</span></span></code></pre>
       </figure>
 
       <div class="diff">
         <div>
           <figure class="code">
             <figcaption class="code-header"><span class="code-lang">before</span></figcaption>
-            <pre><code><span class="kw">import</span> { MemoryVectorStore }
-  <span class="kw">from</span> <span class="str">"langchain/vectorstores/memory"</span>;
-
-<span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">MemoryVectorStore</span>(emb);
-<span class="kw">await</span> store.<span class="fn">addVectors</span>(vectors, docs);
-<span class="kw">const</span> hits = <span class="kw">await</span> store
-  .<span class="fn">similaritySearchVectorWithScore</span>(q, <span class="num">10</span>);</code></pre>
+            <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { MemoryVectorStore }</span></span>
+<span class="line"><span style="color:#F97583">  from</span><span style="color:#9ECBFF"> "langchain/vectorstores/memory"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> store</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> MemoryVectorStore</span><span style="color:#E1E4E8">(emb);</span></span>
+<span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> store.</span><span style="color:#B392F0">addVectors</span><span style="color:#E1E4E8">(vectors, docs);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> hits</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> store</span></span>
+<span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">similaritySearchVectorWithScore</span><span style="color:#E1E4E8">(q, </span><span style="color:#79B8FF">10</span><span style="color:#E1E4E8">);</span></span></code></pre>
           </figure>
         </div>
         <div>
           <figure class="code">
             <figcaption class="code-header"><span class="code-lang">after</span></figcaption>
-            <pre><code><span class="kw">import</span> { ParabunVectorStore }
-  <span class="kw">from</span> <span class="str">"./parabun-store.pjs"</span>;
-
-<span class="kw">const</span> store = <span class="kw">new</span> <span class="fn">ParabunVectorStore</span>(emb);
-<span class="kw">await</span> store.<span class="fn">addVectors</span>(vectors, docs);
-<span class="kw">const</span> hits = <span class="kw">await</span> store
-  .<span class="fn">similaritySearchVectorWithScore</span>(q, <span class="num">10</span>);</code></pre>
+            <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { ParabunVectorStore }</span></span>
+<span class="line"><span style="color:#F97583">  from</span><span style="color:#9ECBFF"> "./parabun-store.pjs"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> store</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> ParabunVectorStore</span><span style="color:#E1E4E8">(emb);</span></span>
+<span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> store.</span><span style="color:#B392F0">addVectors</span><span style="color:#E1E4E8">(vectors, docs);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> hits</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> store</span></span>
+<span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">similaritySearchVectorWithScore</span><span style="color:#E1E4E8">(q, </span><span style="color:#79B8FF">10</span><span style="color:#E1E4E8">);</span></span></code></pre>
           </figure>
         </div>
       </div>
@@ -724,44 +724,44 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         </div>
         <pre
           data-lang="ts"
-        ><code><span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
-<span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
-
-<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
-  llm: <span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
-  stt: <span class="str">"./ggml-tiny.en.bin"</span>,
-  tts: <span class="str">"./en_US-lessac-medium.onnx"</span>,
-  system: <span class="str">"You are a helpful home assistant. Keep replies short."</span>,
-  tools: {
-    <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
-    <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
-  },
-});
-
-<span class="com">// One reactive line redraws a live status line in place.</span>
-<span class="fn">effect</span>(() =&gt; process.stdout.<span class="fn">write</span>(<span class="str">`\r${bot.state.get()}`</span>));
-
-<span class="kw">await</span> bot.<span class="fn">run</span>();   <span class="com">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></code></pre>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  stt: </span><span style="color:#9ECBFF">"./ggml-tiny.en.bin"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tts: </span><span style="color:#9ECBFF">"./en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a helpful home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tools: {</span></span>
+<span class="line"><span style="color:#B392F0">    setLight</span><span style="color:#E1E4E8">:  ({ </span><span style="color:#FFAB70">room</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">on</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">brightness</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`light ${</span><span style="color:#E1E4E8">room</span><span style="color:#9ECBFF">} ${</span><span style="color:#E1E4E8">on</span><span style="color:#F97583"> ?</span><span style="color:#9ECBFF"> "on"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "off"} @ ${</span><span style="color:#E1E4E8">brightness</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#B392F0">    playMusic</span><span style="color:#E1E4E8">: ({ </span><span style="color:#FFAB70">track</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`play ${</span><span style="color:#E1E4E8">track</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// One reactive line redraws a live status line in place.</span></span>
+<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> process.stdout.</span><span style="color:#B392F0">write</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`</span><span style="color:#79B8FF">\r</span><span style="color:#9ECBFF">${</span><span style="color:#E1E4E8">bot</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">state</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">()</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();   </span><span style="color:#6A737D">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></span></code></pre>
         <pre
           data-lang="parabun"
           hidden
-        ><code><span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
-
-<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
-  llm: <span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
-  stt: <span class="str">"./ggml-tiny.en.bin"</span>,
-  tts: <span class="str">"./en_US-lessac-medium.onnx"</span>,
-  system: <span class="str">"You are a helpful home assistant. Keep replies short."</span>,
-  tools: {
-    <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
-    <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
-  },
-});
-
-<span class="com">// One reactive line redraws a live status line in place.</span>
-<span class="str">`\r${bot.state.get()}`</span> <span class="pb-op">-&gt;</span> process.stdout.<span class="fn">write</span>;
-
-<span class="kw">await</span> bot.<span class="fn">run</span>();   <span class="com">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></code></pre>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  stt: </span><span style="color:#9ECBFF">"./ggml-tiny.en.bin"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tts: </span><span style="color:#9ECBFF">"./en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a helpful home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tools: {</span></span>
+<span class="line"><span style="color:#B392F0">    setLight</span><span style="color:#E1E4E8">:  ({ </span><span style="color:#FFAB70">room</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">on</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">brightness</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`light ${</span><span style="color:#E1E4E8">room</span><span style="color:#9ECBFF">} ${</span><span style="color:#E1E4E8">on</span><span style="color:#F97583"> ?</span><span style="color:#9ECBFF"> "on"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "off"} @ ${</span><span style="color:#E1E4E8">brightness</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#B392F0">    playMusic</span><span style="color:#E1E4E8">: ({ </span><span style="color:#FFAB70">track</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`play ${</span><span style="color:#E1E4E8">track</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// One reactive line redraws a live status line in place.</span></span>
+<span class="line"><span style="color:#9ECBFF">`</span><span style="color:#79B8FF">\r</span><span style="color:#9ECBFF">${</span><span style="color:#E1E4E8">bot</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">state</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">()</span><span style="color:#9ECBFF">}`</span><span style="color:#F97583"> -></span><span style="color:#E1E4E8"> process.stdout.write;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();   </span><span style="color:#6A737D">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></span></code></pre>
       </figure>
       <p class="footnote">
         <span class="import">bun:assistant</span> composes <span class="import">bun:audio</span> +
@@ -787,55 +787,55 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="kw">import</span> camera    <span class="kw">from</span> <span class="str">"bun:camera"</span>;
-<span class="kw">import</span> vision    <span class="kw">from</span> <span class="str">"bun:vision"</span>;
-<span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
-<span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
-
-<span class="kw">await using</span> cam = <span class="kw">await</span> camera.<span class="fn">open</span>(<span class="str">"/dev/video0"</span>, { format: <span class="str">"yuyv"</span>, width: <span class="num">640</span>, height: <span class="num">480</span> });
-<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
-  llm: <span class="str">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
-  tts: <span class="str">"/models/en_US-lessac-medium.onnx"</span>,
-  system: <span class="str">"You are a friendly home assistant. Keep replies short."</span>,
-});
-
-<span class="com">// .run() drains the iterator in the background; motion.score / motion.detected</span>
-<span class="com">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span>
-<span class="kw">const</span> motion = vision.<span class="fn">detectMotion</span>(vision.<span class="fn">frames</span>(cam.<span class="fn">frames</span>()), { sensitivity: <span class="num">0.04</span> }).<span class="fn">run</span>();
-
-<span class="com">// Rising edge of motion.detected, only when the bot isn't already busy.</span>
-<span class="kw">let</span> wasPresent = <span class="kw">false</span>;
-<span class="fn">effect</span>(() =&gt; {
-  <span class="kw">const</span> now = motion.detected.<span class="fn">get</span>();
-  <span class="kw">if</span> (now &amp;&amp; !wasPresent &amp;&amp; bot.state.<span class="fn">get</span>() === <span class="str">"idle"</span>) {
-    bot.<span class="fn">say</span>(<span class="str">"Welcome back!"</span>);
-  }
-  wasPresent = now;
-});</code></pre>
-        <pre data-lang="parabun" hidden><code><span class="kw">import</span> camera    <span class="kw">from</span> <span class="str">"bun:camera"</span>;
-<span class="kw">import</span> vision    <span class="kw">from</span> <span class="str">"bun:vision"</span>;
-<span class="kw">import</span> assistant <span class="kw">from</span> <span class="str">"bun:assistant"</span>;
-
-<span class="kw">await using</span> cam = <span class="kw">await</span> camera.<span class="fn">open</span>(<span class="str">"/dev/video0"</span>, { format: <span class="str">"yuyv"</span>, width: <span class="num">640</span>, height: <span class="num">480</span> });
-<span class="kw">await using</span> bot = <span class="kw">await</span> assistant.<span class="fn">create</span>({
-  llm: <span class="str">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>,
-  tts: <span class="str">"/models/en_US-lessac-medium.onnx"</span>,
-  system: <span class="str">"You are a friendly home assistant. Keep replies short."</span>,
-});
-
-<span class="com">// .run() drains the iterator in the background; motion.score / motion.detected</span>
-<span class="com">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span>
-<span class="kw">const</span> motion = vision.<span class="fn">detectMotion</span>(vision.<span class="fn">frames</span>(cam.<span class="fn">frames</span>()), { sensitivity: <span class="num">0.04</span> }).<span class="fn">run</span>();
-
-<span class="com">// Rising edge of motion.detected, only when the bot isn't already busy.</span>
-<span class="kw">let</span> wasPresent = <span class="kw">false</span>;
-<span class="kw">effect</span> {
-  <span class="kw">const</span> now = motion.detected.<span class="fn">get</span>();
-  <span class="kw">if</span> (now &amp;&amp; !wasPresent &amp;&amp; bot.state.<span class="fn">get</span>() === <span class="str">"idle"</span>) {
-    bot.<span class="fn">say</span>(<span class="str">"Welcome back!"</span>);
-  }
-  wasPresent = now;
-}</code></pre>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tts: </span><span style="color:#9ECBFF">"/models/en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// .run() drains the iterator in the background; motion.score / motion.detected</span></span>
+<span class="line"><span style="color:#6A737D">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> motion</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> vision.</span><span style="color:#B392F0">detectMotion</span><span style="color:#E1E4E8">(vision.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(cam.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()), { sensitivity: </span><span style="color:#79B8FF">0.04</span><span style="color:#E1E4E8"> }).</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Rising edge of motion.detected, only when the bot isn't already busy.</span></span>
+<span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> wasPresent </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> false</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> now</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (now </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#F97583"> !</span><span style="color:#E1E4E8">wasPresent </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">    bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">  wasPresent </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> now;</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tts: </span><span style="color:#9ECBFF">"/models/en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// .run() drains the iterator in the background; motion.score / motion.detected</span></span>
+<span class="line"><span style="color:#6A737D">// auto-fill as frames flow. cam.close() (or the disposer) stops it.</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> motion</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> vision.</span><span style="color:#B392F0">detectMotion</span><span style="color:#E1E4E8">(vision.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(cam.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()), { sensitivity: </span><span style="color:#79B8FF">0.04</span><span style="color:#E1E4E8"> }).</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Rising edge of motion.detected, only when the bot isn't already busy.</span></span>
+<span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> wasPresent </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> false</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">effect</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> now</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (now </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#F97583"> !</span><span style="color:#E1E4E8">wasPresent </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">    bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">  wasPresent </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> now;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
       </figure>
       <p class="footnote">
         Four modules, three signals, zero glue code. Barge-in is built into
@@ -858,60 +858,60 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
-<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
-<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
-<span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
-
-<span class="kw">const</span> tools: <span class="type">Record</span>&lt;<span class="type">string</span>, (args: <span class="kw">any</span>) =&gt; <span class="kw">any</span>&gt; = {
-  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
-  <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
-  <span class="fn">reply</span>:     ({ text }) =&gt; text,
-};
-<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
-
-<span class="kw">await using</span> mic  = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
-<span class="kw">using</span>       wsp  = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"./ggml-tiny.en.bin"</span>);
-<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
-
-<span class="fn">effect</span>(() =&gt; {
-  process.stdout.<span class="fn">write</span>(<span class="str">`\rmic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`);
-});
-
-<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
-  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
-  <span class="kw">const</span> { tool, args } = <span class="kw">await</span> chat.<span class="fn">chatJSON</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> });
-  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
-  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
-    <span class="kw">await</span> speech.<span class="fn">say</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"./en_US-lessac-medium.onnx"</span> });
-  }
-}</code></pre>
-        <pre data-lang="parabun" hidden><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
-<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
-<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
-
-<span class="kw">const</span> tools: <span class="type">Record</span>&lt;<span class="type">string</span>, (args: <span class="kw">any</span>) =&gt; <span class="kw">any</span>&gt; = {
-  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`light ${room} ${on ? "on" : "off"} @ ${brightness}`</span>),
-  <span class="fn">playMusic</span>: ({ track }) =&gt; <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">`play ${track}`</span>),
-  <span class="fn">reply</span>:     ({ text }) =&gt; text,
-};
-<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
-
-<span class="kw">await using</span> mic  = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
-<span class="kw">using</span>       wsp  = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"./ggml-tiny.en.bin"</span>);
-<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
-
-<span class="str">`\rmic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`</span>
-  <span class="pb-op">-&gt;</span> process.stdout.<span class="fn">write</span>;
-
-<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
-  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
-  <span class="kw">const</span> { tool, args } = <span class="kw">await</span> chat.<span class="fn">chatJSON</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> });
-  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
-  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
-    <span class="kw">await</span> speech.<span class="fn">say</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"./en_US-lessac-medium.onnx"</span> });
-  }
-}</code></pre>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:speech"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> tools</span><span style="color:#F97583">:</span><span style="color:#B392F0"> Record</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">, (</span><span style="color:#FFAB70">args</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">> </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#B392F0">  setLight</span><span style="color:#E1E4E8">:  ({ </span><span style="color:#FFAB70">room</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">on</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">brightness</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`light ${</span><span style="color:#E1E4E8">room</span><span style="color:#9ECBFF">} ${</span><span style="color:#E1E4E8">on</span><span style="color:#F97583"> ?</span><span style="color:#9ECBFF"> "on"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "off"} @ ${</span><span style="color:#E1E4E8">brightness</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#B392F0">  playMusic</span><span style="color:#E1E4E8">: ({ </span><span style="color:#FFAB70">track</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`play ${</span><span style="color:#E1E4E8">track</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#B392F0">  reply</span><span style="color:#E1E4E8">:     ({ </span><span style="color:#FFAB70">text</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> text,</span></span>
+<span class="line"><span style="color:#E1E4E8">};</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> ToolSchema</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> { </span><span style="color:#6A737D">/* JSON schema with oneOf for each tool */</span><span style="color:#E1E4E8"> };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> mic</span><span style="color:#F97583">  =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">capture</span><span style="color:#E1E4E8">({ sampleRate: </span><span style="color:#79B8FF">16000</span><span style="color:#E1E4E8">, channels: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">using</span><span style="color:#79B8FF">       wsp</span><span style="color:#F97583">  =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> llm.WhisperModel.</span><span style="color:#B392F0">load</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"./ggml-tiny.en.bin"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">using</span><span style="color:#79B8FF">       chat</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> llm.</span><span style="color:#79B8FF">LLM</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">load</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">  process.stdout.</span><span style="color:#B392F0">write</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`</span><span style="color:#79B8FF">\r</span><span style="color:#9ECBFF">mic ${</span><span style="color:#E1E4E8">mic</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">peakLevel</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">().</span><span style="color:#B392F0">toFixed</span><span style="color:#9ECBFF">(</span><span style="color:#79B8FF">3</span><span style="color:#9ECBFF">)</span><span style="color:#9ECBFF">}  llm ${</span><span style="color:#E1E4E8">chat</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">busy</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">() </span><span style="color:#F97583">?</span><span style="color:#9ECBFF"> "🤔"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "✅"}  whisper ${</span><span style="color:#E1E4E8">wsp</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">busy</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">() </span><span style="color:#F97583">?</span><span style="color:#9ECBFF"> "🎙️"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "✅"}`</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> utt</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> speech.</span><span style="color:#B392F0">listen</span><span style="color:#E1E4E8">(mic.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(), { sampleRate: </span><span style="color:#79B8FF">16000</span><span style="color:#E1E4E8"> })) {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> heard</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> wsp.</span><span style="color:#B392F0">transcribe</span><span style="color:#E1E4E8">(utt.samples, { language: </span><span style="color:#9ECBFF">"en"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#E1E4E8"> { </span><span style="color:#79B8FF">tool</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">args</span><span style="color:#E1E4E8"> } </span><span style="color:#F97583">=</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> chat.</span><span style="color:#B392F0">chatJSON</span><span style="color:#E1E4E8">([{ role: </span><span style="color:#9ECBFF">"user"</span><span style="color:#E1E4E8">, content: heard }], { schema: ToolSchema, maxTokens: </span><span style="color:#79B8FF">80</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> tools[tool](args);</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">typeof</span><span style="color:#E1E4E8"> result </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "string"</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    await</span><span style="color:#E1E4E8"> speech.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(result, { engine: </span><span style="color:#9ECBFF">"piper"</span><span style="color:#E1E4E8">, model: </span><span style="color:#9ECBFF">"./en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:speech"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> tools</span><span style="color:#F97583">:</span><span style="color:#B392F0"> Record</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">, (</span><span style="color:#FFAB70">args</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">> </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#B392F0">  setLight</span><span style="color:#E1E4E8">:  ({ </span><span style="color:#FFAB70">room</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">on</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">brightness</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`light ${</span><span style="color:#E1E4E8">room</span><span style="color:#9ECBFF">} ${</span><span style="color:#E1E4E8">on</span><span style="color:#F97583"> ?</span><span style="color:#9ECBFF"> "on"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "off"} @ ${</span><span style="color:#E1E4E8">brightness</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#B392F0">  playMusic</span><span style="color:#E1E4E8">: ({ </span><span style="color:#FFAB70">track</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`play ${</span><span style="color:#E1E4E8">track</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#B392F0">  reply</span><span style="color:#E1E4E8">:     ({ </span><span style="color:#FFAB70">text</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> text,</span></span>
+<span class="line"><span style="color:#E1E4E8">};</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> ToolSchema</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> { </span><span style="color:#6A737D">/* JSON schema with oneOf for each tool */</span><span style="color:#E1E4E8"> };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> mic</span><span style="color:#F97583">  =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">capture</span><span style="color:#E1E4E8">({ sampleRate: </span><span style="color:#79B8FF">16000</span><span style="color:#E1E4E8">, channels: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">using</span><span style="color:#79B8FF">       wsp</span><span style="color:#F97583">  =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> llm.WhisperModel.</span><span style="color:#B392F0">load</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"./ggml-tiny.en.bin"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">using</span><span style="color:#79B8FF">       chat</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> llm.</span><span style="color:#79B8FF">LLM</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">load</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#9ECBFF">`</span><span style="color:#79B8FF">\r</span><span style="color:#9ECBFF">mic ${</span><span style="color:#E1E4E8">mic</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">peakLevel</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">().</span><span style="color:#B392F0">toFixed</span><span style="color:#9ECBFF">(</span><span style="color:#79B8FF">3</span><span style="color:#9ECBFF">)</span><span style="color:#9ECBFF">}  llm ${</span><span style="color:#E1E4E8">chat</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">busy</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">() </span><span style="color:#F97583">?</span><span style="color:#9ECBFF"> "🤔"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "✅"}  whisper ${</span><span style="color:#E1E4E8">wsp</span><span style="color:#9ECBFF">.</span><span style="color:#E1E4E8">busy</span><span style="color:#9ECBFF">.</span><span style="color:#B392F0">get</span><span style="color:#9ECBFF">() </span><span style="color:#F97583">?</span><span style="color:#9ECBFF"> "🎙️"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "✅"}`</span></span>
+<span class="line"><span style="color:#F97583">  -></span><span style="color:#E1E4E8"> process.stdout.write;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> utt</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> speech.</span><span style="color:#B392F0">listen</span><span style="color:#E1E4E8">(mic.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(), { sampleRate: </span><span style="color:#79B8FF">16000</span><span style="color:#E1E4E8"> })) {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> heard</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> wsp.</span><span style="color:#B392F0">transcribe</span><span style="color:#E1E4E8">(utt.samples, { language: </span><span style="color:#9ECBFF">"en"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#E1E4E8"> { </span><span style="color:#79B8FF">tool</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">args</span><span style="color:#E1E4E8"> } </span><span style="color:#F97583">=</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> chat.</span><span style="color:#B392F0">chatJSON</span><span style="color:#E1E4E8">([{ role: </span><span style="color:#9ECBFF">"user"</span><span style="color:#E1E4E8">, content: heard }], { schema: ToolSchema, maxTokens: </span><span style="color:#79B8FF">80</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> tools[tool](args);</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">typeof</span><span style="color:#E1E4E8"> result </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "string"</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    await</span><span style="color:#E1E4E8"> speech.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(result, { engine: </span><span style="color:#9ECBFF">"piper"</span><span style="color:#E1E4E8">, model: </span><span style="color:#9ECBFF">"./en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
       </figure>
       <p class="footnote">
         <code>chat.chatJSON({ schema })</code> drains the streamed grammar-constrained chat and parses the result in one
@@ -945,48 +945,48 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="com">// Hand-rolled memoization. `memo` is sugar over this Map-keyed pattern.</span>
-<span class="kw">const</span> fibCache = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">number</span>, <span class="type">number</span>&gt;();
-<span class="kw">function</span> <span class="fn">fib</span>(n: <span class="type">number</span>): <span class="type">number</span> {
-  <span class="kw">const</span> hit = fibCache.<span class="fn">get</span>(n);
-  <span class="kw">if</span> (hit !== <span class="kw">undefined</span>) <span class="kw">return</span> hit;
-  <span class="kw">const</span> v = n &lt; <span class="num">2</span> ? n : <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
-  fibCache.<span class="fn">set</span>(n, v);
-  <span class="kw">return</span> v;
-}
-
-<span class="com">// Single-arg form — same Map-keyed cache, simpler API.</span>
-<span class="kw">const</span> normCache = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;();
-<span class="kw">const</span> <span class="fn">normalize</span> = (s: <span class="type">string</span>) =&gt; {
-  <span class="kw">const</span> hit = normCache.<span class="fn">get</span>(s);
-  <span class="kw">if</span> (hit !== <span class="kw">undefined</span>) <span class="kw">return</span> hit;
-  <span class="kw">const</span> v = s.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
-  normCache.<span class="fn">set</span>(s, v);
-  <span class="kw">return</span> v;
-};
-
-<span class="com">// Async-dedupe: cache the in-flight Promise, evict on reject.</span>
-<span class="kw">const</span> db = { users: { <span class="fn">get</span>: <span class="kw">async</span> (id: <span class="type">string</span>) =&gt; ({ id, name: <span class="str">"alice"</span> }) };
-<span class="kw">const</span> profileCache = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">Promise</span>&lt;<span class="kw">any</span>&gt;&gt;();
-<span class="kw">async function</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) {
-  <span class="kw">const</span> hit = profileCache.<span class="fn">get</span>(id);
-  <span class="kw">if</span> (hit) <span class="kw">return</span> hit;
-  <span class="kw">const</span> p = db.users.<span class="fn">get</span>(id);
-  profileCache.<span class="fn">set</span>(id, p);
-  p.<span class="fn">catch</span>(() =&gt; profileCache.<span class="fn">delete</span>(id));
-  <span class="kw">return</span> p;
-}</code></pre>
-        <pre data-lang="parabun" hidden><code><span class="com">// declarator form — `memo` implies pure + function</span>
-<span class="pb-kw">memo</span> <span class="fn">fib</span>(n: <span class="type">number</span>): <span class="type">number</span> {
-  <span class="kw">return</span> n &lt; <span class="num">2</span> ? n : <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>);
-}
-
-<span class="com">// arrow form — same thing as an expression prefix</span>
-<span class="kw">const</span> <span class="fn">normalize</span> = <span class="pb-kw">memo</span> (s: <span class="type">string</span>) =&gt; s.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
-
-<span class="com">// async dedupes concurrent in-flight calls, evicts on reject</span>
-<span class="kw">const</span> db = { users: { <span class="fn">get</span>: <span class="kw">async</span> (id: <span class="type">string</span>) =&gt; ({ id, name: <span class="str">"alice"</span> }) };
-<span class="pb-kw">memo</span> <span class="kw">async</span> <span class="fn">fetchProfile</span>(id: <span class="type">string</span>) { <span class="kw">return</span> <span class="kw">await</span> db.users.<span class="fn">get</span>(id); }</code></pre>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#6A737D">// Hand-rolled memoization. `memo` is sugar over this Map-keyed pattern.</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> fibCache</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Map</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">number</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">number</span><span style="color:#E1E4E8">>();</span></span>
+<span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">n</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> hit</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> fibCache.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(n);</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (hit </span><span style="color:#F97583">!==</span><span style="color:#79B8FF"> undefined</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> hit;</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> v</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 2</span><span style="color:#F97583"> ?</span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">:</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">+</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  fibCache.</span><span style="color:#B392F0">set</span><span style="color:#E1E4E8">(n, v);</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> v;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Single-arg form — same Map-keyed cache, simpler API.</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> normCache</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Map</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">>();</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#B392F0"> normalize</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> (</span><span style="color:#FFAB70">s</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> hit</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> normCache.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(s);</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (hit </span><span style="color:#F97583">!==</span><span style="color:#79B8FF"> undefined</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> hit;</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> v</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> s.</span><span style="color:#B392F0">trim</span><span style="color:#E1E4E8">().</span><span style="color:#B392F0">toLowerCase</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#E1E4E8">  normCache.</span><span style="color:#B392F0">set</span><span style="color:#E1E4E8">(s, v);</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> v;</span></span>
+<span class="line"><span style="color:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Async-dedupe: cache the in-flight Promise, evict on reject.</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> db</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> { users: { </span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">: </span><span style="color:#F97583">async</span><span style="color:#E1E4E8"> (</span><span style="color:#FFAB70">id</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> ({ id, name: </span><span style="color:#9ECBFF">"alice"</span><span style="color:#E1E4E8"> }) };</span></span>
+<span class="line"><span style="color:#E1E4E8">const profileCache </span><span style="color:#F97583">=</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Map</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">Promise</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">any</span><span style="color:#E1E4E8">>>();</span></span>
+<span class="line"><span style="color:#F97583">async</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> fetchProfile</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">id</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> hit</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> profileCache.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(id);</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (hit) </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> hit;</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> p</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> db.users.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(id);</span></span>
+<span class="line"><span style="color:#E1E4E8">  profileCache.</span><span style="color:#B392F0">set</span><span style="color:#E1E4E8">(id, p);</span></span>
+<span class="line"><span style="color:#E1E4E8">  p.</span><span style="color:#B392F0">catch</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> profileCache.</span><span style="color:#B392F0">delete</span><span style="color:#E1E4E8">(id));</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> p;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#6A737D">// declarator form — `memo` implies pure + function</span></span>
+<span class="line"><span style="color:#F97583">memo</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n: number): number {</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 2</span><span style="color:#F97583"> ?</span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">:</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">+</span><span style="color:#B392F0"> fib</span><span style="color:#E1E4E8">(n </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// arrow form — same thing as an expression prefix</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> normalize</span><span style="color:#F97583"> =</span><span style="color:#F97583"> memo</span><span style="color:#E1E4E8"> (</span><span style="color:#FFAB70">s</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> s.</span><span style="color:#B392F0">trim</span><span style="color:#E1E4E8">().</span><span style="color:#B392F0">toLowerCase</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// async dedupes concurrent in-flight calls, evicts on reject</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> db</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> { users: { </span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">: </span><span style="color:#F97583">async</span><span style="color:#E1E4E8"> (</span><span style="color:#FFAB70">id</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> ({ id, name: </span><span style="color:#9ECBFF">"alice"</span><span style="color:#E1E4E8"> }) };</span></span>
+<span class="line"><span style="color:#F97583">memo</span><span style="color:#F97583"> async</span><span style="color:#B392F0"> fetchProfile</span><span style="color:#E1E4E8">(id: string) { return await db.users.get(id); }</span></span></code></pre>
       </figure>
 
       <h3><span class="pb-kw">signal</span>, <span class="pb-kw">effect</span>, <span class="pb-op">~&gt;</span>, <span class="pb-op">-&gt;</span></h3>
@@ -1007,34 +1007,34 @@ gpu.<span class="fn">release</span>(held);</code></pre>
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="kw">import</span> { signal, derived, effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
-
-<span class="kw">const</span> count = <span class="fn">signal</span>(<span class="num">0</span>);
-<span class="kw">const</span> doubled = <span class="fn">derived</span>(() =&gt; count.<span class="fn">get</span>() * <span class="num">2</span>);
-
-<span class="fn">effect</span>(() =&gt; { console.<span class="fn">log</span>(count.<span class="fn">get</span>(), doubled.<span class="fn">get</span>()); });
-
-count.<span class="fn">update</span>(n =&gt; n + <span class="num">1</span>);          <span class="com">// effect re-runs: 1, 2</span>
-
-<span class="com">// assignment sink — bind into a DOM-ish lvalue</span>
-<span class="kw">const</span> el = { innerHTML: <span class="str">""</span> };   <span class="com">// pretend DOM element</span>
-<span class="fn">effect</span>(() =&gt; { el.innerHTML = <span class="kw">String</span>(count.<span class="fn">get</span>()); });
-
-<span class="com">// function/method sink — bind into a writer</span>
-<span class="fn">effect</span>(() =&gt; { console.<span class="fn">log</span>(count.<span class="fn">get</span>()); });</code></pre>
-        <pre data-lang="parabun" hidden><code><span class="pb-kw">signal</span> <span class="pb-signal-ref">count</span> = <span class="num">0</span>;
-<span class="pb-kw">signal</span> <span class="pb-signal-ref">doubled</span> = <span class="pb-signal-ref">count</span> * <span class="num">2</span>;   <span class="com">// auto-derived</span>
-
-<span class="pb-kw">effect</span> { console.<span class="fn">log</span>(<span class="pb-signal-ref">count</span>, <span class="pb-signal-ref">doubled</span>); }
-
-<span class="pb-signal-ref">count</span>++;                           <span class="com">// effect re-runs: 1, 2</span>
-
-<span class="com">// assignment sink — bind into a DOM-ish lvalue</span>
-<span class="kw">const</span> el = { innerHTML: <span class="str">""</span> };   <span class="com">// pretend DOM element</span>
-<span class="pb-signal-ref">count</span> <span class="pb-op">~&gt;</span> el.innerHTML;
-
-<span class="com">// function/method sink — bind into a writer</span>
-<span class="pb-signal-ref">count</span> <span class="pb-op">-&gt;</span> console.<span class="fn">log</span>;</code></pre>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { signal, derived, effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> count</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> signal</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> doubled</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> derived</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> { console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(), doubled.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">()); });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">count.</span><span style="color:#B392F0">update</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">n</span><span style="color:#F97583"> =></span><span style="color:#E1E4E8"> n </span><span style="color:#F97583">+</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">);          </span><span style="color:#6A737D">// effect re-runs: 1, 2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// assignment sink — bind into a DOM-ish lvalue</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> el</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> { innerHTML: </span><span style="color:#9ECBFF">""</span><span style="color:#E1E4E8"> };   </span><span style="color:#6A737D">// pretend DOM element</span></span>
+<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> { el.innerHTML </span><span style="color:#F97583">=</span><span style="color:#B392F0"> String</span><span style="color:#E1E4E8">(count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">()); });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// function/method sink — bind into a writer</span></span>
+<span class="line"><span style="color:#B392F0">effect</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> { console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">()); });</span></span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">signal</span><span style="color:#E1E4E8"> count </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">signal</span><span style="color:#E1E4E8"> doubled </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> count </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">;   </span><span style="color:#6A737D">// auto-derived</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">effect</span><span style="color:#E1E4E8"> { console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(count, doubled); }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">count</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">;                           </span><span style="color:#6A737D">// effect re-runs: 1, 2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// assignment sink — bind into a DOM-ish lvalue</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> el</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> { innerHTML: </span><span style="color:#9ECBFF">""</span><span style="color:#E1E4E8"> };   </span><span style="color:#6A737D">// pretend DOM element</span></span>
+<span class="line"><span style="color:#E1E4E8">count </span><span style="color:#F97583">~></span><span style="color:#E1E4E8"> el.innerHTML;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// function/method sink — bind into a writer</span></span>
+<span class="line"><span style="color:#E1E4E8">count </span><span style="color:#F97583">-></span><span style="color:#E1E4E8"> console.log;</span></span></code></pre>
       </figure>
 
       <h3>
@@ -1055,26 +1055,26 @@ count.<span class="fn">update</span>(n =&gt; n + <span class="num">1</span>);   
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
-
-<span class="kw">const</span> result = <span class="fn">sq</span>(<span class="fn">sq</span>(<span class="num">5</span>));   <span class="com">// 625</span>
-<span class="kw">console</span>.<span class="fn">log</span>(result);
-
-<span class="kw">const</span> json = <span class="kw">await</span> fetch(<span class="str">"https://api.github.com"</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>())
-  .<span class="fn">catch</span>(err =&gt; console.<span class="fn">error</span>(err))
-  .<span class="fn">finally</span>(() =&gt; console.<span class="fn">log</span>(<span class="str">"done"</span>));
-
-<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt;= <span class="num">9</span>; i++) <span class="kw">console</span>.<span class="fn">log</span>(i);   <span class="com">// 0,1,2,…,9</span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="pb-kw">pure</span> <span class="kw">function</span> <span class="fn">sq</span>(x: <span class="type">number</span>) { <span class="kw">return</span> x * x; }
-
-<span class="kw">const</span> result = <span class="num">5</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span> <span class="pb-op">|&gt;</span> <span class="fn">sq</span>;   <span class="com">// 625 — both calls inlined</span>
-<span class="kw">console</span>.<span class="fn">log</span>(result);
-
-<span class="kw">const</span> json <span class="pb-op">..=</span> fetch(<span class="str">"https://api.github.com"</span>).<span class="fn">then</span>(r =&gt; r.<span class="fn">json</span>())
-  <span class="pb-op">..!</span> err =&gt; console.<span class="fn">error</span>(err)      <span class="com">// .catch</span>
-  <span class="pb-op">..&amp;</span> () =&gt; console.<span class="fn">log</span>(<span class="str">"done"</span>); <span class="com">// .finally</span>
-
-<span class="kw">for</span> (<span class="kw">const</span> i <span class="kw">of</span> <span class="num">0</span><span class="pb-op">..=</span><span class="num">9</span>) <span class="kw">console</span>.<span class="fn">log</span>(i);          <span class="com">// 0,1,2,…,9</span></code></pre>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">x</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> number</span><span style="color:#E1E4E8">) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">sq</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">5</span><span style="color:#E1E4E8">));   </span><span style="color:#6A737D">// 625</span></span>
+<span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(result);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> json</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> fetch</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"https://api.github.com"</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">then</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">r</span><span style="color:#F97583"> =></span><span style="color:#E1E4E8"> r.</span><span style="color:#B392F0">json</span><span style="color:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">catch</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">err</span><span style="color:#F97583"> =></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">error</span><span style="color:#E1E4E8">(err))</span></span>
+<span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">finally</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"done"</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;=</span><span style="color:#79B8FF"> 9</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(i);   </span><span style="color:#6A737D">// 0,1,2,…,9</span></span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 5</span><span style="color:#F97583"> |></span><span style="color:#E1E4E8"> sq </span><span style="color:#F97583">|></span><span style="color:#E1E4E8"> sq;   </span><span style="color:#6A737D">// 625 — both calls inlined</span></span>
+<span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(result);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> json</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> fetch(</span><span style="color:#9ECBFF">"https://api.github.com"</span><span style="color:#E1E4E8">).then(r </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> r.</span><span style="color:#B392F0">json</span><span style="color:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#F97583">  ..!</span><span style="color:#FFAB70"> err</span><span style="color:#F97583"> =></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">error</span><span style="color:#E1E4E8">(err)      </span><span style="color:#6A737D">// .catch</span></span>
+<span class="line"><span style="color:#F97583">  ..&#x26;</span><span style="color:#E1E4E8"> () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"done"</span><span style="color:#E1E4E8">); </span><span style="color:#6A737D">// .finally</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> i</span><span style="color:#F97583"> of</span><span style="color:#79B8FF"> 0.</span><span style="color:#E1E4E8">.</span><span style="color:#F97583">=</span><span style="color:#79B8FF">9</span><span style="color:#E1E4E8">) console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(i);          </span><span style="color:#6A737D">// 0,1,2,…,9</span></span></code></pre>
       </figure>
 
       <h3><span class="pb-kw">defer</span> and <span class="pb-kw">arena</span></h3>
@@ -1091,36 +1091,36 @@ count.<span class="fn">update</span>(n =&gt; n + <span class="num">1</span>);   
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre data-lang="ts"><code><span class="kw">import</span> * <span class="kw">as</span> fs <span class="kw">from</span> <span class="str">"node:fs"</span>;
-<span class="kw">import</span> arena <span class="kw">from</span> <span class="str">"bun:arena"</span>;
-
-<span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
-  <span class="kw">const</span> fd = fs.<span class="fn">openSync</span>(path, <span class="str">"r"</span>);
-  <span class="kw">try</span> {
-    <span class="kw">return</span> <span class="type">JSON</span>.<span class="fn">parse</span>(fs.<span class="fn">readFileSync</span>(fd, <span class="str">"utf8"</span>));
-  } <span class="kw">finally</span> {
-    fs.<span class="fn">closeSync</span>(fd);             <span class="com">// runs on every exit path</span>
-  }
-}
-
-arena.<span class="fn">scope</span>(() =&gt; {
-  <span class="kw">const</span> buf = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="num">1_000_000</span>);
-  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; buf.length; i++) buf[i] = <span class="type">Math</span>.<span class="fn">sin</span>(i * <span class="num">0.001</span>);
-  <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"sum:"</span>, buf.<span class="fn">reduce</span>((a, b) =&gt; a + b, <span class="num">0</span>));
-});                                          <span class="com">// buf freed here, no GC pressure</span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="kw">import</span> * <span class="kw">as</span> fs <span class="kw">from</span> <span class="str">"node:fs"</span>;
-
-<span class="kw">function</span> <span class="fn">readConfig</span>(path: <span class="type">string</span>) {
-  <span class="kw">const</span> fd = fs.<span class="fn">openSync</span>(path, <span class="str">"r"</span>);
-  <span class="pb-kw">defer</span> fs.<span class="fn">closeSync</span>(fd);                  <span class="com">// runs on every exit path</span>
-  <span class="kw">return</span> <span class="type">JSON</span>.<span class="fn">parse</span>(fs.<span class="fn">readFileSync</span>(fd, <span class="str">"utf8"</span>));
-}
-
-<span class="pb-kw">arena</span> {
-  <span class="kw">const</span> buf = <span class="kw">new</span> <span class="type">Float32Array</span>(<span class="num">1_000_000</span>);
-  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; buf.length; i++) buf[i] = <span class="type">Math</span>.<span class="fn">sin</span>(i * <span class="num">0.001</span>);
-  <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">"sum:"</span>, buf.<span class="fn">reduce</span>((a, b) =&gt; a + b, <span class="num">0</span>));
-}                                            <span class="com">// buf freed here, no GC pressure</span></code></pre>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> arena </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:arena"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> readConfig</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">path</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> fd</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> fs.</span><span style="color:#B392F0">openSync</span><span style="color:#E1E4E8">(path, </span><span style="color:#9ECBFF">"r"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">  try</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">    return</span><span style="color:#79B8FF"> JSON</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">parse</span><span style="color:#E1E4E8">(fs.</span><span style="color:#B392F0">readFileSync</span><span style="color:#E1E4E8">(fd, </span><span style="color:#9ECBFF">"utf8"</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#E1E4E8">  } </span><span style="color:#F97583">finally</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">    fs.</span><span style="color:#B392F0">closeSync</span><span style="color:#E1E4E8">(fd);             </span><span style="color:#6A737D">// runs on every exit path</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">arena.</span><span style="color:#B392F0">scope</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> buf</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8"> buf.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) buf[i] </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> Math.</span><span style="color:#B392F0">sin</span><span style="color:#E1E4E8">(i </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 0.001</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"sum:"</span><span style="color:#E1E4E8">, buf.</span><span style="color:#B392F0">reduce</span><span style="color:#E1E4E8">((</span><span style="color:#FFAB70">a</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">b</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> a </span><span style="color:#F97583">+</span><span style="color:#E1E4E8"> b, </span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#E1E4E8">});                                          </span><span style="color:#6A737D">// buf freed here, no GC pressure</span></span></code></pre>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> readConfig</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">path</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> fd</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> fs.</span><span style="color:#B392F0">openSync</span><span style="color:#E1E4E8">(path, </span><span style="color:#9ECBFF">"r"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">  defer</span><span style="color:#E1E4E8"> fs.</span><span style="color:#B392F0">closeSync</span><span style="color:#E1E4E8">(fd);                  </span><span style="color:#6A737D">// runs on every exit path</span></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#79B8FF"> JSON</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">parse</span><span style="color:#E1E4E8">(fs.</span><span style="color:#B392F0">readFileSync</span><span style="color:#E1E4E8">(fd, </span><span style="color:#9ECBFF">"utf8"</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">arena</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> buf</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8"> buf.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) buf[i] </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> Math.</span><span style="color:#B392F0">sin</span><span style="color:#E1E4E8">(i </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 0.001</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"sum:"</span><span style="color:#E1E4E8">, buf.</span><span style="color:#B392F0">reduce</span><span style="color:#E1E4E8">((</span><span style="color:#FFAB70">a</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">b</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> a </span><span style="color:#F97583">+</span><span style="color:#E1E4E8"> b, </span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#E1E4E8">}                                            </span><span style="color:#6A737D">// buf freed here, no GC pressure</span></span></code></pre>
       </figure>
 
       <p class="footnote">

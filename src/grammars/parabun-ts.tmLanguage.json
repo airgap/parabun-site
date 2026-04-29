@@ -1,0 +1,183 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "displayName": "Parabun TypeScript",
+  "name": "parabun-ts",
+  "scopeName": "source.pts",
+  "embeddedLangs": ["typescript"],
+  "patterns": [
+    { "include": "#parabun-keywords" },
+    { "include": "#parabun-fun" },
+    { "include": "#parabun-pure" },
+    { "include": "#parabun-operators" },
+    { "include": "source.ts" }
+  ],
+  "repository": {
+    "parabun-keywords": {
+      "patterns": [
+        {
+          "comment": "signal NAME = ... — reactive cell declaration",
+          "match": "\\b(signal)\\b(?=\\s+[A-Za-z_$][\\w$]*\\s*[=,;:!])",
+          "captures": {
+            "1": { "name": "storage.type.signal.parabun" }
+          }
+        },
+        {
+          "comment": "effect { ... } — block sugar for signals.effect()",
+          "match": "\\b(effect)\\b(?=\\s*\\{)",
+          "captures": {
+            "1": { "name": "keyword.control.effect.parabun" }
+          }
+        },
+        {
+          "comment": "arena { ... } — GC-paused block",
+          "match": "\\b(arena)\\b(?=\\s*\\{)",
+          "captures": {
+            "1": { "name": "keyword.control.arena.parabun" }
+          }
+        },
+        {
+          "comment": "memo async NAME( — statement-form async memoized fn",
+          "match": "\\b(memo)\\s+(async)\\s+(?=[A-Za-z_$][\\w$]*\\s*(?:<|\\())",
+          "captures": {
+            "1": { "name": "keyword.other.memo.parabun" },
+            "2": { "name": "storage.modifier.async.ts" }
+          }
+        },
+        {
+          "comment": "memo NAME( — statement-form memoized fn",
+          "match": "\\b(memo)\\s+(?!async\\b)(?=[A-Za-z_$][\\w$]*\\s*(?:<|\\())",
+          "captures": {
+            "1": { "name": "keyword.other.memo.parabun" }
+          }
+        },
+        {
+          "comment": "memo async ( ... ) or memo async NAME => — async arrow form",
+          "match": "\\b(memo)\\s+(async)\\s+(?=\\(|[A-Za-z_$][\\w$]*\\s*=>)",
+          "captures": {
+            "1": { "name": "keyword.other.memo.parabun" },
+            "2": { "name": "storage.modifier.async.ts" }
+          }
+        },
+        {
+          "comment": "memo ( ... ) or memo <T>( ... ) or memo NAME => — sync arrow form",
+          "match": "\\b(memo)\\s+(?=\\(|<[\\w\\s,=]+>\\s*\\(|[A-Za-z_$][\\w$]*\\s*=>)",
+          "captures": {
+            "1": { "name": "keyword.other.memo.parabun" }
+          }
+        },
+        {
+          "comment": "defer EXPR / defer await EXPR — block-exit hook",
+          "match": "\\b(defer)\\b(?=\\s+[A-Za-z_$])",
+          "captures": {
+            "1": { "name": "keyword.control.defer.parabun" }
+          }
+        }
+      ]
+    },
+    "parabun-fun": {
+      "patterns": [
+        {
+          "comment": "fun keyword (shorthand for function)",
+          "match": "\\b(fun)\\b(?=\\s*[a-zA-Z_$*(<])",
+          "captures": {
+            "1": { "name": "storage.type.function.ts" }
+          }
+        }
+      ]
+    },
+    "parabun-pure": {
+      "patterns": [
+        {
+          "comment": "export pure async fun/function",
+          "match": "\\b(export)\\s+(pure)\\s+(async)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.export.ts" },
+            "2": { "name": "keyword.other.pure.parabun" },
+            "3": { "name": "storage.modifier.async.ts" },
+            "4": { "name": "storage.type.function.ts" }
+          }
+        },
+        {
+          "comment": "export pure fun/function",
+          "match": "\\b(export)\\s+(pure)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.export.ts" },
+            "2": { "name": "keyword.other.pure.parabun" },
+            "3": { "name": "storage.type.function.ts" }
+          }
+        },
+        {
+          "comment": "pure async fun/function declaration/expression",
+          "match": "\\b(pure)\\s+(async)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" },
+            "2": { "name": "storage.modifier.async.ts" },
+            "3": { "name": "storage.type.function.ts" }
+          }
+        },
+        {
+          "comment": "pure fun/function declaration/expression",
+          "match": "\\b(pure)\\s+(fun(?:ction)?)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" },
+            "2": { "name": "storage.type.function.ts" }
+          }
+        },
+        {
+          "comment": "pure async arrow (before async keyword)",
+          "match": "\\b(pure)\\s+(async)\\b(?=\\s*(?:\\(|\\w+\\s*=>))",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" },
+            "2": { "name": "storage.modifier.async.ts" }
+          }
+        },
+        {
+          "comment": "pure arrow (before parens or identifier)",
+          "match": "\\b(pure)\\b(?=\\s*(?:\\(|\\w+\\s*=>))",
+          "captures": {
+            "1": { "name": "keyword.other.pure.parabun" }
+          }
+        }
+      ]
+    },
+    "parabun-operators": {
+      "patterns": [
+        {
+          "comment": "..= await-assign / inclusive-range operator",
+          "name": "keyword.operator.await-assign.parabun",
+          "match": "\\.\\.="
+        },
+        {
+          "comment": "..! error catch operator",
+          "name": "keyword.operator.catch.parabun",
+          "match": "\\.\\.!"
+        },
+        {
+          "comment": "..& finally operator",
+          "name": "keyword.operator.finally.parabun",
+          "match": "\\.\\.&"
+        },
+        {
+          "comment": ".. exclusive-range operator (must come after ..= / ..! / ..&)",
+          "name": "keyword.operator.range.parabun",
+          "match": "\\.\\."
+        },
+        {
+          "comment": "|> pipeline operator",
+          "name": "keyword.operator.pipeline.parabun",
+          "match": "\\|>"
+        },
+        {
+          "comment": "~> reactive-binding operator",
+          "name": "keyword.operator.rbind.parabun",
+          "match": "~>"
+        },
+        {
+          "comment": "-> reactive call-binding operator (negative lookbehind on -/=/< guards against -->/=>/<-)",
+          "name": "keyword.operator.callbind.parabun",
+          "match": "(?<![\\-=<])->"
+        }
+      ]
+    }
+  }
+}
