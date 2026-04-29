@@ -1,6 +1,6 @@
 # `bun:gpio` + `bun:i2c` + `bun:spi` + `bun:mmio` — Plan
 
-> **Status (2026-04-29):** `bun:gpio`, `bun:i2c`, `bun:spi` ship. End-to-end validated on Raspberry Pi 5 — five gpiochips enumerate (`brcmstb` × 4 + `pinctrl-rp1`), pull-up/pull-down bias propagates, `i2c.scan()` matches `i2cdetect`, `spi.transactSegments` issues clean `SPI_IOC_MESSAGE` ioctls. `bun:mmio` deferred. Single-line GPIO surface only — bulk `chip.lines([...])` not yet shipped.
+> **Status (2026-04-29):** `bun:gpio` (single + bulk-line `chip.bank(...)`), `bun:i2c`, `bun:spi` ship. End-to-end validated on Raspberry Pi 5 — five gpiochips enumerate (`brcmstb` × 4 + `pinctrl-rp1`), pull-up/pull-down bias propagates, `i2c.scan()` matches `i2cdetect`, `spi.transactSegments` issues clean `SPI_IOC_MESSAGE` ioctls. `bun:mmio` deferred. Bulk-line acquired through `chip.bank()` rather than the original spec's `chip.lines([...])` — `chip.lines: number` already exists as the chip's line count.
 
 Bring SBC peripheral access into parabun so a `bun:assistant` running on a Pi or Jetson can flip relays, read sensors, drive servos, and talk to displays without shelling out to Python or `gpioset`. Three high-level modules over Linux character devices for the 99% case; one low-level escape hatch for register-direct speed and weird peripherals.
 
