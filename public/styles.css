@@ -373,6 +373,63 @@ figure.code > pre {
   letter-spacing: 0.02em;
 }
 
+/* Tabbed code blocks — TypeScript / Parabun toggle. Same .figure.code shell;
+   the lang-toggle row replaces the static .code-header. JS in fx.js syncs
+   all tabs on the page (and persists choice via localStorage). */
+figure.code.lang-tabs .code-header {
+  display: flex;
+  gap: 0;
+  padding: 0;
+}
+figure.code.lang-tabs .lang-toggle {
+  display: flex;
+  width: 100%;
+}
+figure.code.lang-tabs .lang-toggle button {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-right: 1px solid var(--rule);
+  transition: color 80ms ease;
+}
+figure.code.lang-tabs .lang-toggle button:hover {
+  color: var(--text);
+}
+figure.code.lang-tabs .lang-toggle button.active {
+  color: var(--text);
+  background: var(--bg-code);
+  position: relative;
+}
+figure.code.lang-tabs .lang-toggle button.active::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 1px;
+  background: var(--bg-code);
+}
+figure.code.lang-tabs pre[hidden] {
+  display: none;
+}
+
+/* Pre-paint default. Avoids a flash where both panels are visible until
+   fx.js loads. The dataset.lang on <html> is set in head before paint
+   (see index.html); we mirror it here to drive initial visibility. */
+html[data-lang="ts"] figure.code.lang-tabs pre[data-lang="parabun"],
+html[data-lang="parabun"] figure.code.lang-tabs pre[data-lang="ts"] {
+  display: none;
+}
+html[data-lang="ts"] figure.code.lang-tabs button[data-lang="ts"],
+html[data-lang="parabun"] figure.code.lang-tabs button[data-lang="parabun"] {
+  color: var(--text);
+  background: var(--bg-code);
+}
+
 @media (max-width: 640px) {
   .diff {
     grid-template-columns: 1fr;

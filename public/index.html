@@ -26,8 +26,12 @@
       try {
         const pref = localStorage.getItem("parabun-ligatures");
         if (pref !== "off") document.documentElement.classList.add("ligatures");
+      } catch {}
+      try {
+        const lang = localStorage.getItem("parabun-lang") || "ts";
+        document.documentElement.dataset.lang = lang;
       } catch {
-        document.documentElement.classList.add("ligatures");
+        document.documentElement.dataset.lang = "ts";
       }
     </script>
   </head>
@@ -663,9 +667,14 @@ gpu.<span class="fn">release</span>(held);</code></pre>
         <code>mic.peakLevel</code> / <code>chat.busy</code> / <code>wsp.busy</code> drives a status line — no
         polling, no observers, no event emitters.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-        <pre><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre data-lang="ts"><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
 <span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
 <span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
 <span class="kw">import</span> { effect } <span class="kw">from</span> <span class="str">"bun:signals"</span>;
@@ -687,6 +696,42 @@ gpu.<span class="fn">release</span>(held);</code></pre>
 <span class="fn">effect</span>(() =&gt; <span class="fn">render</span>(
   <span class="str">`mic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`
 ));
+
+<span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
+  <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });
+  <span class="kw">let</span> json = <span class="str">""</span>;
+  <span class="kw">for await</span> (<span class="kw">const</span> piece <span class="kw">of</span> chat.<span class="fn">chat</span>([{ role: <span class="str">"user"</span>, content: heard }], { schema: ToolSchema, maxTokens: <span class="num">80</span> })) {
+    json += piece;
+  }
+  <span class="kw">const</span> { tool, args } = JSON.<span class="fn">parse</span>(json);
+  <span class="kw">const</span> result = <span class="kw">await</span> tools[tool](args);
+  <span class="kw">if</span> (<span class="kw">typeof</span> result === <span class="str">"string"</span>) {
+    <span class="kw">const</span> out = <span class="kw">await</span> speech.<span class="fn">speak</span>(result, { engine: <span class="str">"piper"</span>, model: <span class="str">"/models/en_US-lessac-medium.onnx"</span> });
+    spk ??= <span class="kw">await</span> audio.<span class="fn">play</span>({ sampleRate: out.sampleRate, channels: out.channels });
+    <span class="kw">await</span> spk.<span class="fn">write</span>(out.samples);
+  }
+}</code></pre>
+        <pre data-lang="parabun" hidden><code><span class="kw">import</span> audio  <span class="kw">from</span> <span class="str">"bun:audio"</span>;
+<span class="kw">import</span> speech <span class="kw">from</span> <span class="str">"bun:speech"</span>;
+<span class="kw">import</span> llm    <span class="kw">from</span> <span class="str">"bun:llm"</span>;
+
+<span class="com">// Dispatch table — same shape an MCP client would expose.</span>
+<span class="kw">const</span> tools = {
+  <span class="fn">setLight</span>:  ({ room, on, brightness }) =&gt; mqtt.<span class="fn">publish</span>(<span class="str">`home/${room}/light`</span>, { on, brightness }),
+  <span class="fn">playMusic</span>: ({ track }) =&gt; spotify.<span class="fn">play</span>(track),
+  <span class="fn">reply</span>:     ({ text }) =&gt; text,
+};
+<span class="kw">const</span> ToolSchema = { <span class="com">/* JSON schema with oneOf for each tool */</span> };
+
+<span class="kw">await using</span> mic = <span class="kw">await</span> audio.<span class="fn">capture</span>({ sampleRate: <span class="num">16000</span>, channels: <span class="num">1</span> });
+<span class="kw">using</span>       wsp = <span class="kw">await</span> llm.WhisperModel.<span class="fn">load</span>(<span class="str">"/models/ggml-tiny.en.bin"</span>);
+<span class="kw">using</span>       chat = <span class="kw">await</span> llm.LLM.<span class="fn">load</span>(<span class="str">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span>);
+<span class="kw">let</span> spk;
+
+<span class="com">// One reactive line drives a live UI badge.</span>
+<span class="pb-kw">effect</span> {
+  <span class="fn">render</span>(<span class="str">`mic ${mic.peakLevel.get().toFixed(3)}  llm ${chat.busy.get() ? "🤔" : "✅"}  whisper ${wsp.busy.get() ? "🎙️" : "✅"}`);
+}
 
 <span class="kw">for await</span> (<span class="kw">const</span> utt <span class="kw">of</span> speech.<span class="fn">listen</span>(mic.<span class="fn">frames</span>(), { sampleRate: <span class="num">16000</span> })) {
   <span class="kw">const</span> heard = wsp.<span class="fn">transcribe</span>(utt.samples, { language: <span class="str">"en"</span> });

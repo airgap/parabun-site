@@ -11,7 +11,7 @@
       maximumFractionDigits: d,
     });
 
-  const parse = (cell) => {
+  const parse = cell => {
     const raw = cell.textContent.trim();
     const m = raw.match(/^([~<>]?)\s*([\d][\d,._ ]*(?:\.\d+)?)(.*)$/);
     if (!m) return null;
@@ -23,7 +23,7 @@
   };
 
   const cells = new Map();
-  document.querySelectorAll("table.bench td.num-cell").forEach((cell) => {
+  document.querySelectorAll("table.bench td.num-cell").forEach(cell => {
     const info = parse(cell);
     if (!info) return;
     cells.set(cell, info);
@@ -35,7 +35,7 @@
   const animate = (cell, info) => {
     const dur = 900;
     const t0 = performance.now();
-    const step = (now) => {
+    const step = now => {
       const t = Math.min(1, (now - t0) / dur);
       const e = 1 - Math.pow(1 - t, 3);
       cell.textContent = `${info.prefix}${fmt(info.target * e, info.decimals)}${info.suffix}`;
@@ -46,16 +46,16 @@
   };
 
   const played = new WeakSet();
-  const play = (table) => {
+  const play = table => {
     if (played.has(table)) return;
     played.add(table);
-    table.querySelectorAll("td.num-cell").forEach((cell) => {
+    table.querySelectorAll("td.num-cell").forEach(cell => {
       const info = cells.get(cell);
       if (!info) return;
       if (reduced) return;
       animate(cell, info);
     });
-    table.querySelectorAll("tr.winner").forEach((row) => {
+    table.querySelectorAll("tr.winner").forEach(row => {
       row.classList.add("pulse");
       setTimeout(() => row.classList.remove("pulse"), 1500);
     });
@@ -66,12 +66,12 @@
     return;
   }
   const io = new IntersectionObserver(
-    (entries) => {
+    entries => {
       for (const e of entries) if (e.isIntersecting) play(e.target);
     },
     { threshold: 0.25 },
   );
-  document.querySelectorAll("table.bench").forEach((t) => io.observe(t));
+  document.querySelectorAll("table.bench").forEach(t => io.observe(t));
 })();
 
 // Mobile docs nav: tap-to-open disclosure. The CSS hides the trigger on
@@ -84,5 +84,38 @@
   toggle.addEventListener("click", () => {
     const opened = panel.classList.toggle("open");
     toggle.setAttribute("aria-expanded", opened ? "true" : "false");
+  });
+})();
+
+// TypeScript / Parabun code-tab toggle. Each <figure class="code lang-tabs">
+// holds a pair of <pre data-lang="ts|parabun"> blocks plus a header row
+// with two <button data-lang="..."> tabs. Clicking either tab updates
+// every group on the page and persists the choice via localStorage. The
+// initial state is set in <head> via dataset.lang so there's no flash.
+(() => {
+  const groups = document.querySelectorAll("figure.code.lang-tabs");
+  if (!groups.length) return;
+
+  const apply = lang => {
+    document.documentElement.dataset.lang = lang;
+    try {
+      localStorage.setItem("parabun-lang", lang);
+    } catch {}
+    groups.forEach(g => {
+      g.querySelectorAll("[data-lang]").forEach(el => {
+        const match = el.dataset.lang === lang;
+        if (el.tagName === "BUTTON") el.classList.toggle("active", match);
+        else el.hidden = !match;
+      });
+    });
+  };
+
+  const initial = document.documentElement.dataset.lang === "parabun" ? "parabun" : "ts";
+  apply(initial);
+
+  groups.forEach(g => {
+    g.querySelectorAll(".lang-toggle button").forEach(btn => {
+      btn.addEventListener("click", () => apply(btn.dataset.lang));
+    });
   });
 })();
