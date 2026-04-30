@@ -28,6 +28,15 @@ const ENTITIES: Record<string, string> = {
   "#x27": "'",
   "#x60": "`",
   nbsp: " ",
+  mdash: "—",
+  ndash: "–",
+  rarr: "→",
+  larr: "←",
+  uarr: "↑",
+  darr: "↓",
+  hellip: "…",
+  sup2: "²",
+  sup3: "³",
 };
 
 function decodeEntities(s: string): string {
