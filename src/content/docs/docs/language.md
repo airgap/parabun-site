@@ -42,7 +42,7 @@ memo async fetchProfile(id: string) { return await db.users.get(id); }
 
 `A ~> B when C` (and `A -> fn when C`) adds a guard. The desugar wraps the body in `if (C)` — `C` is read inside the effect so signal reads in the predicate are tracked too. Flipping `C` re-fires the effect, the body re-evaluates the guard, and only emits when it passes.
 
-`when EXPR { BODY }` is a statement-level **edge-triggered** block. It fires `BODY` once each time `EXPR` transitions false → true. The dual `when not EXPR { BODY }` fires on the true → false edge. Desugars to `signals.onRising(() => EXPR, () => { BODY })` and `signals.onFalling(...)` respectively. Distinct from suffix `when`: position disambiguates — suffix is every-truthy guard, block is edge-triggered.
+`when EXPR { BODY }` is a statement-level **edge-triggered** block. It fires `BODY` once each time `EXPR` transitions false → true. The dual `when not EXPR { BODY }` fires on the true → false edge. Both desugar to `signals.when(() => EXPR, () => { BODY })` — the `not` form pushes the negation into the predicate (`() => !(EXPR)`), since the falling edge is just the rising edge of the inverse. Distinct from suffix `when`: position disambiguates — suffix is every-truthy guard, block is edge-triggered.
 
 ```parabun
 signal count = 0;

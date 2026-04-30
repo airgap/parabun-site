@@ -187,28 +187,31 @@ Returns a disposer with the same semantics as `fromAsync`'s `dispose`.
 
 The signal must be a writable one (returned by `signal(...)`); passing a `derived(...)` result throws.
 
-## `onRising(source, fn)` / `onFalling(source, fn)`
+## `when(source, fn)`
 
-Edge-detection helpers. `onRising` calls `fn` once each time `source` transitions from falsy to truthy (boolean-coerced); `onFalling` is the dual.
+Edge-detection helper. `when` calls `fn` once each time `source` transitions from falsy to truthy (boolean-coerced). The falling edge is the rising edge of the negated predicate, so a single helper covers both directions: `when(() => !s.get(), fn)` fires on true→false. The block syntax `when not EXPR { … }` rewrites to that form automatically.
 
 `source` can be **either** a `Signal<T>` (a `signal(...)` cell, a `derived(...)`, or any driver-handle signal) **or** a predicate function — passing `() => a.get() && b.get() === "x"` skips the explicit `derived(...)` wrapper. Reads inside the predicate are tracked the same way they would be inside an `effect`.
 
-The initial value is treated as already-observed — a source that starts truthy does **not** fire `onRising` on first run; only subsequent false→true transitions do.
+The initial value is treated as already-observed — a source that starts truthy does **not** fire on first run; only subsequent false→true transitions do.
 
 ```ts
-import { onRising } from "para:signals";
+import signals from "para:signals";
 
 // Greet on the rising edge of (motion present AND bot idle).
-onRising(
+signals.when(
   () => motion.detected.get() && bot.state.get() === "idle",
   () => bot.say("Welcome back!"),
 );
 
 // Or, with an existing signal:
-onRising(button.pressed, () => console.log("clicked"));
+signals.when(button.pressed, () => console.log("clicked"));
+
+// Falling edge — negate the predicate.
+signals.when(() => !button.pressed.get(), () => console.log("released"));
 ```
 
-Both forms return a disposer with the same semantics as `effect()`.
+Returns a disposer with the same semantics as `effect()`.
 
 Common patterns: button-press detection, arrival/departure handlers, threshold crossings, "fire once when condition becomes true" without manual `wasX = false` flag bookkeeping.
 

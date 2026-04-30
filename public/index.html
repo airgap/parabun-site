@@ -784,7 +784,7 @@
         <code>vision.detectMotion</code> emits frame-by-frame scores; the rising-edge handler fires once on each
         false→true transition of the predicate — no <code>derived()</code> wrapper, no state machine, no debounce timer,
         no <code>wasPresent</code> flag. The Parabun tab uses a <code>when EXPR { … }</code> block; the TypeScript tab
-        uses the equivalent <code>onRising()</code> call.
+        uses the equivalent <code>signals.when()</code> call.
       </p>
       <figure class="code lang-tabs">
         <div class="code-header">
@@ -793,12 +793,10 @@
             <button data-lang="parabun" type="button">Parabun</button>
           </div>
         </div>
-        <pre
-          data-lang="ts"
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
+        <pre data-lang="ts"><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:vision"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> signals   </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
@@ -812,11 +810,14 @@
 <span class="line"></span>
 <span class="line"><span style="color:#6A737D">// Greet whenever motion appears AND the bot is idle. The predicate is</span></span>
 <span class="line"><span style="color:#6A737D">// auto-tracked — every signal it reads becomes a dep, no derived() wrapper.</span></span>
-<span class="line"><span style="color:#B392F0">onRising</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#E1E4E8">signals.</span><span style="color:#B392F0">when</span><span style="color:#E1E4E8">(</span></span>
 <span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">,</span></span>
 <span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">),</span></span>
 <span class="line"><span style="color:#E1E4E8">);</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:vision"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
@@ -1081,7 +1082,10 @@
 <span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">finally</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"done"</span><span style="color:#E1E4E8">));</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;=</span><span style="color:#79B8FF"> 9</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(i);   </span><span style="color:#6A737D">// 0,1,2,…,9</span></span></code></pre>
-        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 5</span><span style="color:#F97583"> |></span><span style="color:#E1E4E8"> sq </span><span style="color:#F97583">|></span><span style="color:#E1E4E8"> sq;   </span><span style="color:#6A737D">// 625 — both calls inlined</span></span>
 <span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(result);</span></span>
