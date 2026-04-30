@@ -781,14 +781,22 @@
       <p>
         Module composition: <span class="import">bun:camera</span> + <span class="import">bun:vision</span> +
         <span class="import">bun:assistant</span> over <span class="import">bun:signals</span>.
-        <code>vision.detectMotion</code> emits frame-by-frame scores; <code>derived()</code> distils raw motion AND
-        bot-idle into one boolean; <code>onRising()</code> fires a greeting once per false→true transition. No state
-        machine, no debounce timer, no flag bookkeeping. There is no parabun-syntax tab here on purpose — the ergonomic
-        win all comes from the runtime modules, and the call shape is already as compact as it gets.
+        <code>vision.detectMotion</code> emits frame-by-frame scores; the <code>onRising()</code> predicate auto-tracks
+        every signal it reads, so the greeting fires once on each false→true edge — no <code>derived()</code> wrapper,
+        no state machine, no debounce timer, no <code>wasPresent</code> flag. The Parabun tab collapses each
+        <code>await using x = await resource.open(…)</code> to <code>await using x ..= resource.open(…)</code> — same
+        semantics, less doubled-<code>await</code>.
       </p>
-      <figure class="code">
-        <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-        <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
+      <figure class="code lang-tabs">
+        <div class="code-header">
+          <div class="lang-toggle" role="tablist">
+            <button data-lang="ts" type="button">TypeScript</button>
+            <button data-lang="parabun" type="button">Parabun</button>
+          </div>
+        </div>
+        <pre
+          data-lang="ts"
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
@@ -805,6 +813,27 @@
 <span class="line"></span>
 <span class="line"><span style="color:#6A737D">// Greet whenever motion appears AND the bot is idle. The predicate is</span></span>
 <span class="line"><span style="color:#6A737D">// auto-tracked — every signal it reads becomes a dep, no derived() wrapper.</span></span>
+<span class="line"><span style="color:#B392F0">onRising</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">);</span></span></code></pre>
+        <pre
+          data-lang="parabun"
+          hidden
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> camera.open(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { </span><span style="color:#79B8FF">format</span><span style="color:#F97583">:</span><span style="color:#9ECBFF"> "yuyv"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">width</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> 640</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">height</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> 480</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> assistant.create({</span></span>
+<span class="line"><span style="color:#B392F0">  llm</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#B392F0">  tts</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"/models/en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#B392F0">  system</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> motion</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> vision.</span><span style="color:#B392F0">detectMotion</span><span style="color:#E1E4E8">(vision.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(cam.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()), { sensitivity: </span><span style="color:#79B8FF">0.04</span><span style="color:#E1E4E8"> }).</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
 <span class="line"><span style="color:#B392F0">onRising</span><span style="color:#E1E4E8">(</span></span>
 <span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">,</span></span>
 <span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">),</span></span>
