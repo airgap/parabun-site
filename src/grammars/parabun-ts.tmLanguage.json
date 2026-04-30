@@ -143,8 +143,8 @@
     "parabun-operators": {
       "patterns": [
         {
-          "comment": "..= await-assign / inclusive-range operator",
-          "name": "keyword.operator.await-assign.parabun",
+          "comment": "..= inclusive-range operator",
+          "name": "keyword.operator.range-inclusive.parabun",
           "match": "\\.\\.="
         },
         {

@@ -69,20 +69,19 @@ when motionPresent && enabled { console.log("greet"); }
 when not enabled { console.log("disabled"); }
 ```
 
-## `|>`, `..!`, `..&`, `..=`
+## `|>`, `..!`, `..&`, `..` / `..=`
 
 - `x |> f` is `f(x)`. `pure` functions threaded through `|>` are inlined at parse time — no call overhead.
 - `..!` is `.catch` in suffix position.
 - `..&` is `.finally` in suffix position.
-- `..=` in a declaration is `= await`.
-- `..=` in expression position is the inclusive-range marker. `0..5` excludes 5; `0..=5` includes it.
+- `a..b` is an exclusive integer range; `a..=b` is inclusive.
 
 ```parabun
 pure function sq(x: number) { return x * x; }
 
 const result = 5 |> sq |> sq;   // 625 — both calls inlined
 
-const json ..= fetch("/api").then(r => r.json())
+const json = await fetch("/api").then(r => r.json())
   ..! err => console.error(err)      // .catch
   ..& () => console.log("done");     // .finally
 

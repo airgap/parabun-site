@@ -89,11 +89,11 @@
       <h2 id="stack">Module index</h2>
       <p>
         Modules grouped by what you'd reach for them to do. Click a pill for the API. Higher-level modules compose the
-        lower-level ones — <span class="import">para:assistant</span> is built on <span class="import">para:audio</span> +
-        <span class="import">para:speech</span> + <span class="import">para:llm</span>;
-        <span class="import">para:llm</span> on <span class="import">para:gpu</span> +
-        <span class="import">para:simd</span>; and so on. The imports are the truth, but you don't need to know the
-        dependency graph to pick a module.
+        lower-level ones — <span class="import">para:assistant</span> is built on
+        <span class="import">para:audio</span> + <span class="import">para:speech</span> +
+        <span class="import">para:llm</span>; <span class="import">para:llm</span> on
+        <span class="import">para:gpu</span> + <span class="import">para:simd</span>; and so on. The imports are the
+        truth, but you don't need to know the dependency graph to pick a module.
       </p>
 
       <div class="tiers" aria-label="Parabun modules by use case">
@@ -534,11 +534,11 @@
         <h3 id="bun-vision"><span class="import">para:vision</span></h3>
         <p>
           <code>vision.frames(stream, { decodeMjpg? })</code> takes a frame iterator from
-          <span class="import">para:camera</span> (or any source yielding the same shape) and yields packed-RGBA8 frames.
-          yuyv, nv12, and rgb24 are converted inline; mjpeg requires the caller to pass <code>image.decode</code> from
-          <span class="import">para:image</span> (cross-builtin imports between <code>bun:</code> modules aren't
-          supported, so dependencies are passed in at the call site). <code>vision.detectMotion</code> adds a
-          downsampled-luma frame-diff estimator with temporal smoothing.
+          <span class="import">para:camera</span> (or any source yielding the same shape) and yields packed-RGBA8
+          frames. yuyv, nv12, and rgb24 are converted inline; mjpeg requires the caller to pass
+          <code>image.decode</code> from <span class="import">para:image</span> (cross-builtin imports between
+          <code>bun:</code> modules aren't supported, so dependencies are passed in at the call site).
+          <code>vision.detectMotion</code> adds a downsampled-luma frame-diff estimator with temporal smoothing.
         </p>
         <p>
           <code>vision.detect</code> (YOLO / SSD / RT-DETR) and <code>vision.recognize</code> (Tesseract / EasyOCR) are
@@ -781,11 +781,10 @@
       <p>
         Module composition: <span class="import">para:camera</span> + <span class="import">para:vision</span> +
         <span class="import">para:assistant</span> over <span class="import">para:signals</span>.
-        <code>vision.detectMotion</code> emits frame-by-frame scores; the <code>onRising()</code> predicate auto-tracks
-        every signal it reads, so the greeting fires once on each false→true edge — no <code>derived()</code> wrapper,
-        no state machine, no debounce timer, no <code>wasPresent</code> flag. The Parabun tab collapses each
-        <code>await using x = await resource.open(…)</code> to <code>await using x ..= resource.open(…)</code> — same
-        semantics, less doubled-<code>await</code>.
+        <code>vision.detectMotion</code> emits frame-by-frame scores; the rising-edge handler fires once on each
+        false→true transition of the predicate — no <code>derived()</code> wrapper, no state machine, no debounce timer,
+        no <code>wasPresent</code> flag. The Parabun tab uses a <code>when EXPR { … }</code> block; the TypeScript tab
+        uses the equivalent <code>onRising()</code> call.
       </p>
       <figure class="code lang-tabs">
         <div class="code-header">
@@ -817,27 +816,23 @@
 <span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">,</span></span>
 <span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">),</span></span>
 <span class="line"><span style="color:#E1E4E8">);</span></span></code></pre>
-        <pre
-          data-lang="parabun"
-          hidden
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:vision"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> camera.open(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { </span><span style="color:#79B8FF">format</span><span style="color:#F97583">:</span><span style="color:#9ECBFF"> "yuyv"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">width</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> 640</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">height</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> 480</span><span style="color:#E1E4E8"> });</span></span>
-<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> assistant.create({</span></span>
-<span class="line"><span style="color:#B392F0">  llm</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#B392F0">  tts</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"/models/en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#B392F0">  system</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
+<span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  tts: </span><span style="color:#9ECBFF">"/models/en_US-lessac-medium.onnx"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">  system: </span><span style="color:#9ECBFF">"You are a friendly home assistant. Keep replies short."</span><span style="color:#E1E4E8">,</span></span>
 <span class="line"><span style="color:#E1E4E8">});</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> motion</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> vision.</span><span style="color:#B392F0">detectMotion</span><span style="color:#E1E4E8">(vision.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">(cam.</span><span style="color:#B392F0">frames</span><span style="color:#E1E4E8">()), { sensitivity: </span><span style="color:#79B8FF">0.04</span><span style="color:#E1E4E8"> }).</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#B392F0">onRising</span><span style="color:#E1E4E8">(</span></span>
-<span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> motion.detected.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#E1E4E8">  () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">),</span></span>
-<span class="line"><span style="color:#E1E4E8">);</span></span></code></pre>
+<span class="line"><span style="color:#6A737D">// Edge-triggered: fires once on each false→true transition of the predicate.</span></span>
+<span class="line"><span style="color:#F97583">when</span><span style="color:#E1E4E8"> motion.detected </span><span style="color:#F97583">&#x26;&#x26;</span><span style="color:#E1E4E8"> bot.state </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "idle"</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">  bot.</span><span style="color:#B392F0">say</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Welcome back!"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
       </figure>
       <p class="footnote">
         Four modules, three signals, zero glue code. Barge-in is built into
@@ -1059,14 +1054,13 @@
 
       <h3>
         <span class="pb-op">|&gt;</span>, <span class="pb-op">..!</span>, <span class="pb-op">..&amp;</span>,
-        <span class="pb-op">..=</span>
+        <span class="pb-op">..</span> / <span class="pb-op">..=</span>
       </h3>
       <p>
         <code>x |&gt; f</code> is <code>f(x)</code>. <code>pure</code> functions passed through <code>|&gt;</code> get
         inlined at parse time — no call overhead. <code>..!</code> / <code>..&amp;</code> are <code>.catch</code> /
-        <code>.finally</code> in suffix position. <code>..=</code> is <code>= await</code> in a declaration and
-        disambiguates to an inclusive-range literal otherwise (<code>0..5</code> excludes 5, <code>0..=5</code> includes
-        it).
+        <code>.finally</code> in suffix position. <code>a..b</code> is an exclusive integer range; <code>a..=b</code> is
+        inclusive (empty / inverted ranges return <code>[]</code>, never throw).
       </p>
       <figure class="code lang-tabs">
         <div class="code-header">
@@ -1087,15 +1081,12 @@
 <span class="line"><span style="color:#E1E4E8">  .</span><span style="color:#B392F0">finally</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"done"</span><span style="color:#E1E4E8">));</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;=</span><span style="color:#79B8FF"> 9</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(i);   </span><span style="color:#6A737D">// 0,1,2,…,9</span></span></code></pre>
-        <pre
-          data-lang="parabun"
-          hidden
-        ><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
+        <pre data-lang="parabun" hidden><code><span class="line"><span style="color:#F97583">pure</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> sq</span><span style="color:#E1E4E8">(x: number) { </span><span style="color:#F97583">return</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">*</span><span style="color:#E1E4E8"> x; }</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 5</span><span style="color:#F97583"> |></span><span style="color:#E1E4E8"> sq </span><span style="color:#F97583">|></span><span style="color:#E1E4E8"> sq;   </span><span style="color:#6A737D">// 625 — both calls inlined</span></span>
 <span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(result);</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> json</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> fetch(</span><span style="color:#9ECBFF">"https://api.github.com"</span><span style="color:#E1E4E8">).then(r </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> r.</span><span style="color:#B392F0">json</span><span style="color:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> json</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> fetch</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"https://api.github.com"</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">then</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">r</span><span style="color:#F97583"> =></span><span style="color:#E1E4E8"> r.</span><span style="color:#B392F0">json</span><span style="color:#E1E4E8">())</span></span>
 <span class="line"><span style="color:#F97583">  ..!</span><span style="color:#FFAB70"> err</span><span style="color:#F97583"> =></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">error</span><span style="color:#E1E4E8">(err)      </span><span style="color:#6A737D">// .catch</span></span>
 <span class="line"><span style="color:#F97583">  ..&#x26;</span><span style="color:#E1E4E8"> () </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"done"</span><span style="color:#E1E4E8">); </span><span style="color:#6A737D">// .finally</span></span>
 <span class="line"></span>
