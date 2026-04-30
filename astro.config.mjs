@@ -42,7 +42,7 @@ const modules = [
   "spi",
   "video",
   "vision",
-].map(slug => ({ label: `bun:${slug}`, link: `${docsRoot}/${slug}/` }));
+].map(slug => ({ label: `para:${slug}`, link: `${docsRoot}/${slug}/` }));
 
 export default defineConfig({
   site: "https://parabun.script.dev",
