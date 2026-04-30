@@ -1,13 +1,13 @@
 ---
-title: bun:mcp
-description: Model Context Protocol client. Stdio + WebSocket transports. Composes with bun:assistant's tool dispatch.
+title: para:mcp
+description: Model Context Protocol client. Stdio + WebSocket transports. Composes with para:assistant's tool dispatch.
 ---
 
 ```ts
-import mcp from "bun:mcp";
+import mcp from "para:mcp";
 ```
 
-A Model Context Protocol client. Two transports for v1 — stdio (subprocess over newline-delimited JSON-RPC 2.0) and ws (WebSocket text frames) — plus the structural surface [`bun:assistant`](/docs/assistant/) reuses for its `tools:` option. Out of scope for v1: server hosting, HTTP / SSE transport, OAuth wrappers, resources / prompts surfaces (`tools/*` only).
+A Model Context Protocol client. Two transports for v1 — stdio (subprocess over newline-delimited JSON-RPC 2.0) and ws (WebSocket text frames) — plus the structural surface [`para:assistant`](/docs/assistant/) reuses for its `tools:` option. Out of scope for v1: server hosting, HTTP / SSE transport, OAuth wrappers, resources / prompts surfaces (`tools/*` only).
 
 ## `mcp.connect(transport, target, opts?)`
 
@@ -31,7 +31,7 @@ The connection is `AsyncDisposable` — `await using` releases the transport at 
 | Option | Default | Description |
 | --- | --- | --- |
 | `protocolVersion` | `"2025-03-26"` | Override the spec version sent in `initialize`. |
-| `clientInfo` | `{ name: "bun:mcp", version: "0.1.0" }` | Client identifier sent in `initialize`. |
+| `clientInfo` | `{ name: "para:mcp", version: "0.1.0" }` | Client identifier sent in `initialize`. |
 
 Stdio transport adds:
 
@@ -66,13 +66,13 @@ try {
 }
 ```
 
-## Composing with `bun:assistant`
+## Composing with `para:assistant`
 
-The connection object is structurally compatible with `bun:assistant`'s `tools:` option — the assistant flattens every tool the connection exposes into its own catalog and routes calls back through `conn.call`.
+The connection object is structurally compatible with `para:assistant`'s `tools:` option — the assistant flattens every tool the connection exposes into its own catalog and routes calls back through `conn.call`.
 
 ```ts
-import assistant from "bun:assistant";
-import mcp from "bun:mcp";
+import assistant from "para:assistant";
+import mcp from "para:mcp";
 
 await using conn = await mcp.connect("stdio", "home-assistant-mcp");
 await using bot = await assistant.create({

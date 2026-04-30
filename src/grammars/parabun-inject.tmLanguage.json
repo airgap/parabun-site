@@ -62,6 +62,18 @@
       "captures": { "1": { "name": "keyword.control.effect.parabun" } }
     },
     {
+      "comment": "when EXPR { ... } / when not EXPR { ... } — edge-triggered handler",
+      "match": "\\b(when)\\s+(not)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.when.parabun" },
+        "2": { "name": "keyword.control.when.not.parabun" }
+      }
+    },
+    {
+      "match": "\\b(when)\\b(?=\\s+[!A-Za-z_$])",
+      "captures": { "1": { "name": "keyword.control.when.parabun" } }
+    },
+    {
       "match": "\\b(arena)\\b(?=\\s*\\{)",
       "captures": { "1": { "name": "keyword.control.arena.parabun" } }
     },

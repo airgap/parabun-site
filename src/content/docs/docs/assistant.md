@@ -1,16 +1,16 @@
 ---
-title: bun:assistant
-description: Three-line edge voice assistant. Composes bun:audio + bun:speech + bun:llm with reactive signals and persistent memory.
+title: para:assistant
+description: Three-line edge voice assistant. Composes para:audio + para:speech + para:llm with reactive signals and persistent memory.
 ---
 
 ```ts
-import assistant from "bun:assistant";
+import assistant from "para:assistant";
 ```
 
-A Tier 2 facade. Composes [`bun:audio`](/docs/audio/) (mic + speaker), [`bun:speech`](/docs/speech/) (VAD + STT + TTS), and [`bun:llm`](/docs/llm/) (Llama / Qwen2 inference) into a complete on-device voice loop. The 3-line case stays 3 lines; new fields unlock new capabilities, never remove defaults.
+A Tier 2 facade. Composes [`para:audio`](/docs/audio/) (mic + speaker), [`para:speech`](/docs/speech/) (VAD + STT + TTS), and [`para:llm`](/docs/llm/) (Llama / Qwen2 inference) into a complete on-device voice loop. The 3-line case stays 3 lines; new fields unlock new capabilities, never remove defaults.
 
 ```ts
-import assistant from "bun:assistant";
+import assistant from "para:assistant";
 
 await using bot = await assistant.create({
   llm: "/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
@@ -40,7 +40,7 @@ type AssistantOptions = {
   llmOpts?: { maxContext?: number };
   chatOpts?: { maxTokens?: number; temperature?: number; topK?: number; topP?: number };
   memory?: string | { path: string };  // sqlite path — opt-in persistent transcript
-  tools?: AssistantTool[];           // inline tools or bun:mcp connections
+  tools?: AssistantTool[];           // inline tools or para:mcp connections
   wakeWord?: string | WakeWordConfig;  // gate utterances on a phrase ("hey jetson")
   schedule?: ScheduledPrompt[];      // cron-driven self-initiated turns
   knowledge?: KnowledgeOptions;      // RAG over a local doc directory
@@ -62,7 +62,7 @@ type WakeWordConfig = {
 | `mic` | ALSA capture options (defaults: `default`, 16 kHz, mono, 20 ms periods). | n/a if you have `stt` — defaults are fine for Whisper. |
 | `speaker` | ALSA playback device. Sample rate is auto-negotiated from the TTS-emitted WAV. | n/a if you have `tts`. |
 | `memory` | Sqlite-backed persistent transcript that replays on next `create`. | Each process starts with an empty history (system prompt only). |
-| `tools` | Inline `{name,schema,run}` tools and/or `bun:mcp` connections — the model can call them mid-turn. | The bot is a pure chat surface (still very useful, just no actuators). |
+| `tools` | Inline `{name,schema,run}` tools and/or `para:mcp` connections — the model can call them mid-turn. | The bot is a pure chat surface (still very useful, just no actuators). |
 | `wakeWord` | The voice loop ignores utterances that don't carry the wake phrase. Re-arms after every turn. | The bot replies to every utterance the mic picks up. |
 | `schedule` | Cron-driven self-initiated turns. Each fire calls `bot.ask(prompt)`; the resulting `Turn` carries `scheduled: true`. | The bot only speaks when spoken to. |
 | `knowledge` | RAG over a local doc directory. Each user turn retrieves the top-K most-relevant chunks and prepends them to the prompt. `bot.knowledge.search(text, n)` and `.reindex()` exposed. | The model only knows what's in its own weights + this session's transcript. |
@@ -131,7 +131,7 @@ await bot.say("Your laundry cycle is finished.");
 
 ## Reactive signals
 
-Every public signal is a [`bun:signals`](/docs/signals/) Signal — wire them into a UI without polling. Each updates synchronously when its source changes; subscribe with `.subscribe(cb)` or read with `.get()`.
+Every public signal is a [`para:signals`](/docs/signals/) Signal — wire them into a UI without polling. Each updates synchronously when its source changes; subscribe with `.subscribe(cb)` or read with `.get()`.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |
@@ -142,7 +142,7 @@ Every public signal is a [`bun:signals`](/docs/signals/) Signal — wire them in
 | `bot.toolsActive` | `Set<string>` | Names of tool calls currently in flight. Synchronous transitions on dispatch start and end. |
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 
 effect(() => console.log(`bot is ${bot.state.get()}`));
 effect(() => console.log(`history length=${bot.history.get().length}`));
@@ -205,10 +205,10 @@ const bot = await assistant.create({
 
 `run` returns any JSON-serializable value. Async returns are awaited. Schema is the JSON Schema fed to grammar-constrained sampling; only structures the schema lib supports work (no recursive `oneOf`, no recursive `object`).
 
-**MCP connections** — an object with `tools: ToolDescriptor[]` + `call(name, args)`. Every [`bun:mcp`](/docs/mcp/) connection matches structurally:
+**MCP connections** — an object with `tools: ToolDescriptor[]` + `call(name, args)`. Every [`para:mcp`](/docs/mcp/) connection matches structurally:
 
 ```ts
-import mcp from "bun:mcp";
+import mcp from "para:mcp";
 await using conn = await mcp.connect("stdio", "home-assistant-mcp");
 await using bot = await assistant.create({
   llm: "/models/...gguf",
@@ -229,7 +229,7 @@ While the bot is thinking or speaking, a rising edge on the listen stream's `vad
 This is automatic when the voice loop (`bot.run()` / `bot.turns()`) is in use. For programmatic interruption — UI cancel button, custom barge-in source, watchdog timer, etc. — call `bot.interrupt()`:
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 
 // Cut the bot off when the user clicks "stop":
 cancelButton.onclick = () => bot.interrupt();
@@ -310,7 +310,7 @@ const bot = await assistant.create({
 await bot.ask("What did I write about hash maps last week?");
 ```
 
-`encoder` is either a path to a sentence-embedding GGUF (BGE / E5 / MiniLM-class — anything `bun:llm.Encoder.load` can open) or a pre-loaded `Encoder` instance. Use the pre-loaded form when you want one encoder shared across multiple bots / stores in the same process.
+`encoder` is either a path to a sentence-embedding GGUF (BGE / E5 / MiniLM-class — anything `para:llm.Encoder.load` can open) or a pre-loaded `Encoder` instance. Use the pre-loaded form when you want one encoder shared across multiple bots / stores in the same process.
 
 `KnowledgeOptions`:
 
@@ -348,19 +348,19 @@ Each `KnowledgeHit` is `{ path, offset, text, score }` — `score` is cosine sim
 
 - Pure-JS cosine over a `Float32Array` matrix. Fine for `<10k` chunks on a Pi 5; beyond that, the per-query scan starts costing real ms. A vector-DB MCP connection (or a future `bun:vector`) is the path for larger corpora.
 - Indexing is one-shot — no persistent on-disk vector cache. A process restart re-embeds the whole corpus (and on a Pi 5 with BGE-small, a few thousand chunks is ~10–30 s). A simple sqlite-backed cache is a tracked follow-up.
-- The encoder runs on whatever device `bun:llm` picks. CPU is fine for embedding short chunks; the cost is mostly tokenization on the JS side.
+- The encoder runs on whatever device `para:llm` picks. CPU is fine for embedding short chunks; the cost is mostly tokenization on the JS side.
 
 ## Power-user escape hatches
 
 The composed resources are reachable directly when you need to do something `bot` doesn't:
 
 ```ts
-bot.llm        // bun:llm.LLM — call .chat / .generate / .embed / .prefix directly
+bot.llm        // para:llm.LLM — call .chat / .generate / .embed / .prefix directly
 bot.memory     // MemoryStore — query / clear out of band
 bot.knowledge  // KnowledgeStore — search / reindex / introspect the RAG corpus
 ```
 
-Anything reachable via [`bun:llm`](/docs/llm/), [`bun:speech`](/docs/speech/), or [`bun:audio`](/docs/audio/) is reachable through `bot` too.
+Anything reachable via [`para:llm`](/docs/llm/), [`para:speech`](/docs/speech/), or [`para:audio`](/docs/audio/) is reachable through `bot` too.
 
 ## Disposal
 
@@ -380,7 +380,7 @@ Per `PLAN-bun-assistant.md` build order, the core covers:
 - `assistant.create` + `bot.run` / `turns` / `ask` / `say` / `close` / `interrupt`
 - Reactive signals: `state`, `history`, `lastTurn`, `interrupted`, `toolsActive`
 - In-memory + sqlite-backed transcript
-- Tool dispatch: inline `{name,schema,run}` tools and `bun:mcp` connections
+- Tool dispatch: inline `{name,schema,run}` tools and `para:mcp` connections
 - VAD-driven barge-in (and programmatic `bot.interrupt()`)
 - Wake-word gate (whisper-backed; substring / exact / fuzzy matching)
 - Cron-driven scheduled / proactive prompts
@@ -392,7 +392,7 @@ Per `PLAN-bun-assistant.md` build order, the core covers:
 Tracked under [LYK-760](https://linear.app/lyku/issue/LYK-760) — none of these are blocking core use cases:
 
 - **Sub-watt KWS engine** — the v1 wake word is whisper-backed, which is honest about its CPU cost (only fires on VAD-detected speech bursts) but isn't a true always-on sub-watt KWS like Picovoice Porcupine or openWakeWord. Adding a dedicated engine option is a tracked follow-up; the surface here is engine-agnostic enough to absorb it.
-- **Vision / VLM turns** — `vision: VisionOpts` — `bun:camera` frame fed into a VLM turn. Blocked on `bun:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
+- **Vision / VLM turns** — `vision: VisionOpts` — `para:camera` frame fed into a VLM turn. Blocked on `para:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
 - **Persistent vector cache** — RAG re-embeds the whole corpus on process restart. A sqlite-backed vector cache keyed by `(file mtime, chunk offset, encoder hash)` would cut Pi 5 cold-start by an order of magnitude.
 
 ## Limits

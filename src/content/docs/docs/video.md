@@ -1,10 +1,10 @@
 ---
-title: bun:video
+title: para:video
 description: probe() + MJPEG-in-MP4 decode() / encode() in pure JS. Other codecs wait for libavcodec.
 ---
 
 ```ts
-import video from "bun:video";
+import video from "para:video";
 ```
 
 The video surface is staged: `probe()` (any container), `decode()`, and `encode()` for MJPEG-encoded MP4 ship today in pure JS. `decode()` / `encode()` for other codecs (h264 / h265 / vp9 / av1) are typed but throw — they need the native binding (libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on Jetson, VideoToolbox on macOS).
@@ -14,7 +14,7 @@ The video surface is staged: `probe()` (any container), `decode()`, and `encode(
 Returns `{ container, streams: [{ codec, width, height, fps, duration }] }` from the file's container header. No pixel decoding, no native dep — walks the MP4 box tree or Matroska EBML tree directly.
 
 ```ts
-import video from "bun:video";
+import video from "para:video";
 
 const bytes = new Uint8Array(await Bun.file("clip.mp4").arrayBuffer());
 const info = await video.probe(bytes);
@@ -59,13 +59,13 @@ Verified end-to-end against `ffprobe` on h264/aac MP4 and vp9/opus WebM fixtures
 
 ## `decode(input, opts?)` / `decodeAll(input, opts?)` — partial
 
-Returns a `VideoDecoder` whose `.frames()` is an async iterator of `DecodedFrame`. Frame shape matches the consumer signature [`bun:vision.frames(...)`](/docs/vision/) accepts.
+Returns a `VideoDecoder` whose `.frames()` is an async iterator of `DecodedFrame`. Frame shape matches the consumer signature [`para:vision.frames(...)`](/docs/vision/) accepts.
 
-**MJPEG-in-MP4 ships today** — UVC-webcam recordings, surveillance footage, ffmpeg `-c:v mjpeg` output. The container's sample tables (`stsz` / `stco` / `co64` / `stsc` / `stts`) are walked, each MJPEG sample's bytes are sliced, and `opts.decodeMjpg` is called per frame to lift JPEG → RGBA. Pass `image.decode` from [`bun:image`](/docs/image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here).
+**MJPEG-in-MP4 ships today** — UVC-webcam recordings, surveillance footage, ffmpeg `-c:v mjpeg` output. The container's sample tables (`stsz` / `stco` / `co64` / `stsc` / `stts`) are walked, each MJPEG sample's bytes are sliced, and `opts.decodeMjpg` is called per frame to lift JPEG → RGBA. Pass `image.decode` from [`para:image`](/docs/image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here).
 
 ```ts
-import video from "bun:video";
-import image from "bun:image";
+import video from "para:video";
+import image from "para:image";
 
 const bytes = new Uint8Array(await Bun.file("webcam.mp4").arrayBuffer());
 const dec = await video.decode(bytes, { decodeMjpg: image.decode });
@@ -78,22 +78,22 @@ for await (const frame of dec.frames()) {
 
 | Option | Description |
 | --- | --- |
-| `decodeMjpg` | Required for MJPEG inputs. Pass `image.decode` from `bun:image`. |
+| `decodeMjpg` | Required for MJPEG inputs. Pass `image.decode` from `para:image`. |
 | `streamIndex` | Stream index to decode. Default: first video stream. |
 | `startMs` | Drop frames whose PTS is below this. Default 0. |
 | `endMs` | Stop when PTS exceeds this. Default Infinity. |
 
-**Other codecs (h264 / h265 / vp9 / av1) still throw** with `bun:video.decode: codec "<codec>" needs the libavcodec native binding (only MJPEG-in-MP4 is unstubbed today)`. Same input shape will work once libavcodec is vendored.
+**Other codecs (h264 / h265 / vp9 / av1) still throw** with `para:video.decode: codec "<codec>" needs the libavcodec native binding (only MJPEG-in-MP4 is unstubbed today)`. Same input shape will work once libavcodec is vendored.
 
 ## `encode(opts)` — partial
 
 Returns a `VideoEncoder` whose `.pushFrame(frame)` queues a frame and `.finalize()` returns the muxed bytes (or writes to `opts.path` if set).
 
-**MJPEG-in-MP4 ships today** — JPEG-encode each frame via `opts.encodeJpg` (= `image.encode` from [`bun:image`](/docs/image/)) and mux into a hand-written ISOBMFF container. Output is bit-for-bit readable by ffprobe / ffmpeg.
+**MJPEG-in-MP4 ships today** — JPEG-encode each frame via `opts.encodeJpg` (= `image.encode` from [`para:image`](/docs/image/)) and mux into a hand-written ISOBMFF container. Output is bit-for-bit readable by ffprobe / ffmpeg.
 
 ```ts
-import video from "bun:video";
-import image from "bun:image";
+import video from "para:video";
+import image from "para:image";
 
 await using enc = await video.encode({
   codec: "mjpeg",
@@ -114,11 +114,11 @@ Frame shapes accepted by `pushFrame`:
 
 | Shape | Notes |
 | --- | --- |
-| `{ data, width, height, channels }` | bun:image-style `DecodedImage`. Channels 3 (RGB) or 4 (RGBA). |
+| `{ data, width, height, channels }` | para:image-style `DecodedImage`. Channels 3 (RGB) or 4 (RGBA). |
 | `{ data, width, height, pixelFormat: "rgba" \| "rgb24" }` | Generic raw-frame shape. |
-| `{ data, width, height, format: "rgba" \| "rgb" }` | bun:camera `RawFrame`. yuyv / nv12 / mjpg need pre-conversion via [`vision.frames`](/docs/vision/). |
+| `{ data, width, height, format: "rgba" \| "rgb" }` | para:camera `RawFrame`. yuyv / nv12 / mjpg need pre-conversion via [`vision.frames`](/docs/vision/). |
 
-**Other codecs (h264 / h265 / vp9 / av1) still throw** with `bun:video.encode: codec "<codec>" needs the libavcodec native binding (only "mjpeg" is unstubbed today)`.
+**Other codecs (h264 / h265 / vp9 / av1) still throw** with `para:video.encode: codec "<codec>" needs the libavcodec native binding (only "mjpeg" is unstubbed today)`.
 
 ### File layout
 

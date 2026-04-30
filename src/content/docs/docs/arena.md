@@ -1,13 +1,13 @@
 ---
-title: bun:arena
+title: para:arena
 description: A pool of SharedArrayBuffer typed arrays. Per-chunk work doesn't allocate a fresh buffer.
 ---
 
 ```ts
-import arena, { Pool, scope } from "bun:arena";
+import arena, { Pool, scope } from "para:arena";
 ```
 
-A small allocator: a pool of `SharedArrayBuffer`-backed typed arrays drawn from a pre-warmed pool, returned at the end of an `arena { }` block (or programmatically via `release()`). Used internally by [`bun:parallel`](/docs/parallel/) and [`bun:pipeline`](/docs/pipeline/) so per-chunk work doesn't allocate a fresh buffer every time.
+A small allocator: a pool of `SharedArrayBuffer`-backed typed arrays drawn from a pre-warmed pool, returned at the end of an `arena { }` block (or programmatically via `release()`). Used internally by [`para:parallel`](/docs/parallel/) and [`para:pipeline`](/docs/pipeline/) so per-chunk work doesn't allocate a fresh buffer every time.
 
 ## `arena { ... }` — block form
 
@@ -43,7 +43,7 @@ pool.release(buf);
 Runs `fn` with a fresh sub-pool. All `alloc` calls inside `fn` are released when `fn` returns — the same semantics as the `arena` block, exposed as a function for plain `.ts` / `.js` files.
 
 ```ts
-import { scope } from "bun:arena";
+import { scope } from "para:arena";
 
 const result = scope(p => {
   const buf = p.alloc("f32", N);
@@ -54,7 +54,7 @@ const result = scope(p => {
 
 ## When it pays off
 
-`bun:arena` matters when you have:
+`para:arena` matters when you have:
 
 - Tight inner loops allocating short-lived intermediate buffers.
 - A tail-of-microtask allocation pattern that the GC doesn't reach in time.

@@ -232,9 +232,9 @@
 
       <p class="footnote">
         Notes: sizes are debug-build estimates; release builds are roughly <strong>40% smaller</strong> after stripping.
-        <code>bun:gpu</code> uses system Metal / CUDA via FFI and adds no static-link weight; same for
-        <code>bun:camera</code> (V4L2 / AVFoundation / Media Foundation are all OS-provided).
-        <code>bun:llm</code> piggybacks on <code>bun:gpu</code>+<code>bun:simd</code> so it's free if you've already
+        <code>para:gpu</code> uses system Metal / CUDA via FFI and adds no static-link weight; same for
+        <code>para:camera</code> (V4L2 / AVFoundation / Media Foundation are all OS-provided).
+        <code>para:llm</code> piggybacks on <code>para:gpu</code>+<code>para:simd</code> so it's free if you've already
         included those.
       </p>
 
@@ -277,7 +277,7 @@
           modules: [
             {
               id: "simd",
-              label: "bun:simd",
+              label: "para:simd",
               desc: "SIMD primitives over typed arrays (always linked)",
               size: 0,
               on: true,
@@ -285,17 +285,17 @@
             },
             {
               id: "parallel",
-              label: "bun:parallel",
+              label: "para:parallel",
               desc: "pmap / preduce / pool / Mutex / Semaphore — pure JS",
               size: 0,
               on: true,
               locked: true,
             },
-            { id: "gpu", label: "bun:gpu", desc: "Metal + CUDA + WebGPU via FFI; system libs only", size: 0, on: true },
+            { id: "gpu", label: "para:gpu", desc: "Metal + CUDA + WebGPU via FFI; system libs only", size: 0, on: true },
             {
               id: "llm",
-              label: "bun:llm",
-              desc: "GGUF / Llama inference (uses bun:gpu + bun:simd)",
+              label: "para:llm",
+              desc: "GGUF / Llama inference (uses para:gpu + para:simd)",
               size: 0,
               on: true,
             },
@@ -304,18 +304,18 @@
         {
           name: "Media",
           modules: [
-            { id: "image", label: "bun:image", desc: "JPEG / PNG / WebP decode + encode + resize", size: 6, on: true },
-            { id: "video", label: "bun:video", desc: "ffmpeg transcode / thumbnail / concat", size: 30, on: false },
+            { id: "image", label: "para:image", desc: "JPEG / PNG / WebP decode + encode + resize", size: 6, on: true },
+            { id: "video", label: "para:video", desc: "ffmpeg transcode / thumbnail / concat", size: 30, on: false },
             {
               id: "audio",
-              label: "bun:audio",
+              label: "para:audio",
               desc: "FFT, spectrograms, IIR / FIR filters, resampling",
               size: 2,
               on: false,
             },
             {
               id: "camera",
-              label: "bun:camera",
+              label: "para:camera",
               desc: "live capture (V4L2 / AVFoundation / Media Foundation)",
               size: 0,
               on: false,
@@ -327,14 +327,14 @@
           modules: [
             {
               id: "csv",
-              label: "bun:csv",
+              label: "para:csv",
               desc: "streaming CSV parser, parallel chunk mode (pure JS)",
               size: 0,
               on: true,
             },
             {
               id: "arrow",
-              label: "bun:arrow",
+              label: "para:arrow",
               desc: "Apache Arrow + Parquet read with SIMD column ops",
               size: 20,
               on: false,

@@ -1,13 +1,13 @@
 ---
-title: bun:gpu
+title: para:gpu
 description: GPU-accelerated vector + matrix primitives. Metal on macOS, CUDA on Linux + Windows, CPU fallback everywhere.
 ---
 
 ```ts
-import gpu from "bun:gpu";
+import gpu from "para:gpu";
 ```
 
-`bun:gpu` is the device-dispatch layer. The same API works on Metal, CUDA, and CPU — backends register themselves via probe + capability, and `bun:gpu` picks the best one available. The CPU backend forwards to [`bun:simd`](/docs/simd/), so unsupported hosts still get vectorized routes.
+`para:gpu` is the device-dispatch layer. The same API works on Metal, CUDA, and CPU — backends register themselves via probe + capability, and `para:gpu` picks the best one available. The CPU backend forwards to [`para:simd`](/docs/simd/), so unsupported hosts still get vectorized routes.
 
 ## Backend
 
@@ -37,7 +37,7 @@ The CPU backend always returns `false` so `if (winsForSize(...))` falls through 
 
 ### `calibrate()`
 
-Sweeps the real GPU kernel against bun:simd at a small set of sizes, persists the measured crossover under `~/.cache/parabun/gpu-calibrate-<hash>.json`, and rehydrates it on subsequent process starts. Intended to be called once at app boot — the sweep takes 200–500ms. Setting `BUN_PARABUN_SKIP_CALIBRATION=1` bypasses the cache read on module load.
+Sweeps the real GPU kernel against para:simd at a small set of sizes, persists the measured crossover under `~/.cache/parabun/gpu-calibrate-<hash>.json`, and rehydrates it on subsequent process starts. Intended to be called once at app boot — the sweep takes 200–500ms. Setting `BUN_PARABUN_SKIP_CALIBRATION=1` bypasses the cache read on module load.
 
 ### Reactive signals
 
@@ -46,10 +46,10 @@ Sweeps the real GPU kernel against bun:simd at a small set of sizes, persists th
 | `gpu.activeBackendSignal` | `"cuda" \| "metal" \| "cpu"` | Flips when `setBackend()` runs (or when lazy probing settles a backend on first use). |
 | `gpu.availableSignal` | `BackendName[]` | List of probable backends. Essentially static — backends don't hot-plug at runtime — but a Signal-shaped surface lets monitoring effects compose with the live `activeBackendSignal`. |
 
-Both signals lazy-init on first read so a CUDA-less host doesn't pay probing cost just for loading `bun:gpu`. Subscribers see the current value on subscribe.
+Both signals lazy-init on first read so a CUDA-less host doesn't pay probing cost just for loading `para:gpu`. Subscribers see the current value on subscribe.
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 effect(() => console.log(`gpu backend: ${gpu.activeBackendSignal.get()}`));
 ```
 
@@ -60,7 +60,7 @@ effect(() => console.log(`gpu backend: ${gpu.activeBackendSignal.get()}`));
 GPU calls take typed arrays *or* device-resident handles. Wrap a `Float32Array` once with `GpuFloat32Array` and the bytes are HtoD-uploaded at construction; subsequent ops use the device buffer with no extra crossing. Disposal is GC-finalized but `using` is preferred.
 
 ```ts
-import gpu from "bun:gpu";
+import gpu from "para:gpu";
 
 const M = 1024, K = 768;
 const weights = Float32Array.from({ length: M * K }, () => Math.random());
@@ -85,7 +85,7 @@ gpu.matVec(handle, vector, M, K);
 gpu.release(handle);
 ```
 
-`holdQ4K` / `holdQ6K` accept raw quantized weight bytes — the device buffer holds the Q4_K / Q6_K super-block layout and dispatches an on-chip dequant kernel inside `matVec`. Used by [`bun:llm`](/docs/llm/) for the `Q4_K_M` / `Q6_K` Llama paths.
+`holdQ4K` / `holdQ6K` accept raw quantized weight bytes — the device buffer holds the Q4_K / Q6_K super-block layout and dispatches an on-chip dequant kernel inside `matVec`. Used by [`para:llm`](/docs/llm/) for the `Q4_K_M` / `Q6_K` Llama paths.
 
 ## Vector ops
 
@@ -95,7 +95,7 @@ Vector dot product. Accepts typed arrays or handles for either side.
 
 ### `matVec(matrix, vector, nRows, nCols)`
 
-`matrix` is `[nRows, nCols]` row-major, `vector` is length `nCols`. Returns `[nRows]`. The hot path inside [`bun:llm`](/docs/llm/)'s decoder step — every Q/K/V/O projection plus the LM head goes through here.
+`matrix` is `[nRows, nCols]` row-major, `vector` is length `nCols`. Returns `[nRows]`. The hot path inside [`para:llm`](/docs/llm/)'s decoder step — every Q/K/V/O projection plus the LM head goes through here.
 
 ### `matmul(A, B, m, k, n, out?)`
 
@@ -129,7 +129,7 @@ CUDA `reduce` (sum/min/max) and atomic-privatized `histogram` ship as device ker
 
 ### `conv2D(input, kernel, iH, iW, kH, kW)`
 
-2D valid-mode correlation. Used by [`bun:image`](/docs/image/) for blur / sharpen / edge-detect. f32 only for v1.
+2D valid-mode correlation. Used by [`para:image`](/docs/image/) for blur / sharpen / edge-detect. f32 only for v1.
 
 ### `imageBlurRGBA(input, width, height, sigma)`
 
@@ -157,10 +157,10 @@ Obj-C FFI to `MTLDevice` + `MTLComputePipelineState`. Zero-copy via Apple's unif
 
 ### CPU
 
-Forwards every op to [`bun:simd`](/docs/simd/). Always available — useful for tests and CI hosts without a GPU.
+Forwards every op to [`para:simd`](/docs/simd/). Always available — useful for tests and CI hosts without a GPU.
 
 ## Limits
 
-- f64 matmul / matVec are CUDA-only on NVIDIA's higher-precision SKUs; consumer cards trap to a much slower path. `bun:gpu` runs f64 on CPU instead.
+- f64 matmul / matVec are CUDA-only on NVIDIA's higher-precision SKUs; consumer cards trap to a much slower path. `para:gpu` runs f64 on CPU instead.
 - The dynamic kernel compiler (`simdMap`) supports arithmetic + `Math.*` + ternaries. No control flow beyond that — branch-heavy bodies stay on CPU.
 - Two `GpuHandle`s on different backends can't be mixed in one call (e.g. you can't pass a CUDA handle to a Metal kernel). The active backend at the call site determines which the inputs must belong to.

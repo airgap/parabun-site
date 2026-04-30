@@ -1,13 +1,13 @@
 ---
-title: bun:rtp
+title: para:rtp
 description: RFC 3550 packet pack / parse and a jitter buffer. Wire transport for the codec stack.
 ---
 
 ```ts
-import rtp from "bun:rtp";
+import rtp from "para:rtp";
 ```
 
-A small RTP toolkit — pack a payload into an RFC 3550 packet, parse one off the wire, and reorder by sequence number with a configurable depth. Built to sit under [`bun:audio`](/docs/audio/)'s Opus encoder for a WebRTC-style send/receive path.
+A small RTP toolkit — pack a payload into an RFC 3550 packet, parse one off the wire, and reorder by sequence number with a configurable depth. Built to sit under [`para:audio`](/docs/audio/)'s Opus encoder for a WebRTC-style send/receive path.
 
 ## `pack(opts)`
 
@@ -60,7 +60,7 @@ for (const ordered of buf.drain()) {
 
 ### Reactive signals
 
-Three [`bun:signals`](/docs/signals/) Signals on the buffer instance — wire them into a UI without polling.
+Three [`para:signals`](/docs/signals/) Signals on the buffer instance — wire them into a UI without polling.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |
@@ -69,22 +69,22 @@ Three [`bun:signals`](/docs/signals/) Signals on the buffer instance — wire th
 | `jb.lossRateSignal` | `number` | Lifetime loss ratio: `lossCount / (lossCount + delivered)`. Recomputes on every delivered or lost transition. |
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 
 effect(() => {
   if (jb.lossRateSignal.get() > 0.05) console.warn("packet loss > 5%");
 });
 ```
 
-`session.connected` and `session.jitterMs` from `PLAN-module-signals.md` need a future Session abstraction (RTP / RTCP correlation, source-arrival timestamp differencing) — neither exists in `bun:rtp` v1. When a Session class lands, those signals will join the surface there.
+`session.connected` and `session.jitterMs` from `PLAN-module-signals.md` need a future Session abstraction (RTP / RTCP correlation, source-arrival timestamp differencing) — neither exists in `para:rtp` v1. When a Session class lands, those signals will join the surface there.
 
 ## A full audio pipeline
 
-Combined with [`bun:audio`](/docs/audio/):
+Combined with [`para:audio`](/docs/audio/):
 
 ```ts
-import audio from "bun:audio";
-import rtp from "bun:rtp";
+import audio from "para:audio";
+import rtp from "para:rtp";
 
 await using mic = await audio.capture({ sampleRate: 48000, channels: 1 });
 const enc = new audio.OpusEncoder({ sampleRate: 48000, channels: 1, application: "voip" });
@@ -116,5 +116,5 @@ for await (const frame of mic.frames()) {
 ## Limits
 
 - Single-stream — no SDES / RTCP companion.
-- The jitter buffer is sequence-only. Packet-loss concealment, FEC, and rate-adaptive depth are all on the encoder/decoder side ([`bun:audio.OpusDecoder`](/docs/audio/) handles in-band PLC).
-- IPv4 / IPv6 wire transport itself is up to the caller — `bun:rtp` produces / consumes bytes, not sockets.
+- The jitter buffer is sequence-only. Packet-loss concealment, FEC, and rate-adaptive depth are all on the encoder/decoder side ([`para:audio.OpusDecoder`](/docs/audio/) handles in-band PLC).
+- IPv4 / IPv6 wire transport itself is up to the caller — `para:rtp` produces / consumes bytes, not sockets.

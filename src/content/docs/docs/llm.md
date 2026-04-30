@@ -1,13 +1,13 @@
 ---
-title: bun:llm
+title: para:llm
 description: GGUF LLM inference, BERT sentence encoders, Whisper STT, and an OpenAI-compatible HTTP server — all built into the runtime.
 ---
 
 ```ts
-import llm from "bun:llm";
+import llm from "para:llm";
 ```
 
-`bun:llm` is an in-tree native inference stack. Models are `mmap`ped off disk; weights stay device-resident on CUDA / Metal so per-token traffic is a 4-byte argmax. Three model classes ship today:
+`para:llm` is an in-tree native inference stack. Models are `mmap`ped off disk; weights stay device-resident on CUDA / Metal so per-token traffic is a 4-byte argmax. Three model classes ship today:
 
 - **LLM** — Llama 3 / Qwen2 family decoder-only models (chat + completion + grammar / JSON-schema constrained decoding).
 - **Encoder** — BERT-style sentence embedders (BGE / E5 / MiniLM).
@@ -18,7 +18,7 @@ Plus `llm.serve(...)` — an OpenAI-compatible HTTP wrapper that points any of t
 ## LLM — chat and completion
 
 ```ts
-import { LLM } from "bun:llm";
+import { LLM } from "para:llm";
 
 using m = await LLM.load("./Llama-3.2-1B-Instruct-Q4_K_M.gguf");
 
@@ -94,7 +94,7 @@ Returns a `PrefixCache` — the KV cache snapshot after running `text` (or the t
 
 ### Reactive signals
 
-Each `LLM` instance exposes two [`bun:signals`](/docs/signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
+Each `LLM` instance exposes two [`para:signals`](/docs/signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
 
 | Signal | Type | What it tracks |
 | --- | --- | --- |
@@ -102,16 +102,16 @@ Each `LLM` instance exposes two [`bun:signals`](/docs/signals/) Signals — wire
 | `m.device` | `"cuda" \| "metal" \| "cpu"` | Whichever backend the load probe selected. Stable for the life of the instance. |
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 effect(() => console.log(m.busy.get() ? "🤔" : "✅"));
 ```
 
-`WhisperModel` exposes the same `busy` signal — it flips while a `transcribe` / `transcribeMel` is running, and stays correct when nested under a higher-level call (e.g. `bun:assistant`'s turn loop).
+`WhisperModel` exposes the same `busy` signal — it flips while a `transcribe` / `transcribeMel` is running, and stays correct when nested under a higher-level call (e.g. `para:assistant`'s turn loop).
 
 ## Encoder — BERT-family sentence embeddings
 
 ```ts
-import { Encoder } from "bun:llm";
+import { Encoder } from "para:llm";
 
 using enc = await Encoder.load("./bge-small-en-v1.5.gguf");
 const vec = enc.embed("hello world");          // Float32Array of dModel
@@ -123,8 +123,8 @@ Targets `general.architecture="bert"` GGUFs. Bidirectional attention, post-LN re
 ## WhisperModel — speech-to-text
 
 ```ts
-import llm from "bun:llm";
-import audio from "bun:audio";
+import llm from "para:llm";
+import audio from "para:audio";
 
 const wav = audio.readWav(new Uint8Array(await Bun.file("clip.wav").arrayBuffer()));
 const m = await llm.WhisperModel.load("./ggml-tiny.en.bin");
@@ -176,7 +176,7 @@ Release build, NVIDIA RTX 4070 Ti, JFK 11-second sample on `ggml-tiny.en`:
 ## llm.serve — OpenAI-compatible HTTP server
 
 ```ts
-import llm from "bun:llm";
+import llm from "para:llm";
 
 const m = await llm.LLM.load("./Llama-3.2-1B-Instruct-Q4_K_M.gguf");
 llm.serve({ engine: m, modelId: "llama-3.2-1b", port: 11434 });

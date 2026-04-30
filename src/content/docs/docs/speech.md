@@ -1,13 +1,13 @@
 ---
-title: bun:speech
-description: VAD-segmented utterance streams + Whisper STT. Compose with bun:audio for a full mic-to-text pipeline.
+title: para:speech
+description: VAD-segmented utterance streams + Whisper STT. Compose with para:audio for a full mic-to-text pipeline.
 ---
 
 ```ts
-import speech from "bun:speech";
+import speech from "para:speech";
 ```
 
-A small orchestration module sitting on top of [`bun:audio`](/docs/audio/)'s capture + DSP and [`bun:llm`](/docs/llm/)'s `WhisperModel`. Five exports:
+A small orchestration module sitting on top of [`para:audio`](/docs/audio/)'s capture + DSP and [`para:llm`](/docs/llm/)'s `WhisperModel`. Five exports:
 
 - `listen(stream, opts?)` — VAD-gated utterance segmentation over any audio chunk iterator. The returned stream exposes reactive `active` / `noiseFloor` / `lastUtterance` signals.
 - `transcribe(utterance, opts)` — speech-to-text via Whisper.
@@ -16,15 +16,15 @@ A small orchestration module sitting on top of [`bun:audio`](/docs/audio/)'s cap
 - `wakeWord(opts)` — Whisper-backed keyword spotter. Composable trigger stream for "hey jetson"-style wake-on-phrase, with reactive `active` / `lastTrigger` signals.
 - `matchWakePhrase(text, phrase, strategy?, maxEdits?)` — pure phrase matcher. Substring / exact / fuzzy (Levenshtein) strategies; reusable outside the wake-word stream.
 
-For a full mic + STT + LLM + TTS + speaker pipeline composed in three lines, see [`bun:assistant`](/docs/assistant/).
+For a full mic + STT + LLM + TTS + speaker pipeline composed in three lines, see [`para:assistant`](/docs/assistant/).
 
 ## `listen(stream, opts?)`
 
 Takes an `AsyncIterable<{ samples: Float32Array; timestampMs?: number }>` and yields one `Utterance` per detected speech burst. Pair with `audio.capture(...).frames()` for live mic input, or with any frame source you can produce yourself (file readers, websockets, etc.).
 
 ```ts
-import audio from "bun:audio";
-import speech from "bun:speech";
+import audio from "para:audio";
+import speech from "para:speech";
 
 await using mic = await audio.capture({ sampleRate: 16000, channels: 1 });
 
@@ -57,7 +57,7 @@ type Utterance = {
 
 ### Reactive signals on the listen stream
 
-The object `listen()` returns is the async iterator plus three [`bun:signals`](/docs/signals/) Signals — wire them straight into a UI without polling.
+The object `listen()` returns is the async iterator plus three [`para:signals`](/docs/signals/) Signals — wire them straight into a UI without polling.
 
 | Signal | Type | What it tracks |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ The object `listen()` returns is the async iterator plus three [`bun:signals`](/
 | `lastUtterance` | `Utterance \| null` | The most recently emitted utterance. Updates after `hangoverMs` of silence closes a burst. |
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 
 // Reactive-only — call .run() to drain in the background; signals auto-fill.
 const listener = speech.listen(mic.frames(), { sampleRate: 16000 }).run();
@@ -102,8 +102,8 @@ const text = await speech.transcribe(utt, {
 The pipeline shape:
 
 ```ts
-import audio from "bun:audio";
-import speech from "bun:speech";
+import audio from "para:audio";
+import speech from "para:speech";
 
 await using mic = await audio.capture({ sampleRate: 16000, channels: 1 });
 
@@ -123,7 +123,7 @@ For longer-than-30-s segments, use the underlying `WhisperModel.transcribe` dire
 The 99% case: synthesize and play to the speaker in one call. Wraps `speak()` + `audio.play()` + `spk.write()` with a process-wide PlaybackStream cache keyed on `(sampleRate, channels)`, so repeated calls don't re-open the speaker.
 
 ```ts
-import speech from "bun:speech";
+import speech from "para:speech";
 
 await speech.say("Hello world.", {
   engine: "piper",
@@ -138,8 +138,8 @@ Returns when the audio is queued (not when it finishes playing). For flush seman
 Synthesizes `text` into f32 mono PCM via Piper. Returns the samples ready for [`audio.play().write()`](/docs/audio/#playopts). Use this when you need the raw PCM — to encode to WAV, run through an effects chain, mix with other audio — rather than send straight to the speaker; otherwise `say(...)` is the simpler call.
 
 ```ts
-import audio  from "bun:audio";
-import speech from "bun:speech";
+import audio  from "para:audio";
+import speech from "para:speech";
 
 const out = await speech.speak("Hello world.", {
   engine: "piper",
@@ -183,8 +183,8 @@ Closes every cached Piper session and frees the underlying subprocesses. Idempot
 Composable wake-word stream. Pipes the audio source through `listen()` for VAD-bounded utterances, transcribes each with Whisper, and emits a `WakeTrigger` whenever the transcription matches one of the configured phrases.
 
 ```ts
-import audio from "bun:audio";
-import speech from "bun:speech";
+import audio from "para:audio";
+import speech from "para:speech";
 
 await using mic = await audio.capture({ sampleRate: 16000, channels: 1 });
 
@@ -196,7 +196,7 @@ for await (const trigger of speech.wakeWord({
   maxEdits: 2,
 })) {
   console.log(`woke on ${trigger.phrase} (confidence ${trigger.confidence.toFixed(2)})`);
-  // Now run your own listen loop, hand off to bun:assistant, etc.
+  // Now run your own listen loop, hand off to para:assistant, etc.
 }
 ```
 

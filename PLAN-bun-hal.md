@@ -1,10 +1,10 @@
-# `bun:gpio` + `bun:i2c` + `bun:spi` + `bun:mmio` — Plan
+# `para:gpio` + `para:i2c` + `para:spi` + `bun:mmio` — Plan
 
-> **Status (2026-04-29):** `bun:gpio` (single + bulk-line `chip.bank(...)`), `bun:i2c`, `bun:spi` ship. End-to-end validated on Raspberry Pi 5 — five gpiochips enumerate (`brcmstb` × 4 + `pinctrl-rp1`), pull-up/pull-down bias propagates, `i2c.scan()` matches `i2cdetect`, `spi.transactSegments` issues clean `SPI_IOC_MESSAGE` ioctls. `bun:mmio` deferred. Bulk-line acquired through `chip.bank()` rather than the original spec's `chip.lines([...])` — `chip.lines: number` already exists as the chip's line count.
+> **Status (2026-04-29):** `para:gpio` (single + bulk-line `chip.bank(...)`), `para:i2c`, `para:spi` ship. End-to-end validated on Raspberry Pi 5 — five gpiochips enumerate (`brcmstb` × 4 + `pinctrl-rp1`), pull-up/pull-down bias propagates, `i2c.scan()` matches `i2cdetect`, `spi.transactSegments` issues clean `SPI_IOC_MESSAGE` ioctls. `bun:mmio` deferred. Bulk-line acquired through `chip.bank()` rather than the original spec's `chip.lines([...])` — `chip.lines: number` already exists as the chip's line count.
 
-Bring SBC peripheral access into parabun so a `bun:assistant` running on a Pi or Jetson can flip relays, read sensors, drive servos, and talk to displays without shelling out to Python or `gpioset`. Three high-level modules over Linux character devices for the 99% case; one low-level escape hatch for register-direct speed and weird peripherals.
+Bring SBC peripheral access into parabun so a `para:assistant` running on a Pi or Jetson can flip relays, read sensors, drive servos, and talk to displays without shelling out to Python or `gpioset`. Three high-level modules over Linux character devices for the 99% case; one low-level escape hatch for register-direct speed and weird peripherals.
 
-Sits at Tier 1 alongside `bun:audio` / `bun:camera` — kernel-driver wrappers on the userspace side. `bun:assistant` consumes GPIO as MCP tools (the IoT story we already have on the roadmap).
+Sits at Tier 1 alongside `para:audio` / `para:camera` — kernel-driver wrappers on the userspace side. `para:assistant` consumes GPIO as MCP tools (the IoT story we already have on the roadmap).
 
 ---
 
@@ -12,7 +12,7 @@ Sits at Tier 1 alongside `bun:audio` / `bun:camera` — kernel-driver wrappers o
 
 ```ts
 // LED on, button reading, 5ms debounce, all in three lines.
-import gpio from "bun:gpio";
+import gpio from "para:gpio";
 
 await using chip = gpio.open("/dev/gpiochip0");
 chip.line(17, { mode: "out" }).write(1);
@@ -25,30 +25,30 @@ Same shape for I2C and SPI, plus a `bun:mmio` escape hatch for users who need >1
 
 ## Why now
 
-- `bun:assistant` + `bun:mcp` is taking shape — the IoT story needs hardware access at the bottom of the stack.
+- `para:assistant` + `para:mcp` is taking shape — the IoT story needs hardware access at the bottom of the stack.
 - Edge devices are the explicit target. Users on Jetson / RPi want to control hardware from JS without spawning Python helpers.
 - Linux's GPIO/I2C/SPI character device APIs are stable, well-documented, and don't need vendored libraries — implementable as raw `ioctl` calls in Zig with no new third-party deps.
 
 ## Design rules
 
 1. **Character-device, not sysfs.** `/sys/class/gpio` is deprecated, slow, and racy across multi-process callers. Build on `/dev/gpiochipN` (uAPI v2), `/dev/i2c-N`, and `/dev/spidevN.M`. Same shape on RPi 4, RPi 5, Jetson, NUC + breakout — no per-board branches.
-2. **No libgpiod / libi2c-dev dep.** All three are thin `ioctl` wrappers. Implementing in Zig keeps the runtime statically linked and matches the parabun pattern (`bun:audio` doesn't link libasound, `bun:camera` doesn't link libv4l).
+2. **No libgpiod / libi2c-dev dep.** All three are thin `ioctl` wrappers. Implementing in Zig keeps the runtime statically linked and matches the parabun pattern (`para:audio` doesn't link libasound, `para:camera` doesn't link libv4l).
 3. **`AsyncDisposable` everything.** `await using chip = gpio.open(...)` releases the file descriptor on scope exit. Same for I2C buses, SPI devices, mmap regions.
-4. **Signals where state is reactive.** Pin levels, bus presence, edge events expose `bun:signals` Signals — composes with `bun:assistant` and the rest of the reactive surface.
+4. **Signals where state is reactive.** Pin levels, bus presence, edge events expose `para:signals` Signals — composes with `para:assistant` and the rest of the reactive surface.
 5. **Default off only for `bun:mmio`.** GPIO/I2C/SPI ship in the default release because they're cheap (no native libs, ~1 KiB overhead each). MMIO is dangerous enough — wrong physical address can hang the kernel — that it stays out of the default build and behind a runtime permission gate.
 
 ---
 
 ## Modules
 
-### `bun:gpio`
+### `para:gpio`
 
 Linux GPIO character device (uAPI v2: `/dev/gpiochipN`). Works unchanged across RPi 4, RPi 5 (the new pinctrl-rp1 driver exposes the same uAPI), Jetson, and any other Linux SBC.
 
 **Surface:**
 
 ```ts
-import gpio from "bun:gpio";
+import gpio from "para:gpio";
 
 // Discover chips.
 gpio.chips();          // [{ path, label, lines }, ...] — returns synchronously
@@ -87,14 +87,14 @@ const v = bank.read();   // 4-bit value
 
 **Lines per use:** typed `Float32Array`-style buffers for bulk r/w; `Signal<number>` for live state. The Signal updates from the same kernel events the `edges()` iterator yields — no double-subscribe path.
 
-### `bun:i2c`
+### `para:i2c`
 
 Linux i2c-dev character device (`/dev/i2c-N`).
 
 **Surface:**
 
 ```ts
-import i2c from "bun:i2c";
+import i2c from "para:i2c";
 
 i2c.buses();           // [{ path, name, capabilities }, ...]
 
@@ -118,14 +118,14 @@ const result = await dev.transact([
 
 **Implementation:** `ioctl(I2C_RDWR, &i2c_rdwr_ioctl_data)` for combined transactions; `ioctl(I2C_SMBUS, ...)` for SMBus shortcuts. `bus.scan()` does single-byte writes across 0x03–0x77 and watches for ENXIO. No vendored library.
 
-### `bun:spi`
+### `para:spi`
 
 Linux spidev (`/dev/spidevN.M`).
 
 **Surface:**
 
 ```ts
-import spi from "bun:spi";
+import spi from "para:spi";
 
 spi.devices();         // [{ path, bus, cs }, ...]
 
@@ -194,15 +194,15 @@ The configurator at `/configure/` claims every module ships behind a compile-tim
 
 ### Current configurator inventory (10 modules)
 
-`bun:simd`, `bun:parallel`, `bun:gpu`, `bun:llm`, `bun:image`, `bun:video`, `bun:audio`, `bun:camera`, `bun:csv`, `bun:arrow`.
+`para:simd`, `para:parallel`, `para:gpu`, `para:llm`, `para:image`, `para:video`, `para:audio`, `para:camera`, `para:csv`, `para:arrow`.
 
 ### Missing from configurator (7)
 
-`bun:arena`, `bun:pipeline`, `bun:signals`, `bun:rtp`, `bun:speech`, `bun:assistant`, `bun:vision`. These either land as add-ons or are simply forgotten in the form. All seven need entries.
+`para:arena`, `para:pipeline`, `para:signals`, `para:rtp`, `para:speech`, `para:assistant`, `para:vision`. These either land as add-ons or are simply forgotten in the form. All seven need entries.
 
 ### New (this plan, 4)
 
-`bun:gpio`, `bun:i2c`, `bun:spi`, `bun:mmio`.
+`para:gpio`, `para:i2c`, `para:spi`, `bun:mmio`.
 
 ### Total after this work
 
@@ -214,7 +214,7 @@ The configurator at `/configure/` claims every module ships behind a compile-tim
 
 1. Catalogue the existing build flags in `/raid/parabun/build.zig` (or wherever the per-module gates live).
 2. Add gates for the 7 missing modules + 4 new modules.
-3. Ensure imports of a disabled `bun:*` throw at parse time with a documented error message ("`bun:gpio` was not included in this build — re-run `bun build --compile --with bun:gpio`").
+3. Ensure imports of a disabled `bun:*` throw at parse time with a documented error message ("`para:gpio` was not included in this build — re-run `bun build --compile --with para:gpio`").
 4. Document the canonical invariant: every `bun:*` module in the runtime must have a compile-time feature flag, registered in a single source-of-truth list.
 
 ---
@@ -227,9 +227,9 @@ Add a new group below "Data":
 {
   name: "Peripherals (Linux SBC)",
   modules: [
-    { id: "gpio", label: "bun:gpio", desc: "GPIO via /dev/gpiochipN — pin r/w + edge events", size: 0, on: true },
-    { id: "i2c",  label: "bun:i2c",  desc: "I2C via /dev/i2c-N — scan, read, write, SMBus, combined transactions", size: 0, on: true },
-    { id: "spi",  label: "bun:spi",  desc: "SPI via /dev/spidevN.M — full/half duplex transfers", size: 0, on: true },
+    { id: "gpio", label: "para:gpio", desc: "GPIO via /dev/gpiochipN — pin r/w + edge events", size: 0, on: true },
+    { id: "i2c",  label: "para:i2c",  desc: "I2C via /dev/i2c-N — scan, read, write, SMBus, combined transactions", size: 0, on: true },
+    { id: "spi",  label: "para:spi",  desc: "SPI via /dev/spidevN.M — full/half duplex transfers", size: 0, on: true },
     { id: "mmio", label: "bun:mmio", desc: "Raw mmap of /dev/gpiomem or /dev/mem — root + permission flag required", size: 0, on: false },
   ],
 }
@@ -243,9 +243,9 @@ The size column stays 0 for these — they're tiny ioctl wrappers without vendor
 
 ## Build order
 
-1. **`bun:gpio`** — highest demand (the IoT control story is what unblocks `bun:assistant` MCP tools on a Pi). Self-contained, ~400 lines of Zig + JS. ~1 day.
-2. **`bun:i2c`** — sensor reading is the next-most-asked. Same shape, smaller surface area. ~half a day.
-3. **`bun:spi`** — display drivers, flash chips, SPI sensors. Same shape. ~half a day.
+1. **`para:gpio`** — highest demand (the IoT control story is what unblocks `para:assistant` MCP tools on a Pi). Self-contained, ~400 lines of Zig + JS. ~1 day.
+2. **`para:i2c`** — sensor reading is the next-most-asked. Same shape, smaller surface area. ~half a day.
+3. **`para:spi`** — display drivers, flash chips, SPI sensors. Same shape. ~half a day.
 4. **Configurator overhaul** — add 7 missing modules and 4 new ones in one PR. Minimal code change; mostly UI scaffolding.
 5. **Feature-flag audit on the runtime side** — catalogue existing gates, add gates for the 11 missing modules, lock in the invariant. ~1 day in `/raid/parabun`.
 6. **`bun:mmio`** — last because it's the riskiest. Needs the permission-flag plumbing, the warning callout in docs, the safety review. ~2 days.
@@ -258,16 +258,16 @@ Items 1–4 can ship without the runtime-side audit (5) — the audit is cleanup
 
 - **Permission gating for `bun:mmio`.** Three options: (a) compile-time only — if you built without `--with bun:mmio`, it's not there; (b) runtime flag `--allow-mmio` like Deno's permission model; (c) a `bun:permissions` module that gates anything risky (mmio, raw sockets, FFI, etc.). Recommend (a) + (b) for v1; defer (c) to a separate proposal. The compile-time flag covers casual users; the runtime flag covers shared binaries.
 - **`/dev/gpiomem` default.** `/dev/gpiomem` is the safer device but only exposes GPIO; `/dev/mem` exposes everything. Recommend `mmio.map({ device: "/dev/gpiomem" })` as the documented happy-path example, with `/dev/mem` requiring an explicit opt-in argument.
-- **Naming: one `bun:hal` module or four separate?** Considered combined — rejected. Parabun's pattern is small, focused modules (`bun:audio` separate from `bun:rtp`, `bun:vision` separate from `bun:camera`). Keep them split. The "hal" framing lives in docs / the configurator group, not the import.
+- **Naming: one `bun:hal` module or four separate?** Considered combined — rejected. Parabun's pattern is small, focused modules (`para:audio` separate from `para:rtp`, `para:vision` separate from `para:camera`). Keep them split. The "hal" framing lives in docs / the configurator group, not the import.
 - **Pull-resistor + bias terminology.** GPIO uAPI v2 uses `BIAS_PULL_UP/DOWN/DISABLE`. The JS surface uses `pull: "up" | "down" | "off"` for ergonomics. Document the mapping.
 - **Edge-event API: async-iterator vs Signal vs both.** Currently sketched with both. Pure ergonomics — having both means consumers pick. If telemetry shows nobody uses one of them after release, drop it.
 - **RPi 5 specifics.** RP1 lives at a different base address (`0x1f000d0000`) and the GPIO numbering is different from the BCM2711. The GPIO uAPI abstracts this — `/dev/gpiochip4` on Pi 5 is the equivalent of `/dev/gpiochip0` on Pi 4. Document the mapping in the gpio doc page; keep the API uniform.
-- **Signals lifecycle on disposed line.** When `await using` releases a line, what does its `value` Signal do? Recommend: stays at the last value, no further updates. Subscribers don't error; they just stop getting events. Same rule as `bun:audio` `mic.peakLevel` per `PLAN-module-signals.md`.
+- **Signals lifecycle on disposed line.** When `await using` releases a line, what does its `value` Signal do? Recommend: stays at the last value, no further updates. Subscribers don't error; they just stop getting events. Same rule as `para:audio` `mic.peakLevel` per `PLAN-module-signals.md`.
 
 ---
 
 ## Relationship to other plans
 
-- **`PLAN-bun-assistant.md`** — MCP tools backed by GPIO/I2C/SPI is the IoT control loop the assistant module is designed for. Once `bun:gpio` ships, an example MCP server in the docs ("expose a `flip-relay` tool over stdio") makes the use case concrete.
+- **`PLAN-bun-assistant.md`** — MCP tools backed by GPIO/I2C/SPI is the IoT control loop the assistant module is designed for. Once `para:gpio` ships, an example MCP server in the docs ("expose a `flip-relay` tool over stdio") makes the use case concrete.
 - **`PLAN-module-signals.md`** — the gpio/i2c/spi modules participate in the signals retrofit from day one (`line.value`, `bus.devices`, `dev.busy`). Adds entries to the audit table.
 - **`/raid/parabun` `PROPOSALS.md`** — independent. Language-level changes don't affect this work.

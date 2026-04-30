@@ -1,9 +1,11 @@
 ---
-title: Language extensions
-description: Optional desugarings on .pts / .pjs files. Parse-time only — output is standard JavaScript.
+title: ParaScript
+description: Parabun's optional TypeScript dialect. Parse-time desugarings — output is standard JavaScript.
 ---
 
-Files ending in `.pts`, `.ptsx`, `.pjs`, or `.pjsx` are parsed with extra desugarings. All of them lower to standard JS at parse time; nothing in the runtime depends on the syntax. Plain `.ts` / `.js` / `.tsx` / `.jsx` files behave exactly as in upstream Bun.
+**ParaScript** is the language Parabun ships alongside its runtime. Files ending in `.pts` (or `.ptsx`) are parsed with the extensions described below — purity, error chaining, pipelines, ranges, reactivity, edge-triggered handlers — and lower to standard JS at parse time. Nothing in the runtime depends on the syntax. Plain `.ts` / `.tsx` files behave exactly as in upstream Bun.
+
+The same extensions also work over plain JavaScript in `.pjs` / `.pjsx` files. We don't lead with that path — `.pts` is the canonical ParaScript surface — but it's there if you need it.
 
 GitHub's TextMate grammars don't recognize `.pts` — install the [editor extension](/docs/install/#editor-extension) for syntax highlighting + LSP support.
 
@@ -30,7 +32,7 @@ const normalize = memo (s: string) => s.trim().toLowerCase();
 memo async fetchProfile(id: string) { return await db.users.get(id); }
 ```
 
-## `signal`, `effect`, `~>`, `->`
+## `signal`, `effect`, `~>`, `->`, `when`
 
 `signal NAME = <rhs>` declares a reactive cell. Bare reads desugar to `.get()`, assignments to `.set()`. If the RHS references another in-scope signal, the binding auto-promotes to a read-only `derived()`. `effect { ... }` tracks every signal it reads and re-runs on change.
 
@@ -39,6 +41,8 @@ memo async fetchProfile(id: string) { return await db.users.get(id); }
 `A -> fn` is a reactive **call** binding — the call-sink complement to `~>`. It desugars to `effect(() => { fn(A); })`, so `fn` is called with the latest value of `A` whenever its tracked deps change. RHS must be a callable target (identifier, `obj.method`, or `arr[i]`) — bare calls, literals, and arrows are rejected.
 
 `A ~> B when C` (and `A -> fn when C`) adds a guard. The desugar wraps the body in `if (C)` — `C` is read inside the effect so signal reads in the predicate are tracked too. Flipping `C` re-fires the effect, the body re-evaluates the guard, and only emits when it passes.
+
+`when EXPR { BODY }` is a statement-level **edge-triggered** block. It fires `BODY` once each time `EXPR` transitions false → true. The dual `when not EXPR { BODY }` fires on the true → false edge. Desugars to `signals.onRising(() => EXPR, () => { BODY })` and `signals.onFalling(...)` respectively. Distinct from suffix `when`: position disambiguates — suffix is every-truthy guard, block is edge-triggered.
 
 ```parabun
 signal count = 0;
@@ -58,6 +62,11 @@ count ~> el.innerHTML;
 signal enabled = true;
 doubled ~> el.innerHTML when enabled;
 enabled = false;              // future doubled changes don't reach el
+
+// edge-triggered handler — fires once per false→true transition
+signal motionPresent = false;
+when motionPresent && enabled { console.log("greet"); }
+when not enabled { console.log("disabled"); }
 ```
 
 ## `|>`, `..!`, `..&`, `..=`

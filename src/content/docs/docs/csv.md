@@ -1,10 +1,10 @@
 ---
-title: bun:csv
+title: para:csv
 description: Streaming RFC 4180 CSV parser. Async generator, full quote / escape handling, optional parallel mode.
 ---
 
 ```ts
-import csv from "bun:csv";
+import csv from "para:csv";
 ```
 
 A single export — `parseCsv(input, opts?)` — that returns an async iterable of rows. The parser is a state machine over UTF-8 bytes; it never materializes the full file in memory regardless of size.
@@ -18,7 +18,7 @@ A single export — `parseCsv(input, opts?)` — that returns an async iterable 
 - `Uint8Array` or `string` (for in-memory).
 
 ```ts
-import csv from "bun:csv";
+import csv from "para:csv";
 
 for await (const row of csv.parseCsv(Bun.file("data.csv"), { header: true })) {
   process(row.id, row.name, row.score);
@@ -39,7 +39,7 @@ Without `header`, every row is an array of strings (no inference — keeps fast-
 
 ## Parallel mode
 
-`parallel: true` chunks the input across [`bun:parallel`](/docs/parallel/)'s worker pool when the input has no quoted cells (the byte-boundary heuristic doesn't work otherwise). It runs the parse off the main thread.
+`parallel: true` chunks the input across [`para:parallel`](/docs/parallel/)'s worker pool when the input has no quoted cells (the byte-boundary heuristic doesn't work otherwise). It runs the parse off the main thread.
 
 ```ts
 for await (const row of csv.parseCsv(Bun.file("data.csv"), { header: true, parallel: true })) {
@@ -59,11 +59,11 @@ Use `parallel: true` to keep the event loop responsive while parsing (parsing N 
 
 ## Bridging to columnar
 
-`bun:csv` rows pair naturally with [`bun:arrow`](/docs/arrow/)'s `fromRows`:
+`para:csv` rows pair naturally with [`para:arrow`](/docs/arrow/)'s `fromRows`:
 
 ```ts
-import csv from "bun:csv";
-import arrow from "bun:arrow";
+import csv from "para:csv";
+import arrow from "para:arrow";
 
 const rows: any[] = [];
 for await (const row of csv.parseCsv(Bun.file("data.csv"), { header: true })) rows.push(row);

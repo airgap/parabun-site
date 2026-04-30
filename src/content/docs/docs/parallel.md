@@ -1,10 +1,10 @@
 ---
-title: bun:parallel
+title: para:parallel
 description: pmap / preduce over a persistent worker pool. SharedArrayBuffer typed arrays cross the wire by handle, not copy.
 ---
 
 ```ts
-import { pmap, preduce, pool, Mutex, Semaphore } from "bun:parallel";
+import { pmap, preduce, pool, Mutex, Semaphore } from "para:parallel";
 ```
 
 A persistent worker pool plus a small concurrency-control toolkit. Functions are serialized via `fn.toString()`, so pmap / preduce bodies must be **pure** — no closures, no outer references, no `this`. TypedArrays passed through a `SharedArrayBuffer` cross workers by handle in `postMessage`, so per-chunk dispatch is fixed-cost regardless of input size.
@@ -14,7 +14,7 @@ A persistent worker pool plus a small concurrency-control toolkit. Functions are
 Chunked map across worker threads. Returns a typed array (or array) of the same length as `input`.
 
 ```ts
-import { pmap } from "bun:parallel";
+import { pmap } from "para:parallel";
 
 pure function score(row) { return row.reduce((a, b) => a + b * b, 0); }
 
@@ -44,7 +44,7 @@ const total = await preduce((a, b) => a + b, 0, scores, { concurrency: 8 });
 When you want lifetime control over the worker pool — e.g. long-running services that don't want to tear down + bring up workers per call — get a handle:
 
 ```ts
-import { pool } from "bun:parallel";
+import { pool } from "para:parallel";
 
 await using p = pool({ concurrency: 8, modulePath: import.meta.path });
 
@@ -64,7 +64,7 @@ const result = await p.dispatch("rankBatch", { batch });   // RPC
 | `p.signals.inflight` | `number` | Number of run-requests currently executing on workers. Updates synchronously on dispatch (incl. drain) and on message return. |
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 effect(() => {
   if (p.signals.queued.get() > 0) console.log(`pool backed up: ${p.signals.queued.get()} queued`);
 });
@@ -105,7 +105,7 @@ It loses when:
 - The function is cheap arithmetic — JS scalar loops on the main thread are faster than crossing process / worker boundaries.
 - Inputs aren't SAB-backed; per-chunk `structuredClone` of plain typed arrays makes the pool's overhead grow with input size.
 
-For small payloads or trivial functions, [`bun:simd`](/docs/simd/) on the main thread is almost always the right choice.
+For small payloads or trivial functions, [`para:simd`](/docs/simd/) on the main thread is almost always the right choice.
 
 ## Limits
 

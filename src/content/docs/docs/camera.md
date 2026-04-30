@@ -1,10 +1,10 @@
 ---
-title: bun:camera
+title: para:camera
 description: V4L2 capture on Linux. AVFoundation (macOS) and Media Foundation (Windows) follow on the same surface.
 ---
 
 ```ts
-import camera from "bun:camera";
+import camera from "para:camera";
 ```
 
 A small module wrapping the kernel's V4L2 capture API. Linux only today; the JS surface is platform-agnostic so AVFoundation + Media Foundation backends slot in without callsite changes.
@@ -54,7 +54,7 @@ for await (const frame of cam.frames()) {
 }
 ```
 
-To compose with [`bun:image`](/docs/image/) / [`bun:vision`](/docs/vision/), pass the iterator through `vision.frames(...)` to convert to packed-RGBA8.
+To compose with [`para:image`](/docs/image/) / [`para:vision`](/docs/vision/), pass the iterator through `vision.frames(...)` to convert to packed-RGBA8.
 
 ### `cam.close()`
 
@@ -62,7 +62,7 @@ Manual close. Equivalent to `using` scope exit. Idempotent.
 
 ### Reactive signals
 
-Three [`bun:signals`](/docs/signals/) Signals on the camera handle — wire them into a UI without polling.
+Three [`para:signals`](/docs/signals/) Signals on the camera handle — wire them into a UI without polling.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |
@@ -71,7 +71,7 @@ Three [`bun:signals`](/docs/signals/) Signals on the camera handle — wire them
 | `cam.cameraFormat` | `{ width, height, pixelFormat }` | Initialized from `open()`. Future renegotiation on V4L2 format-change events updates this in place; today it stays static for the lifetime of the camera. |
 
 ```ts
-import { effect } from "bun:signals";
+import { effect } from "para:signals";
 
 await using cam = await camera.open("/dev/video0", { format: "yuyv", width: 640, height: 480 });
 
@@ -88,12 +88,12 @@ Single-frame converter — useful when you have a `RawFrame` from somewhere else
 
 ## Composition
 
-The end-to-end shape pairs with [`bun:vision`](/docs/vision/):
+The end-to-end shape pairs with [`para:vision`](/docs/vision/):
 
 ```ts
-import camera from "bun:camera";
-import image from "bun:image";
-import vision from "bun:vision";
+import camera from "para:camera";
+import image from "para:image";
+import vision from "para:vision";
 
 await using cam = await camera.open({ device: "/dev/video0", width: 1280, height: 720, fps: 30 });
 

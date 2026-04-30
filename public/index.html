@@ -59,7 +59,7 @@
       <p class="lede">
         These aren't npm packages — they're built into the runtime, so there's no <code>node-gyp</code> step and no
         per-platform binary distribution. Imports look the same as Bun's other built-ins (<code
-          >import gpu from "bun:gpu"</code
+          >import gpu from "para:gpu"</code
         >). Plain <code>.ts</code> / <code>.js</code> files behave the same as upstream Bun.
       </p>
       <p class="lede">
@@ -89,10 +89,10 @@
       <h2 id="stack">Module index</h2>
       <p>
         Modules grouped by what you'd reach for them to do. Click a pill for the API. Higher-level modules compose the
-        lower-level ones — <span class="import">bun:assistant</span> is built on <span class="import">bun:audio</span> +
-        <span class="import">bun:speech</span> + <span class="import">bun:llm</span>;
-        <span class="import">bun:llm</span> on <span class="import">bun:gpu</span> +
-        <span class="import">bun:simd</span>; and so on. The imports are the truth, but you don't need to know the
+        lower-level ones — <span class="import">para:assistant</span> is built on <span class="import">para:audio</span> +
+        <span class="import">para:speech</span> + <span class="import">para:llm</span>;
+        <span class="import">para:llm</span> on <span class="import">para:gpu</span> +
+        <span class="import">para:simd</span>; and so on. The imports are the truth, but you don't need to know the
         dependency graph to pick a module.
       </p>
 
@@ -100,43 +100,43 @@
         <div class="tier">
           <span class="tier-label">Numerical &amp; parallel compute</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-simd">bun:simd</a>
-            <a class="mod-pill" href="#bun-gpu">bun:gpu</a>
-            <a class="mod-pill" href="#bun-parallel">bun:parallel</a>
-            <a class="mod-pill" href="#bun-pipeline">bun:pipeline</a>
-            <a class="mod-pill" href="#bun-arena">bun:arena</a>
+            <a class="mod-pill" href="#bun-simd">para:simd</a>
+            <a class="mod-pill" href="#bun-gpu">para:gpu</a>
+            <a class="mod-pill" href="#bun-parallel">para:parallel</a>
+            <a class="mod-pill" href="#bun-pipeline">para:pipeline</a>
+            <a class="mod-pill" href="#bun-arena">para:arena</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">Media — codec, capture, transport</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-image">bun:image</a>
-            <a class="mod-pill" href="#bun-audio">bun:audio</a>
-            <a class="mod-pill" href="#bun-camera">bun:camera</a>
-            <a class="mod-pill planned" href="#bun-video">bun:video</a>
-            <a class="mod-pill" href="#bun-rtp">bun:rtp</a>
+            <a class="mod-pill" href="#bun-image">para:image</a>
+            <a class="mod-pill" href="#bun-audio">para:audio</a>
+            <a class="mod-pill" href="#bun-camera">para:camera</a>
+            <a class="mod-pill planned" href="#bun-video">para:video</a>
+            <a class="mod-pill" href="#bun-rtp">para:rtp</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">AI &amp; inference</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-llm">bun:llm</a>
-            <a class="mod-pill" href="#bun-speech">bun:speech</a>
-            <a class="mod-pill" href="#bun-assistant">bun:assistant</a>
-            <a class="mod-pill" href="#bun-vision">bun:vision</a>
+            <a class="mod-pill" href="#bun-llm">para:llm</a>
+            <a class="mod-pill" href="#bun-speech">para:speech</a>
+            <a class="mod-pill" href="#bun-assistant">para:assistant</a>
+            <a class="mod-pill" href="#bun-vision">para:vision</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">Data &amp; tabular</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-csv">bun:csv</a>
-            <a class="mod-pill" href="#bun-arrow">bun:arrow</a>
+            <a class="mod-pill" href="#bun-csv">para:csv</a>
+            <a class="mod-pill" href="#bun-arrow">para:arrow</a>
           </div>
         </div>
         <div class="tier">
           <span class="tier-label">Reactive state</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-signals">bun:signals</a>
+            <a class="mod-pill" href="#bun-signals">para:signals</a>
           </div>
         </div>
       </div>
@@ -144,7 +144,7 @@
       <h2 id="runtime-modules">Runtime modules</h2>
 
       <div class="modules">
-        <h3 id="bun-parallel"><span class="import">bun:parallel</span></h3>
+        <h3 id="bun-parallel"><span class="import">para:parallel</span></h3>
         <p>
           <code>pmap</code> and <code>preduce</code> chunk arrays across a persistent worker pool. Functions are
           serialized via <code>fn.toString()</code>, so they must be pure — no closures, no outer references.
@@ -160,7 +160,7 @@
           </div>
           <pre
             data-lang="ts"
-          ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
+          ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:parallel"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> rows</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Array.</span><span style="color:#B392F0">from</span><span style="color:#E1E4E8">({ length: </span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8"> }, (</span><span style="color:#FFAB70">_</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">i</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#9ECBFF"> `record-${</span><span style="color:#E1E4E8">i</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"></span>
@@ -175,7 +175,7 @@
           <pre
             data-lang="parabun"
             hidden
-          ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:parallel"</span><span style="color:#E1E4E8">;</span></span>
+          ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { pmap } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:parallel"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> rows</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Array.</span><span style="color:#B392F0">from</span><span style="color:#E1E4E8">({ length: </span><span style="color:#79B8FF">1_000_000</span><span style="color:#E1E4E8"> }, (</span><span style="color:#FFAB70">_</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">i</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#9ECBFF"> `record-${</span><span style="color:#E1E4E8">i</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"></span>
@@ -189,7 +189,7 @@
 <span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"scored"</span><span style="color:#E1E4E8">, scores.</span><span style="color:#79B8FF">length</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"rows; first ="</span><span style="color:#E1E4E8">, scores[</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">]);</span></span></code></pre>
         </figure>
 
-        <h3 id="bun-simd"><span class="import">bun:simd</span></h3>
+        <h3 id="bun-simd"><span class="import">para:simd</span></h3>
         <p>
           WebAssembly v128 kernels for <code>Float32Array</code> (f32x4) and <code>Float64Array</code> (f64x2). Inputs
           above 4&nbsp;MiB are processed in place rather than copied into WASM memory. <code>alloc()</code> returns a
@@ -197,7 +197,7 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { mulScalar, add, dot, sum } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:simd"</span><span style="color:#E1E4E8">;</span></span>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { mulScalar, add, dot, sum } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:simd"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> a</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">([</span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">2</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">3</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">4</span><span style="color:#E1E4E8">]);</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> b</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#B392F0"> Float32Array</span><span style="color:#E1E4E8">([</span><span style="color:#79B8FF">5</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">6</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">7</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">8</span><span style="color:#E1E4E8">]);</span></span>
@@ -214,7 +214,7 @@
               <th>op (N=100k, f32)</th>
               <th class="num-cell">.map / .reduce</th>
               <th class="num-cell">tight loop</th>
-              <th class="num-cell">bun:simd</th>
+              <th class="num-cell">para:simd</th>
             </tr>
           </thead>
           <tbody>
@@ -245,7 +245,7 @@
           </tbody>
         </table>
 
-        <h3 id="bun-gpu"><span class="import">bun:gpu</span></h3>
+        <h3 id="bun-gpu"><span class="import">para:gpu</span></h3>
         <p>
           Metal on macOS, CUDA on Linux and Windows, CPU fallback on hosts without a GPU. A matrix passed to
           <code>gpu.hold()</code> stays resident across <code>matVec</code> calls, so only the input vector crosses the
@@ -255,7 +255,7 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> gpu </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:gpu"</span><span style="color:#E1E4E8">;</span></span>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> gpu </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:gpu"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> M</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 1024</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">K</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 768</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> mat</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> gpu.</span><span style="color:#B392F0">alloc</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">M</span><span style="color:#F97583"> *</span><span style="color:#79B8FF"> K</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"f32"</span><span style="color:#E1E4E8">);</span></span>
@@ -274,29 +274,29 @@
         </figure>
 
         <p class="footnote">
-          Beyond <code>matVec</code> / <code>simdMap</code>, <span class="import">bun:gpu</span> ships
+          Beyond <code>matVec</code> / <code>simdMap</code>, <span class="import">para:gpu</span> ships
           <code>conv2D</code>, <code>scan</code>, <code>reduce</code>, <code>argMin</code> / <code>argMax</code>,
           <code>histogram</code>, and <code>median</code> / <code>quantile</code> — CPU correctness paths today, with
           optional CUDA / Metal hooks on the same dispatch surface for follow-up device kernels.
         </p>
 
-        <h3 id="bun-arena"><span class="import">bun:arena</span></h3>
+        <h3 id="bun-arena"><span class="import">para:arena</span></h3>
         <p>
-          A pool of <code>SharedArrayBuffer</code>-backed typed arrays. <span class="import">bun:parallel</span> and
-          <span class="import">bun:pipeline</span> draw from it so per-chunk work doesn't allocate a fresh buffer every
+          A pool of <code>SharedArrayBuffer</code>-backed typed arrays. <span class="import">para:parallel</span> and
+          <span class="import">para:pipeline</span> draw from it so per-chunk work doesn't allocate a fresh buffer every
           time. Entries return to the pool at the end of an <code>arena { }</code> block or a <code>pmap</code>
           chunk, instead of waiting for the GC.
         </p>
 
-        <h3 id="bun-pipeline"><span class="import">bun:pipeline</span></h3>
+        <h3 id="bun-pipeline"><span class="import">para:pipeline</span></h3>
         <p>
-          A chain of <span class="import">bun:simd</span> calls (<code>mulScalar</code>, <code>add</code>,
+          A chain of <span class="import">para:simd</span> calls (<code>mulScalar</code>, <code>add</code>,
           <code>relu</code>, …) is collapsed into a single pass at <code>.run()</code> time, so the intermediate arrays
           don't get allocated. If the input is large enough that GPU dispatch wins (<code>gpu.winsForSize(...)</code>),
-          the fused chain runs as a single <span class="import">bun:gpu</span> <code>simdMap</code> instead.
+          the fused chain runs as a single <span class="import">para:gpu</span> <code>simdMap</code> instead.
         </p>
 
-        <h3 id="bun-signals"><span class="import">bun:signals</span></h3>
+        <h3 id="bun-signals"><span class="import">para:signals</span></h3>
         <p>
           <code>signal()</code> is a reactive cell, <code>derived()</code> derives one from others, and
           <code>effect()</code> runs side effects when something it read changes. Reads inside an effect register a
@@ -306,24 +306,24 @@
           <code>effect { }</code> / <code>~&gt;</code> language extensions.
         </p>
         <p>
-          Many other modules expose their own state as Signals — <span class="import">bun:audio</span>'s capture stream
-          (<code>peakLevel</code>, <code>active</code>), <span class="import">bun:llm</span>'s <code>LLM</code> and
+          Many other modules expose their own state as Signals — <span class="import">para:audio</span>'s capture stream
+          (<code>peakLevel</code>, <code>active</code>), <span class="import">para:llm</span>'s <code>LLM</code> and
           <code>WhisperModel</code> instances (<code>busy</code>, <code>device</code>),
-          <span class="import">bun:speech</span>'s <code>listen()</code> stream (<code>active</code>,
-          <code>noiseFloor</code>, <code>lastUtterance</code>), and <span class="import">bun:assistant</span>'s
+          <span class="import">para:speech</span>'s <code>listen()</code> stream (<code>active</code>,
+          <code>noiseFloor</code>, <code>lastUtterance</code>), and <span class="import">para:assistant</span>'s
           <code>state</code> / <code>history</code> / <code>lastTurn</code> / <code>interrupted</code>. Wire any of them
           into UI without polling.
         </p>
 
-        <h3 id="bun-rtp"><span class="import">bun:rtp</span></h3>
+        <h3 id="bun-rtp"><span class="import">para:rtp</span></h3>
         <p>
           RFC 3550 packet pack / parse and a jitter buffer. Built to sit under
-          <span class="import">bun:audio</span>'s Opus encoder for a WebRTC-style send/receive path.
+          <span class="import">para:audio</span>'s Opus encoder for a WebRTC-style send/receive path.
           <code>rtp.pack({ payloadType, sequence, timestamp, ssrc, payload })</code> produces a wire-format packet; the
           jitter buffer reorders by sequence number with a configurable depth.
         </p>
 
-        <h3 id="bun-image"><span class="import">bun:image</span></h3>
+        <h3 id="bun-image"><span class="import">para:image</span></h3>
         <p>
           A Sharp-class image module baked into the runtime — JPEG / PNG / WebP decode and encode (libjpeg-turbo,
           libpng, libwebp + libsharpyuv vendored statically), bilinear and Lanczos resize, separable Gaussian blur,
@@ -333,7 +333,7 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> image </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:image"</span><span style="color:#E1E4E8">;</span></span>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> image </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:image"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> bytes</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> Bun.</span><span style="color:#B392F0">file</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"photo.jpg"</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">bytes</span><span style="color:#E1E4E8">();</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> img</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> image.</span><span style="color:#B392F0">decode</span><span style="color:#E1E4E8">(bytes);</span></span>
@@ -343,7 +343,7 @@
 <span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> Bun.</span><span style="color:#B392F0">write</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"photo.webp"</span><span style="color:#E1E4E8">, webp);</span></span></code></pre>
         </figure>
 
-        <h3 id="bun-audio"><span class="import">bun:audio</span></h3>
+        <h3 id="bun-audio"><span class="import">para:audio</span></h3>
         <p>
           A from-scratch audio toolkit: WAV / MP3 decode, Opus encode and decode (libopus 1.6.1), rnnoise-based
           denoiser, FFT, RBJ Audio EQ Cookbook biquads (lowpass / highpass / bandpass / notch), resample, STFT
@@ -362,8 +362,8 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> rtp </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:rtp"</span><span style="color:#E1E4E8">;</span></span>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:audio"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> rtp </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:rtp"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> mic</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">capture</span><span style="color:#E1E4E8">({ sampleRate: </span><span style="color:#79B8FF">48000</span><span style="color:#E1E4E8">, channels: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> enc</span><span style="color:#F97583"> =</span><span style="color:#F97583"> new</span><span style="color:#E1E4E8"> audio.</span><span style="color:#B392F0">OpusEncoder</span><span style="color:#E1E4E8">({ sampleRate: </span><span style="color:#79B8FF">48000</span><span style="color:#E1E4E8">, channels: </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">, application: </span><span style="color:#9ECBFF">"voip"</span><span style="color:#E1E4E8"> });</span></span>
@@ -383,22 +383,22 @@
 <span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
         </figure>
 
-        <h3 id="bun-csv"><span class="import">bun:csv</span></h3>
+        <h3 id="bun-csv"><span class="import">para:csv</span></h3>
         <p>
           Streaming RFC 4180 parser — async generator, full quote and escape handling, configurable delimiter, header
           mode that yields records keyed by column name, per-cell type inference (number / boolean / null). An opt-in
-          <code>parallel: true</code> mode chunks the input across <span class="import">bun:parallel</span>'s worker
+          <code>parallel: true</code> mode chunks the input across <span class="import">para:parallel</span>'s worker
           pool when the input has no quoted cells and is large enough.
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> csv </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:csv"</span><span style="color:#E1E4E8">;</span></span>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> csv </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:csv"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">for</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">const</span><span style="color:#79B8FF"> row</span><span style="color:#F97583"> of</span><span style="color:#E1E4E8"> csv.</span><span style="color:#B392F0">parseCsv</span><span style="color:#E1E4E8">(Bun.</span><span style="color:#B392F0">file</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"rows.csv"</span><span style="color:#E1E4E8">), { header: </span><span style="color:#79B8FF">true</span><span style="color:#E1E4E8"> })) {</span></span>
 <span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(row.id, row.name, row.score);</span></span>
 <span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
         </figure>
-        <table class="bench" aria-label="bun:csv parallel-vs-serial sweep on a 16-core x86 release build">
+        <table class="bench" aria-label="para:csv parallel-vs-serial sweep on a 16-core x86 release build">
           <thead>
             <tr>
               <th>fixture</th>
@@ -436,7 +436,7 @@
           bigger files to go faster. <code>bench/parabun-csv-parallel/</code> reproduces these numbers.
         </p>
 
-        <h3 id="bun-camera"><span class="import">bun:camera</span></h3>
+        <h3 id="bun-camera"><span class="import">para:camera</span></h3>
         <p>
           V4L2 capture on Linux. <code>camera.devices()</code> reads <code>/sys/class/video4linux/</code> and runs
           <code>VIDIOC_QUERYCAP</code> on each to filter to actual capture devices.
@@ -446,7 +446,7 @@
           backends are planned on the same JS surface.
         </p>
 
-        <h3 id="bun-video"><span class="import">bun:video</span></h3>
+        <h3 id="bun-video"><span class="import">para:video</span></h3>
         <p>
           Scaffold only — the JS surface is in place (<code>video.probe</code>, <code>video.decode</code>,
           <code>video.encode</code>, <code>video.decodeAll</code>, with codec / container / acceleration options) but
@@ -454,7 +454,7 @@
           Jetson, all behind the same JS API.
         </p>
 
-        <h3 id="bun-llm"><span class="import">bun:llm</span></h3>
+        <h3 id="bun-llm"><span class="import">para:llm</span></h3>
         <p>
           An in-tree native inference stack covering three model classes: Llama / Qwen2 chat + completion
           (<code>LLM</code>), BERT-family sentence embedders (<code>Encoder</code>), and Whisper STT
@@ -465,7 +465,7 @@
         </p>
         <figure class="code">
           <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
+          <pre><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:llm"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">using</span><span style="color:#79B8FF"> m</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> llm.</span><span style="color:#79B8FF">LLM</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">load</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"></span>
@@ -525,18 +525,18 @@
         </p>
         <p>
           Both <code>LLM</code> and <code>WhisperModel</code> instances expose reactive
-          <span class="import">bun:signals</span> Signals: <code>m.busy</code> (refcounted, flips while a
+          <span class="import">para:signals</span> Signals: <code>m.busy</code> (refcounted, flips while a
           <code>chat</code> / <code>generate</code> / <code>embed</code> / <code>transcribe</code> call is in flight)
           and <code>m.device</code> (<code>"cuda" | "metal" | "cpu"</code>, stable for the life of the instance). Wire a
           busy spinner or a backend badge with a one-liner <code>effect()</code>.
         </p>
 
-        <h3 id="bun-vision"><span class="import">bun:vision</span></h3>
+        <h3 id="bun-vision"><span class="import">para:vision</span></h3>
         <p>
           <code>vision.frames(stream, { decodeMjpg? })</code> takes a frame iterator from
-          <span class="import">bun:camera</span> (or any source yielding the same shape) and yields packed-RGBA8 frames.
+          <span class="import">para:camera</span> (or any source yielding the same shape) and yields packed-RGBA8 frames.
           yuyv, nv12, and rgb24 are converted inline; mjpeg requires the caller to pass <code>image.decode</code> from
-          <span class="import">bun:image</span> (cross-builtin imports between <code>bun:</code> modules aren't
+          <span class="import">para:image</span> (cross-builtin imports between <code>bun:</code> modules aren't
           supported, so dependencies are passed in at the call site). <code>vision.detectMotion</code> adds a
           downsampled-luma frame-diff estimator with temporal smoothing.
         </p>
@@ -546,17 +546,17 @@
           callers can write against them now and have them work later.
         </p>
 
-        <h3 id="bun-speech"><span class="import">bun:speech</span></h3>
+        <h3 id="bun-speech"><span class="import">para:speech</span></h3>
         <p>
           <code>speech.listen(stream, { sampleRate })</code> takes an audio chunk iterator (<span class="import"
-            >bun:audio</span
+            >para:audio</span
           >'s capture stream, a file reader, anything yielding <code>{ samples }</code>) and yields one utterance per
           detected speech burst. The classifier is RMS-against-an-adaptive-noise-floor, with pre-roll to catch word
           onsets, hangover to seal on silence, and a minimum-length filter to drop clicks and breath sounds.
         </p>
         <p>
           <code>speech.transcribe(utt, { engine: "whisper", model })</code> dispatches to the
-          <code>WhisperModel</code> in <span class="import">bun:llm</span>, with a per-process model cache so the
+          <code>WhisperModel</code> in <span class="import">para:llm</span>, with a per-process model cache so the
           weights aren't reloaded between calls. <code>speech.speak(text, { engine: "piper", model })</code> drives the
           Piper voice synthesizer (subprocess in v1, libpiper FFI v2 tracked) and returns f32 mono PCM at the voice's
           native sample rate, ready to hand straight to <code>audio.play().write()</code>. The
@@ -564,10 +564,10 @@
           <code>lastUtterance</code> signals.
         </p>
 
-        <h3 id="bun-assistant"><span class="import">bun:assistant</span></h3>
+        <h3 id="bun-assistant"><span class="import">para:assistant</span></h3>
         <p>
-          The 3-line case. Composes <span class="import">bun:audio</span> (mic + speaker),
-          <span class="import">bun:speech</span> (VAD + STT + TTS), and <span class="import">bun:llm</span> (Llama /
+          The 3-line case. Composes <span class="import">para:audio</span> (mic + speaker),
+          <span class="import">para:speech</span> (VAD + STT + TTS), and <span class="import">para:llm</span> (Llama /
           Qwen2 inference) into a complete on-device voice loop:
           <code>await using bot = await assistant.create({ llm, stt, tts, system });</code>, then
           <code>await bot.run()</code>. Mic captures, VAD gates, Whisper transcribes, the LLM generates, Piper
@@ -578,15 +578,15 @@
         <p>
           Reactive surface: <code>bot.state</code> (<code>"idle" | "listening" | "thinking" | "speaking"</code>),
           <code>bot.history</code>, <code>bot.lastTurn</code>, and <code>bot.interrupted</code> are all
-          <span class="import">bun:signals</span> Signals — wire them straight into UI without polling. Persistent
+          <span class="import">para:signals</span> Signals — wire them straight into UI without polling. Persistent
           memory is one option away: pass <code>memory: "/path/to/memory.sqlite"</code> and the conversation transcript
           replays into history on every <code>create</code>. Power users keep their seat — <code>bot.llm</code> exposes
-          the underlying model, so anything reachable directly via <span class="import">bun:llm</span> /
-          <span class="import">bun:speech</span> / <span class="import">bun:audio</span> is reachable through
+          the underlying model, so anything reachable directly via <span class="import">para:llm</span> /
+          <span class="import">para:speech</span> / <span class="import">para:audio</span> is reachable through
           <code>bot</code> too.
         </p>
 
-        <h3 id="bun-arrow"><span class="import">bun:arrow</span></h3>
+        <h3 id="bun-arrow"><span class="import">para:arrow</span></h3>
         <p>
           In-memory columnar tables. <code>arrow.recordBatch({ ... })</code> takes a map of typed arrays (or plain
           arrays — types are inferred) and returns a <code>RecordBatch</code> with a <code>Schema</code>. Columns are
@@ -594,7 +594,7 @@
           one schema. Computes: <code>sum</code>, <code>mean</code>, <code>min</code>, <code>max</code>,
           <code>count</code>, <code>variance</code>, <code>stddev</code>, <code>quantile</code>, <code>median</code>,
           <code>distinct</code>, <code>filter</code>, <code>groupBy</code>. <code>fromRows</code> /
-          <code>toRows</code> bridge between row-shaped JS data (e.g. <code>bun:csv</code> output) and the columnar
+          <code>toRows</code> bridge between row-shaped JS data (e.g. <code>para:csv</code> output) and the columnar
           form; <code>concat</code> materializes a table-wide column into one typed array.
         </p>
         <p>
@@ -715,7 +715,7 @@
       <p>
         Mic captures, Whisper transcribes, the LLM picks a tool under a JSON schema (mathematically guaranteed-valid
         output, no parse retries), the runtime dispatches it, Piper speaks the reply. The dispatch table is plain JS
-        below; <span class="import">bun:mcp</span> (now shipped — stdio + WebSocket transports) lets you swap the table
+        below; <span class="import">para:mcp</span> (now shipped — stdio + WebSocket transports) lets you swap the table
         for a Model Context Protocol client without changing this control flow. <code>effect()</code> over
         <code>mic.peakLevel</code> / <code>chat.busy</code> / <code>wsp.busy</code> drives a status line — no polling,
         no observers, no event emitters.
@@ -729,8 +729,8 @@
         </div>
         <pre
           data-lang="ts"
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
 <span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
@@ -750,7 +750,7 @@
         <pre
           data-lang="parabun"
           hidden
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
 <span class="line"><span style="color:#E1E4E8">  llm: </span><span style="color:#9ECBFF">"./Llama-3.2-1B-Instruct-Q4_K_M.gguf"</span><span style="color:#E1E4E8">,</span></span>
@@ -769,18 +769,18 @@
 <span class="line"><span style="color:#F97583">await</span><span style="color:#E1E4E8"> bot.</span><span style="color:#B392F0">run</span><span style="color:#E1E4E8">();   </span><span style="color:#6A737D">// VAD → STT → LLM (with grammar-constrained tool calls) → TTS → speaker</span></span></code></pre>
       </figure>
       <p class="footnote">
-        <span class="import">bun:assistant</span> composes <span class="import">bun:audio</span> +
-        <span class="import">bun:speech</span> + <span class="import">bun:llm</span> +
-        <span class="import">bun:signals</span> internally. <code>bot.state</code> is a Signal that cycles through
+        <span class="import">para:assistant</span> composes <span class="import">para:audio</span> +
+        <span class="import">para:speech</span> + <span class="import">para:llm</span> +
+        <span class="import">para:signals</span> internally. <code>bot.state</code> is a Signal that cycles through
         <code>"idle" | "listening" | "thinking" | "speaking"</code>; the tools dispatch table works the same as an
-        <span class="import">bun:mcp</span> client. <a href="#example-underneath">What's underneath</a> shows the same
+        <span class="import">para:mcp</span> client. <a href="#example-underneath">What's underneath</a> shows the same
         loop hand-rolled — same five modules, no facade.
       </p>
 
       <h3 id="example-motion">Webcam motion → reactive assistant</h3>
       <p>
-        Module composition: <span class="import">bun:camera</span> + <span class="import">bun:vision</span> +
-        <span class="import">bun:assistant</span> over <span class="import">bun:signals</span>.
+        Module composition: <span class="import">para:camera</span> + <span class="import">para:vision</span> +
+        <span class="import">para:assistant</span> over <span class="import">para:signals</span>.
         <code>vision.detectMotion</code> emits frame-by-frame scores; the <code>onRising()</code> predicate auto-tracks
         every signal it reads, so the greeting fires once on each false→true edge — no <code>derived()</code> wrapper,
         no state machine, no debounce timer, no <code>wasPresent</code> flag. The Parabun tab collapses each
@@ -796,10 +796,10 @@
         </div>
         <pre
           data-lang="ts"
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:vision"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> camera.</span><span style="color:#B392F0">open</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { format: </span><span style="color:#9ECBFF">"yuyv"</span><span style="color:#E1E4E8">, width: </span><span style="color:#79B8FF">640</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">480</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> assistant.</span><span style="color:#B392F0">create</span><span style="color:#E1E4E8">({</span></span>
@@ -820,10 +820,10 @@
         <pre
           data-lang="parabun"
           hidden
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:camera"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:vision"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:assistant"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> camera    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:camera"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> vision    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:vision"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> assistant </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:assistant"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { onRising } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> cam</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> camera.open(</span><span style="color:#9ECBFF">"/dev/video0"</span><span style="color:#E1E4E8">, { </span><span style="color:#79B8FF">format</span><span style="color:#F97583">:</span><span style="color:#9ECBFF"> "yuyv"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">width</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> 640</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">height</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> 480</span><span style="color:#E1E4E8"> });</span></span>
 <span class="line"><span style="color:#F97583">await using</span><span style="color:#79B8FF"> bot</span><span style="color:#F97583"> ..=</span><span style="color:#E1E4E8"> assistant.create({</span></span>
@@ -841,14 +841,14 @@
       </figure>
       <p class="footnote">
         Four modules, three signals, zero glue code. Barge-in is built into
-        <span class="import">bun:assistant</span> now (rising edge on <code>vad.active</code> drops the queued TTS via
+        <span class="import">para:assistant</span> now (rising edge on <code>vad.active</code> drops the queued TTS via
         <code>spk.stop()</code> and stamps <code>turn.interrupted</code>); programmatic cancel is
         <code>bot.interrupt()</code>.
       </p>
 
       <h3 id="example-underneath">What's underneath</h3>
       <p>
-        <code>bun:assistant</code> isn't magic — it stitches the same five modules a user could call directly. The
+        <code>para:assistant</code> isn't magic — it stitches the same five modules a user could call directly. The
         version below is the loop the home-assistant facade performs for you. Useful when you want a non-default flow
         (custom VAD threshold, separate transcribe + chat sessions, your own JSON dispatch). Routine smart-home or IoT
         cases should still pick the <a href="#example-voice-tools">facade</a>; this one's longer.
@@ -862,10 +862,10 @@
         </div>
         <pre
           data-lang="ts"
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:speech"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:audio"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:speech"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:llm"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> tools</span><span style="color:#F97583">:</span><span style="color:#B392F0"> Record</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">, (</span><span style="color:#FFAB70">args</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">> </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> {</span></span>
 <span class="line"><span style="color:#B392F0">  setLight</span><span style="color:#E1E4E8">:  ({ </span><span style="color:#FFAB70">room</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">on</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">brightness</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`light ${</span><span style="color:#E1E4E8">room</span><span style="color:#9ECBFF">} ${</span><span style="color:#E1E4E8">on</span><span style="color:#F97583"> ?</span><span style="color:#9ECBFF"> "on"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "off"} @ ${</span><span style="color:#E1E4E8">brightness</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
@@ -893,9 +893,9 @@
         <pre
           data-lang="parabun"
           hidden
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:audio"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:speech"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:llm"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> audio  </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:audio"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> speech </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:speech"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> llm    </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:llm"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> tools</span><span style="color:#F97583">:</span><span style="color:#B392F0"> Record</span><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">, (</span><span style="color:#FFAB70">args</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#79B8FF"> any</span><span style="color:#E1E4E8">> </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> {</span></span>
 <span class="line"><span style="color:#B392F0">  setLight</span><span style="color:#E1E4E8">:  ({ </span><span style="color:#FFAB70">room</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">on</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">brightness</span><span style="color:#E1E4E8"> }) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`light ${</span><span style="color:#E1E4E8">room</span><span style="color:#9ECBFF">} ${</span><span style="color:#E1E4E8">on</span><span style="color:#F97583"> ?</span><span style="color:#9ECBFF"> "on"</span><span style="color:#F97583"> :</span><span style="color:#9ECBFF"> "off"} @ ${</span><span style="color:#E1E4E8">brightness</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">),</span></span>
@@ -1024,7 +1024,7 @@
         </div>
         <pre
           data-lang="ts"
-        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { signal, derived, effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:signals"</span><span style="color:#E1E4E8">;</span></span>
+        ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> { signal, derived, effect } </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:signals"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> count</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> signal</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">);</span></span>
 <span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> doubled</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> derived</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> count.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 2</span><span style="color:#E1E4E8">);</span></span>
@@ -1119,7 +1119,7 @@
         <pre
           data-lang="ts"
         ><code><span class="line"><span style="color:#F97583">import</span><span style="color:#79B8FF"> *</span><span style="color:#F97583"> as</span><span style="color:#E1E4E8"> fs </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "node:fs"</span><span style="color:#E1E4E8">;</span></span>
-<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> arena </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "bun:arena"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> arena </span><span style="color:#F97583">from</span><span style="color:#9ECBFF"> "para:arena"</span><span style="color:#E1E4E8">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> readConfig</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">path</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#E1E4E8">) {</span></span>
 <span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> fd</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> fs.</span><span style="color:#B392F0">openSync</span><span style="color:#E1E4E8">(path, </span><span style="color:#9ECBFF">"r"</span><span style="color:#E1E4E8">);</span></span>
@@ -1163,12 +1163,12 @@
 
       <p>
         Parabun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The shipped
-        modules — <span class="import">bun:parallel</span>, <span class="import">bun:simd</span>,
-        <span class="import">bun:gpu</span>, <span class="import">bun:pipeline</span>,
-        <span class="import">bun:arena</span>, <span class="import">bun:signals</span>,
-        <span class="import">bun:llm</span>, <span class="import">bun:image</span>,
-        <span class="import">bun:audio</span>, <span class="import">bun:csv</span>,
-        <span class="import">bun:rtp</span> — cover the typed-array, codec, and CPU/GPU-parallel surface; the remaining
+        modules — <span class="import">para:parallel</span>, <span class="import">para:simd</span>,
+        <span class="import">para:gpu</span>, <span class="import">para:pipeline</span>,
+        <span class="import">para:arena</span>, <span class="import">para:signals</span>,
+        <span class="import">para:llm</span>, <span class="import">para:image</span>,
+        <span class="import">para:audio</span>, <span class="import">para:csv</span>,
+        <span class="import">para:rtp</span> — cover the typed-array, codec, and CPU/GPU-parallel surface; the remaining
         items below attack the next layer of <em>"I have to shell out / use Python / write native code"</em>
         pain points.
       </p>
@@ -1190,7 +1190,7 @@
         <tbody>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:image</span></td>
+            <td><span class="import">para:image</span></td>
             <td>
               JPEG / PNG / WebP decode + encode, resize (bilinear / Lanczos), blur / sharpen / edge-detect, rotate /
               flip / crop, adjust / threshold / invert / grayscale, histogram, alpha composite.
@@ -1198,7 +1198,7 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:audio</span></td>
+            <td><span class="import">para:audio</span></td>
             <td>
               WAV / MP3 / Opus codecs, RBJ biquads, FFT, resample, spectrogram, VAD, denoiser (rnnoise), AGC, mix /
               normalize / envelope, planar ⇄ frame-major + i16 ⇄ f32 PCM helpers.
@@ -1206,7 +1206,7 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:csv</span></td>
+            <td><span class="import">para:csv</span></td>
             <td>
               Streaming RFC 4180 parser. <code>parallel: true</code> is "off-the-main-thread", not a per-file speedup —
               see the table above.
@@ -1214,12 +1214,12 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:rtp</span></td>
+            <td><span class="import">para:rtp</span></td>
             <td>RFC 3550 packet pack/parse + jitter buffer. Transport for the codec stack.</td>
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:gpu</span> primitives</td>
+            <td><span class="import">para:gpu</span> primitives</td>
             <td>
               <code>conv2D</code>, <code>scan</code>, <code>reduce</code>, <code>argMin</code> / <code>argMax</code>,
               <code>histogram</code>, <code>median</code> / <code>quantile</code>. CPU correctness paths today; CUDA /
@@ -1228,7 +1228,7 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:camera</span></td>
+            <td><span class="import">para:camera</span></td>
             <td>
               V4L2 capture on Linux — <code>devices()</code>, <code>formats(path)</code>, <code>open(...)</code> with an
               async-iterator <code>frames()</code> over kernel-mmapped buffers. AVFoundation + Media Foundation follow
@@ -1239,14 +1239,14 @@
             <td>shipped</td>
             <td>OS audio I/O</td>
             <td>
-              Live ALSA capture + playback for <span class="import">bun:audio</span>. <code>devices()</code> /
+              Live ALSA capture + playback for <span class="import">para:audio</span>. <code>devices()</code> /
               <code>capture(...)</code> / <code>play(...)</code> with Float32 PCM streams, S16_LE on the wire. CoreAudio
               + WASAPI follow.
             </td>
           </tr>
           <tr>
             <td>partial</td>
-            <td><span class="import">bun:gpu</span> device kernels</td>
+            <td><span class="import">para:gpu</span> device kernels</td>
             <td>
               CUDA <code>reduce</code> (sum / min / max) + atomic-privatized <code>histogram</code> shipped. Scan, Metal
               mirror, and the rest of the secondary primitives still on CPU until wired.
@@ -1254,7 +1254,7 @@
           </tr>
           <tr>
             <td>partial</td>
-            <td><span class="import">bun:vision</span></td>
+            <td><span class="import">para:vision</span></td>
             <td>
               Frame stream + frame-diff motion detection ship today (<code>vision.frames</code>,
               <code>vision.detectMotion</code>). Detector (<code>detect</code>) and OCR (<code>recognize</code>) engines
@@ -1263,22 +1263,22 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:speech</span></td>
+            <td><span class="import">para:speech</span></td>
             <td>
               VAD-gated <code>speech.listen</code> (with reactive <code>active</code> / <code>noiseFloor</code> /
               <code>lastUtterance</code> signals), Whisper STT (<code>speech.transcribe</code>, dispatching to
-              <span class="import">bun:llm</span>'s <code>WhisperModel</code> — encoder-decoder, KV cache, beam search,
+              <span class="import">para:llm</span>'s <code>WhisperModel</code> — encoder-decoder, KV cache, beam search,
               language detection, CUDA-accelerated end-to-end), and Piper TTS (<code>speech.speak</code> — subprocess in
               v1; libpiper FFI v2 tracked).
             </td>
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:assistant</span></td>
+            <td><span class="import">para:assistant</span></td>
             <td>
-              Three-line voice-assistant facade composing <span class="import">bun:audio</span> +
-              <span class="import">bun:speech</span> + <span class="import">bun:llm</span> +
-              <span class="import">bun:mcp</span>. <code>bot.run</code> / <code>turns</code> / <code>ask</code> /
+              Three-line voice-assistant facade composing <span class="import">para:audio</span> +
+              <span class="import">para:speech</span> + <span class="import">para:llm</span> +
+              <span class="import">para:mcp</span>. <code>bot.run</code> / <code>turns</code> / <code>ask</code> /
               <code>say</code> / <code>interrupt</code> + reactive <code>state</code> / <code>history</code> /
               <code>lastTurn</code> / <code>interrupted</code> / <code>toolsActive</code> signals + sqlite-backed
               persistent memory + tool dispatch (inline + MCP) + VAD-driven barge-in + wake word (<code
@@ -1289,7 +1289,7 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">bun:arrow</span></td>
+            <td><span class="import">para:arrow</span></td>
             <td>
               In-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile / median /
               distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
@@ -1303,7 +1303,7 @@
           </tr>
           <tr>
             <td>in progress</td>
-            <td><span class="import">bun:video</span></td>
+            <td><span class="import">para:video</span></td>
             <td>
               JS surface scaffolded; libavcodec / V4L2 M2M / NVDEC native binding lands with hardware bring-up. Decode +
               encode + container muxing.
@@ -1311,7 +1311,7 @@
           </tr>
           <tr>
             <td>next</td>
-            <td><span class="import">bun:parallel</span> v2</td>
+            <td><span class="import">para:parallel</span> v2</td>
             <td>
               Closure-aware persistent worker pool + <code>SharedArrayBuffer</code> channels. Lifts today's
               <code>pmap</code> ceiling.
@@ -1319,15 +1319,15 @@
           </tr>
           <tr>
             <td>planned</td>
-            <td><span class="import">bun:image</span> AVIF</td>
+            <td><span class="import">para:image</span> AVIF</td>
             <td>AVIF decode/encode (libavif + AOM / dav1d vendor add). Rounds out the codec coverage matrix.</td>
           </tr>
         </tbody>
       </table>
 
       <p class="footnote">
-        <span class="import">bun:llm</span> serves as proof-of-concept for the stack — built on <code>bun:gpu</code> +
-        <code>bun:simd</code> + <code>bun:parallel</code>. Parabun is positioned as a perf runtime, not an AI runtime.
+        <span class="import">para:llm</span> serves as proof-of-concept for the stack — built on <code>para:gpu</code> +
+        <code>para:simd</code> + <code>para:parallel</code>. Parabun is positioned as a perf runtime, not an AI runtime.
       </p>
 
       <div class="disclaimer">
