@@ -67,6 +67,12 @@ enabled = false;              // future doubled changes don't reach el
 signal motionPresent = false;
 when motionPresent && enabled { console.log("greet"); }
 when not enabled { console.log("disabled"); }
+
+// paired form — bare `when not { ... }` adjacent to a `when EXPR` block
+// shares its predicate and fires the inverse edge.
+signal connected = false;
+when connected { showOnlineBanner(); }
+when not       { showOfflineBanner(); }
 ```
 
 ## `|>`, `..!`, `..&`, `..` / `..=`
