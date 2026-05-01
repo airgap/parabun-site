@@ -313,15 +313,16 @@ header a.site-title,
     "SOFT" 30 !important;
 }
 
-/* Header / sidebar — solid 98% bg. backdrop-filter blur over the
-   nebulae was hammering the main thread on every scroll frame. */
+/* Header — 55% alpha so nebulae read through. Sidebar is its own column
+   (no content scrolls under it) so it can be fully transparent — page
+   nebulae + starfield show all the way through. */
 header.header {
   border-block-end: 1px solid var(--pb-rule);
-  background: color-mix(in srgb, var(--pb-bg) 98%, transparent);
+  background: color-mix(in srgb, var(--pb-bg) 55%, transparent);
 }
 .sidebar-pane {
   border-inline-end: 1px solid var(--pb-rule);
-  background: color-mix(in srgb, var(--pb-bg) 98%, transparent);
+  background: transparent;
 }
 
 /* ─── Tables, blockquotes ───────────────────────────────────────────── */

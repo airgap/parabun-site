@@ -235,9 +235,10 @@ header {
   z-index: 10;
   padding: 14px 0;
   margin-top: -14px;
-  /* Solid 98% — backdrop-filter blur was re-rasterizing the nebulae
-     underneath every scroll frame. */
-  background: color-mix(in srgb, var(--bg) 98%, transparent);
+  /* 55% alpha so nebulae read through. Enough cover to keep content
+     scrolling under from competing with nav text. backdrop-filter would
+     look cleaner but re-rasterizes nebulae every scroll frame. */
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
   border-bottom: 1px solid var(--rule);
 }
 
