@@ -79,12 +79,12 @@
       <h1>ParaBun</h1>
       <p class="lede">
         A fork of <a href="https://bun.com">Bun</a> with native bindings for hardware that Node-class JS runtimes don't
-        usually expose. Bundled modules: <code>para:gpu</code> (libcuda + Metal FFI, hand-written PTX),
-        <code>para:camera</code> (V4L2), <code>para:audio</code> (ALSA + WAV/MP3/Opus codecs + DSP),
-        <code>para:image</code> (JPEG/PNG/WebP codecs, resize, blur, sharpen), <code>para:gpio</code> /
-        <code>para:i2c</code> / <code>para:spi</code> (Linux peripheral I/O), and <code>para:llm</code> (Llama 3, Qwen2,
-        BERT, Whisper, OpenAI-compatible HTTP). Plus the cross-runtime modules from
-        <a href="https://para.script.dev">Para</a> (signals, parallel, pipeline, arena, simd, csv, arrow, rtp, mcp).
+        usually expose. Bundled modules: <code>para:gpu</code> (libcuda + Metal FFI), <code>para:camera</code> (V4L2),
+        <code>para:audio</code> (ALSA + WAV/MP3/Opus codecs + DSP), <code>para:image</code> (JPEG/PNG/WebP codecs,
+        resize, blur, sharpen), <code>para:gpio</code> / <code>para:i2c</code> / <code>para:spi</code> (Linux peripheral
+        I/O), and <code>para:llm</code> (Llama 3, Qwen2, BERT, Whisper, OpenAI-compatible HTTP). Plus the cross-runtime
+        modules from <a href="https://para.script.dev">Para</a> (signals, parallel, pipeline, arena, simd, csv, arrow,
+        rtp, mcp).
       </p>
       <p class="lede">
         Modules are linked into the binary, so there's no <code>node-gyp</code> step, no CUDA toolkit install, and no
