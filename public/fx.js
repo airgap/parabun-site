@@ -87,7 +87,7 @@
   });
 })();
 
-// TypeScript / Parabun code-tab toggle. Each <figure class="code lang-tabs">
+// TypeScript / ParaBun code-tab toggle. Each <figure class="code lang-tabs">
 // holds a pair of <pre data-lang="ts|parabun"> blocks plus a header row
 // with two <button data-lang="..."> tabs. Clicking either tab updates
 // every group on the page and persists the choice via localStorage. The

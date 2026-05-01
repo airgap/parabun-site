@@ -1,5 +1,5 @@
-/* ─── Parabun: Stellar Atlas, companion-led ────────────────────────────
-   Parabun is the warm amber companion in a binary star system; Para
+/* ─── ParaBun: Stellar Atlas, companion-led ────────────────────────────
+   ParaBun is the warm amber companion in a binary star system; Para
    is the blue-white primary at para.script.dev. Both sites use the same
    Stellar Atlas system, but each leads with its own star — visiting one
    then the other makes the binary visibly orbit between them.
@@ -36,7 +36,7 @@
   --pb-text-faint: #5e5446;
 
   /* Same binary system, but the brand accent points to the COMPANION
-     (Parabun's amber). Primary blue-white still defined for the brand
+     (ParaBun's amber). Primary blue-white still defined for the brand
      mark + cross-references to Para. */
   --pb-star-primary: #6db4ff;
   --pb-star-companion: #ffa855;

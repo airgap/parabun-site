@@ -16,7 +16,7 @@ import parabunInjectGrammar from "./src/grammars/parabun-inject.tmLanguage.json"
 // previous build used.
 const docsRoot = "/docs";
 const guides = [
-  { label: "Parabun docs", link: `${docsRoot}/` },
+  { label: "ParaBun docs", link: `${docsRoot}/` },
   { label: "Install", link: `${docsRoot}/install/` },
   { label: "Language extensions", link: `${docsRoot}/language/` },
 ];
@@ -48,7 +48,7 @@ export default defineConfig({
   site: "https://parabun.script.dev",
   integrations: [
     starlight({
-      title: "Parabun",
+      title: "ParaBun",
       description:
         "A fork of Bun with extra runtime modules: parallel CPU work, GPU compute, codecs, capture, on-device LLM inference.",
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/airgap/parabun" }],
@@ -60,7 +60,7 @@ export default defineConfig({
       expressiveCode: {
         // Custom TextMate grammars for `.pts` / `.ptsx` / `.pjs` / `.pjsx`.
         // Each grammar embeds the matching base TS/TSX/JS/JSX grammar via
-        // `embeddedLangs`, then layers Parabun keywords (memo / pure / fun /
+        // `embeddedLangs`, then layers ParaBun keywords (memo / pure / fun /
         // signal / effect / arena / defer) and operators (|> ~> -> ..= ..! ..&)
         // on top.
         shiki: {

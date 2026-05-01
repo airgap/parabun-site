@@ -1,9 +1,9 @@
 ---
 title: Para
-description: Parabun's optional TypeScript dialect. Parse-time desugarings — output is standard JavaScript.
+description: ParaBun's optional TypeScript dialect. Parse-time desugarings — output is standard JavaScript.
 ---
 
-**Para** is the language Parabun ships alongside its runtime. Files ending in `.pts` (or `.ptsx`) are parsed with the extensions described below — purity, error chaining, pipelines, ranges, reactivity, edge-triggered handlers — and lower to standard JS at parse time. Nothing in the runtime depends on the syntax. Plain `.ts` / `.tsx` files behave exactly as in upstream Bun.
+**Para** is the language ParaBun ships alongside its runtime. Files ending in `.pts` (or `.ptsx`) are parsed with the extensions described below — purity, error chaining, pipelines, ranges, reactivity, edge-triggered handlers — and lower to standard JS at parse time. Nothing in the runtime depends on the syntax. Plain `.ts` / `.tsx` files behave exactly as in upstream Bun.
 
 The same extensions also work over plain JavaScript in `.pjs` / `.pjsx` files. We don't lead with that path — `.pts` is the canonical Para surface — but it's there if you need it.
 

@@ -131,14 +131,14 @@ Date / Time / Timestamp from upstream Arrow streams are coerced to int32 / int64
 
 `bench/parabun-arrow-ipc-interop/` round-trips both directions against `apache-arrow@21.1.0`:
 
-- Parabun encodes streaming + file → apache-arrow decodes.
-- apache-arrow encodes streaming + file (including default `Dictionary<Utf8>` strings + `Date64`) → Parabun decodes.
+- ParaBun encodes streaming + file → apache-arrow decodes.
+- apache-arrow encodes streaming + file (including default `Dictionary<Utf8>` strings + `Date64`) → ParaBun decodes.
 
 Mixed type table (`Int8`, `Uint16`, `Uint32`, `Int32`, `Float64`, `Date64`, `Dictionary<Utf8>`, `List<Float64>`) round-trips bit-for-bit through both formats.
 
 ### Output you can read elsewhere
 
-The bytes Parabun produces are the same wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on the streaming + file paths. Save with `.arrow`:
+The bytes ParaBun produces are the same wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on the streaming + file paths. Save with `.arrow`:
 
 ```ts
 await Bun.write("data.arrow", arrow.toIPC(table, "file"));
@@ -183,7 +183,7 @@ await Bun.write("rows.parquet", out);
 Verified end-to-end against pyarrow output:
 
 - Read: round-trips 6-column fixtures (int32 / int64 / float32 / float64 / utf8 / bool) under uncompressed + snappy, plus a 10,000-row fixture with nulls at 1/5, 1/7, 1/13 ratios across 4 row groups under all three compression codecs.
-- Write: pyarrow reads Parabun's output bit-for-bit (`uncompressed`, `snappy`, `gzip`); 100-row fixture with scattered nulls (1/7 id, 1/11 score, 1/13 name) → null counts match pyarrow's `15 / 10 / 8` exactly.
+- Write: pyarrow reads ParaBun's output bit-for-bit (`uncompressed`, `snappy`, `gzip`); 100-row fixture with scattered nulls (1/7 id, 1/11 score, 1/13 name) → null counts match pyarrow's `15 / 10 / 8` exactly.
 
 ## What's not here yet
 
@@ -192,4 +192,4 @@ Verified end-to-end against pyarrow output:
 - **Struct / Map / FixedSizeList / Union / Decimal128 / FixedSizeBinary** — nested + decimal types. The `List<T>` shape proves out the recursive FieldNode + buffer walk; the others reuse it.
 - **Dictionary delta batches** (`isDelta=true`) — apache-arrow's default is non-delta, so this is a long-tail follow-up.
 - **uint64** — no lossless 64-bit unsigned representation in JS Number / BigInt without losing range.
-- **Lossless narrow-type round-trip** — Parabun reads int8 by widening to int32, then writes int32. Lossless on values, lossy on the type tag. A typed wrapper that remembers wire types can land if there's a use case.
+- **Lossless narrow-type round-trip** — ParaBun reads int8 by widening to int32, then writes int32. Lossless on values, lossy on the type tag. A typed wrapper that remembers wire types can land if there's a use case.

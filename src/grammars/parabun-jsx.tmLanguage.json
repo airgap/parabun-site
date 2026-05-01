@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "displayName": "Parabun JSX",
+  "displayName": "ParaBun JSX",
   "name": "parabun-jsx",
   "scopeName": "source.pjsx",
   "embeddedLangs": ["jsx"],

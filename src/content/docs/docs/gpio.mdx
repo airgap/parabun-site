@@ -68,7 +68,7 @@ Acquire a single line on this chip. Returns a `Line` you can `read()` / `write()
     }
     ```
   </TabItem>
-  <TabItem label="Parabun">
+  <TabItem label="ParaBun">
     ```parabun
     // Output:
     const led = chip.line(17, { mode: "out", initial: 0 });
@@ -141,7 +141,7 @@ The full IoT control loop in one effect block. `chip.line({ pollHz: 50 })` updat
     await new Promise(() => {});   // keep alive
     ```
   </TabItem>
-  <TabItem label="Parabun">
+  <TabItem label="ParaBun">
     ```parabun
     import gpio from "para:gpio";
 

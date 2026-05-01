@@ -1,9 +1,9 @@
 ---
-title: Parabun docs
-description: Reference for the runtime modules and language extensions Parabun adds to Bun.
+title: ParaBun docs
+description: Reference for the runtime modules and language extensions ParaBun adds to Bun.
 ---
 
-Parabun is a fork of Bun. Everything upstream Bun does — bundler, test runner, package install, Node compatibility — works the same. Parabun adds a stack of built-in modules for parallel CPU work, GPU compute, codec / capture / inference workloads, and a few language-level desugarings on `.pts` / `.pjs` files.
+ParaBun is a fork of Bun. Everything upstream Bun does — bundler, test runner, package install, Node compatibility — works the same. ParaBun adds a stack of built-in modules for parallel CPU work, GPU compute, codec / capture / inference workloads, and a few language-level desugarings on `.pts` / `.pjs` files.
 
 **Targets edge devices and IoT** — Linux SBCs (Raspberry Pi 5, Jetson Orin), NUCs, and anything else running a real OS with capable CPU/GPU. The composed Tier 2 modules ([`para:assistant`](/docs/assistant/), [`para:speech`](/docs/speech/), [`para:vision`](/docs/vision/)) and the planned peripheral modules (`para:gpio` / `para:i2c` / `para:spi`) assume that shape: a device that's basically a small computer, with mic / camera / GPIO / network / GPU all reachable. Microcontrollers (Cortex-M, ESP32, RP2040) are out of scope — JavaScriptCore alone is bigger than an MCU's flash budget. For MCU-class work, parabun running on a nearby SBC can talk to the MCU over USB-serial / BLE via an MCP tool.
 

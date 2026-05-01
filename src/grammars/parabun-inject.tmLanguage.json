@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "displayName": "Parabun Keyword Injection",
+  "displayName": "ParaBun Keyword Injection",
   "name": "parabun-inject",
   "scopeName": "inject.parabun-keywords",
   "injectTo": ["source.pts", "source.ptsx", "source.pjs", "source.pjsx"],

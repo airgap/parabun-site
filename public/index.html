@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Parabun</title>
+    <title>ParaBun</title>
     <meta
       name="description"
       content="A fork of Bun with extra runtime modules: a worker pool, GPU kernels, SIMD primitives, V4L2 / ALSA capture, GGUF LLM inference, and statically-linked image / audio / CSV codecs."
@@ -50,7 +50,7 @@
       <header>
         <span class="brand">
           <svg class="binary" viewBox="0 0 32 32" aria-hidden="true">
-            <!-- This site = Parabun's site = companion (amber) is the
+            <!-- This site = ParaBun's site = companion (amber) is the
                  heavier of the two and orbits closer to the barycenter
                  (cx=21, distance 5 from center). The primary blue-white
                  traces the wider arc (cx=5, distance 11). They share
@@ -59,7 +59,7 @@
             <circle class="star-a" cx="5" cy="16" r="4" />
             <circle class="star-b" cx="21" cy="16" r="6" />
           </svg>
-          Parabun
+          ParaBun
         </span>
         <nav class="nav">
           <a href="#stack">stack</a>
@@ -72,7 +72,7 @@
         </nav>
       </header>
 
-      <h1>Parabun</h1>
+      <h1>ParaBun</h1>
       <p class="lede">
         A fork of <a href="https://bun.com">Bun</a> with extra runtime modules: a worker pool with shared typed arrays,
         raw CUDA and Metal kernels, SIMD primitives, V4L2 / ALSA capture, GGUF LLM inference, and statically-linked
@@ -118,7 +118,7 @@
         truth, but you don't need to know the dependency graph to pick a module.
       </p>
 
-      <div class="tiers" aria-label="Parabun modules by use case">
+      <div class="tiers" aria-label="ParaBun modules by use case">
         <div class="tier">
           <span class="tier-label">Numerical &amp; parallel compute</span>
           <div class="tier-row">
@@ -177,7 +177,7 @@
           <div class="code-header">
             <div class="lang-toggle" role="tablist">
               <button data-lang="ts" type="button">TypeScript</button>
-              <button data-lang="parabun" type="button">Parabun</button>
+              <button data-lang="parabun" type="button">ParaBun</button>
             </div>
           </div>
           <pre
@@ -638,7 +638,7 @@
         <p>
           Wire compat verified against <code>apache-arrow@21.1.0</code> in
           <code>bench/parabun-arrow-ipc-interop/</code> — six round-trip directions (streaming + file ×
-          Parabun↔apache-arrow, plus Parabun→apache-arrow → Parabun for List). The bytes Parabun produces are the same
+          ParaBun↔apache-arrow, plus ParaBun→apache-arrow → ParaBun for List). The bytes ParaBun produces are the same
           wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on both the streaming and file paths.
         </p>
         <p>
@@ -654,7 +654,7 @@
 
       <h2 id="example">Example: LangChain <code>VectorStore</code></h2>
       <p>
-        <code>ParabunVectorStore</code> extends <code>VectorStore</code> from <code>@langchain/core</code> and
+        <code>ParaBunVectorStore</code> extends <code>VectorStore</code> from <code>@langchain/core</code> and
         implements the <code>addVectors</code> and <code>similaritySearchVectorWithScore</code> methods, so call sites
         that accept any <code>VectorStore</code> work against it without changes. The shared setup below feeds both
         snippets:
@@ -686,10 +686,10 @@
         <div>
           <figure class="code">
             <figcaption class="code-header"><span class="code-lang">after</span></figcaption>
-            <pre><code><span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">import</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> { </span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7">ParabunVectorStore</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span></span>
+            <pre><code><span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">import</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> { </span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7">ParaBunVectorStore</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span></span>
 <span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">  from</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">./parabun-store.pjs</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
 <span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> store</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> new</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> ParabunVectorStore</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">emb</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
+<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> store</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> new</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> ParaBunVectorStore</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">emb</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
 <span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#BB9AF7;--shiki-dark-font-style:italic">await</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> store</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">addVectors</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">vectors</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> docs</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
 <span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> hits</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#BB9AF7;--shiki-dark-font-style:italic"> await</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> store</span></span>
 <span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">  .</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">similaritySearchVectorWithScore</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">q</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 10</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span></code></pre>
@@ -714,7 +714,7 @@
             <td class="num-cell">1.00×</td>
           </tr>
           <tr class="winner">
-            <td>ParabunVectorStore</td>
+            <td>ParaBunVectorStore</td>
             <td class="num-cell">82.7</td>
             <td class="num-cell">15.9</td>
             <td class="num-cell">2.83×</td>
@@ -746,7 +746,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -805,14 +805,14 @@
         <span class="import">para:assistant</span> over <span class="import">para:signals</span>.
         <code>vision.detectMotion</code> emits frame-by-frame scores; the rising-edge handler fires once on each
         false→true transition of the predicate — no <code>derived()</code> wrapper, no state machine, no debounce timer,
-        no <code>wasPresent</code> flag. The Parabun tab uses a <code>when EXPR { … }</code> block; the TypeScript tab
+        no <code>wasPresent</code> flag. The ParaBun tab uses a <code>when EXPR { … }</code> block; the TypeScript tab
         uses the equivalent <code>signals.when()</code> call.
       </p>
       <figure class="code lang-tabs">
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -877,7 +877,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -969,7 +969,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -1039,7 +1039,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -1091,7 +1091,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -1132,7 +1132,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">Parabun</button>
+            <button data-lang="parabun" type="button">ParaBun</button>
           </div>
         </div>
         <pre
@@ -1181,7 +1181,7 @@
       <h2 id="roadmap">Roadmap</h2>
 
       <p>
-        Parabun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The shipped
+        ParaBun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The shipped
         modules — <span class="import">para:parallel</span>, <span class="import">para:simd</span>,
         <span class="import">para:gpu</span>, <span class="import">para:pipeline</span>,
         <span class="import">para:arena</span>, <span class="import">para:signals</span>,
@@ -1198,7 +1198,7 @@
         modules you check — production builds slim to whatever your app actually imports.
       </p>
 
-      <table class="bench" aria-label="Parabun module roadmap">
+      <table class="bench" aria-label="ParaBun module roadmap">
         <thead>
           <tr>
             <th>Status</th>
@@ -1346,7 +1346,7 @@
 
       <p class="footnote">
         <span class="import">para:llm</span> serves as proof-of-concept for the stack — built on <code>para:gpu</code> +
-        <code>para:simd</code> + <code>para:parallel</code>. Parabun is positioned as a perf runtime, not an AI runtime.
+        <code>para:simd</code> + <code>para:parallel</code>. ParaBun is positioned as a perf runtime, not an AI runtime.
       </p>
 
       <div class="disclaimer">
@@ -1356,7 +1356,7 @@
       </div>
 
       <footer>
-        <span>Parabun is a fork of Bun. Not affiliated with Oven.</span>
+        <span>ParaBun is a fork of Bun. Not affiliated with Oven.</span>
         <span>
           <a href="https://github.com/airgap/parabun">source</a> ·
           <a href="https://github.com/airgap/parabun/releases">releases</a> ·

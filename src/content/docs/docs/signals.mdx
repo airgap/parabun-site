@@ -31,7 +31,7 @@ Creates a writable cell.
     count.update(n => n + 1);   // read-modify-write
     ```
   </TabItem>
-  <TabItem label="Parabun">
+  <TabItem label="ParaBun">
     ```parabun
     signal count = 0;
 
@@ -55,7 +55,7 @@ A read-only signal computed from others. Tracks every signal `fn` reads; re-eval
     double();         // 4 (after count(2))
     ```
   </TabItem>
-  <TabItem label="Parabun">
+  <TabItem label="ParaBun">
     ```parabun
     signal double = count * 2;   // RHS reads `count` → auto-derived
     double;            // 4 (after count = 2)
@@ -80,7 +80,7 @@ Runs `fn` immediately, tracks its signal reads, and re-runs whenever any of them
     dispose();          // stop watching
     ```
   </TabItem>
-  <TabItem label="Parabun">
+  <TabItem label="ParaBun">
     ```parabun
     effect {
       console.log("count is", count);
@@ -157,7 +157,7 @@ The internal timer `.unref()`s itself, so a bare `fromInterval(...)` call doesn'
     sigs.effect(() => console.log("temp:", temp.signal.get()));
     ```
   </TabItem>
-  <TabItem label="Parabun">
+  <TabItem label="ParaBun">
     ```parabun
     import sigs from "para:signals";
 

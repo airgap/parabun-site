@@ -1,4 +1,4 @@
-/* ─── Stellar Atlas, companion-led — Parabun owns the amber star ──────
+/* ─── Stellar Atlas, companion-led — ParaBun owns the amber star ──────
    This site mirrors para.script.dev's Stellar Atlas system but flips the
    accent: the amber companion is the brand color here, and the blue-white
    primary appears as the secondary. The two sites visibly orbit each
@@ -82,7 +82,7 @@ body {
 
 /* ─── Atmospheric backgrounds — three parallax layers ─────────────────
    Mirror of para.script.dev's three-layer system, but amber dominates
-   (companion-led, since this is Parabun's site).
+   (companion-led, since this is ParaBun's site).
 
    Layer 1 (html::before, deepest): soft nebulae backdrop, slowest.
    Layer 2 (body::before, middle): dense starfield, medium.
@@ -619,7 +619,7 @@ figure.code > pre {
   letter-spacing: 0.02em;
 }
 
-/* Tabbed code blocks — TypeScript / Parabun toggle. Same .figure.code shell;
+/* Tabbed code blocks — TypeScript / ParaBun toggle. Same .figure.code shell;
    the lang-toggle row replaces the static .code-header. JS in fx.js syncs
    all tabs on the page (and persists choice via localStorage). */
 figure.code.lang-tabs .code-header {
