@@ -124,8 +124,15 @@
       ctx.scale(rx / r, ry / r);
       const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
       const [cr, cg, cb] = n.color;
+      // Multi-stop with an exponential-ish falloff. Two stops produces
+      // a Mach band at the gradient end where the alpha derivative
+      // snaps to zero, visible as a "crisp line" — extra stops smooth
+      // the curve so the derivative tapers gradually.
       grad.addColorStop(0, `rgba(${cr},${cg},${cb},${n.alpha})`);
-      grad.addColorStop(0.65, `rgba(${cr},${cg},${cb},0)`);
+      grad.addColorStop(0.18, `rgba(${cr},${cg},${cb},${n.alpha * 0.6})`);
+      grad.addColorStop(0.4, `rgba(${cr},${cg},${cb},${n.alpha * 0.25})`);
+      grad.addColorStop(0.7, `rgba(${cr},${cg},${cb},${n.alpha * 0.06})`);
+      grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
       ctx.fillStyle = grad;
       ctx.fillRect(-r, -r, r * 2, r * 2);
       ctx.restore();
