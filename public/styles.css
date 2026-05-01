@@ -165,6 +165,9 @@ header {
   height: 32px;
   vertical-align: -10px;
   margin-right: 10px;
+  /* drop-shadow extends past the viewBox; let it paint into adjacent
+     flex gap instead of clipping at the SVG box. */
+  overflow: visible;
 }
 .binary circle {
   transform-box: view-box;
@@ -235,7 +238,7 @@ header {
   position: sticky;
   top: 14px;
   z-index: 10;
-  padding: 14px 22px;
+  padding: 14px;
   background: color-mix(in srgb, var(--bg) 55%, transparent);
   backdrop-filter: blur(10px) saturate(150%);
   -webkit-backdrop-filter: blur(10px) saturate(150%);
