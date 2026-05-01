@@ -112,7 +112,13 @@
     // Nebulae underneath. Their y wraps the same way as stars.
     // Sized by vmin so their shape is governed by the n.rx/ry ratio
     // alone — not pulled wide on landscape or tall on portrait.
+    //
+    // ctx.filter blur smears 8-bit alpha bands together — gradients
+    // at alpha ~0.08 quantize to ~20 distinct steps in the 0-255
+    // range, which the eye reads as "crisp lines" between bands.
+    // 4-6px blur smudges the band boundaries enough to disappear.
     const vmin = Math.min(cssWidth, cssHeight);
+    ctx.filter = "blur(6px)";
     for (const n of nebulae) {
       const y = wrap(n.y - (scrollY * n.parallax) / pageHeight) * cssHeight;
       const cx = n.x * cssWidth;
@@ -138,7 +144,8 @@
       ctx.restore();
     }
 
-    // Stars on top.
+    // Stars on top — reset the blur filter so they stay crisp.
+    ctx.filter = "none";
     for (const s of stars) {
       const y = wrap(s.y - (scrollY * s.parallax) / pageHeight) * cssHeight;
       const x = s.x * cssWidth;
