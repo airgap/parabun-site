@@ -227,19 +227,20 @@ header {
   align-items: baseline;
   justify-content: space-between;
   gap: 24px;
+  margin-top: 14px;
   margin-bottom: 56px;
-  /* Sticky so the section nav stays reachable while scrolling. backdrop-blur
-   * over a translucent --bg keeps content underneath legible. */
+  /* Floating pill — same shape as para.script.dev. Smaller surface +
+     GPU-promoted nebulae underneath keep the backdrop-filter cost
+     bounded enough to bring the blur back in. */
   position: sticky;
-  top: 0;
+  top: 14px;
   z-index: 10;
-  padding: 14px 0;
-  margin-top: -14px;
-  /* 55% alpha so nebulae read through. Enough cover to keep content
-     scrolling under from competing with nav text. backdrop-filter would
-     look cleaner but re-rasterizes nebulae every scroll frame. */
+  padding: 14px 22px;
   background: color-mix(in srgb, var(--bg) 55%, transparent);
-  border-bottom: 1px solid var(--rule);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
 }
 
 /* Once anchor-linked, the heading would otherwise scroll under the sticky
