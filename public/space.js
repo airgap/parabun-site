@@ -76,10 +76,14 @@
   }
 
   // Nebulae — slowest layer (deep background).
+  // Alphas all >= 0.12 so the 8-bit gradient quantization isn't
+  // perceptible — at alpha 0.08 the gradient steps in the 0-255 range
+  // were too sparse and read as visible bands. Higher alpha = more
+  // intermediate steps available, smoother fade.
   const nebulae = [
     { x: 0.78, y: 0.18, rx: 0.7, ry: 0.55, color: [255, 168, 85], alpha: 0.13, parallax: 0.02 },
-    { x: 0.12, y: 0.75, rx: 0.55, ry: 0.45, color: [109, 180, 255], alpha: 0.08, parallax: 0.02 },
-    { x: 0.55, y: 1.1, rx: 0.45, ry: 0.5, color: [180, 110, 220], alpha: 0.06, parallax: 0.015 },
+    { x: 0.12, y: 0.75, rx: 0.55, ry: 0.45, color: [109, 180, 255], alpha: 0.13, parallax: 0.02 },
+    { x: 0.55, y: 1.1, rx: 0.45, ry: 0.5, color: [180, 110, 220], alpha: 0.12, parallax: 0.015 },
   ];
 
   let dpr = 1;
@@ -112,13 +116,7 @@
     // Nebulae underneath. Their y wraps the same way as stars.
     // Sized by vmin so their shape is governed by the n.rx/ry ratio
     // alone — not pulled wide on landscape or tall on portrait.
-    //
-    // ctx.filter blur smears 8-bit alpha bands together — gradients
-    // at alpha ~0.08 quantize to ~20 distinct steps in the 0-255
-    // range, which the eye reads as "crisp lines" between bands.
-    // 4-6px blur smudges the band boundaries enough to disappear.
     const vmin = Math.min(cssWidth, cssHeight);
-    ctx.filter = "blur(6px)";
     for (const n of nebulae) {
       const y = wrap(n.y - (scrollY * n.parallax) / pageHeight) * cssHeight;
       const cx = n.x * cssWidth;
@@ -144,8 +142,7 @@
       ctx.restore();
     }
 
-    // Stars on top — reset the blur filter so they stay crisp.
-    ctx.filter = "none";
+    // Stars on top.
     for (const s of stars) {
       const y = wrap(s.y - (scrollY * s.parallax) / pageHeight) * cssHeight;
       const x = s.x * cssWidth;
