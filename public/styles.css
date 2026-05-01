@@ -313,6 +313,34 @@ h2[id] {
     "SOFT" 30;
 }
 
+/* Dual brand pair (see para-site for shared meaning). */
+.brand-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4ch;
+}
+.brand-active {
+  color: var(--text);
+  font-weight: 700;
+}
+.brand-sep {
+  color: var(--text-faint);
+  font-weight: 300;
+  font-style: italic;
+}
+.brand-link {
+  color: var(--text-faint);
+  font-weight: 400;
+  text-decoration: none;
+  border-bottom: none;
+  transition: color 160ms ease;
+}
+.brand-link:hover,
+.brand-link:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+
 .nav {
   font-family: var(--mono);
   font-size: 13px;

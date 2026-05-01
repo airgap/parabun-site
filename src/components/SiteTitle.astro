@@ -1,0 +1,52 @@
+---
+// Starlight SiteTitle override for parabun.script.dev — "Para /
+// ParaBun" pair with ParaBun active. Mirror of para-site's component
+// with the active/inactive flipped.
+---
+
+<a href="/" class="site-title sl-flex">
+  <span class="brand-pair">
+    <a class="brand-link" href="https://para.script.dev">Para</a>
+    <span class="brand-sep">/</span>
+    <span class="brand-active">ParaBun</span>
+  </span>
+</a>
+
+<style>
+  .site-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.012em;
+    color: var(--pb-text);
+    text-decoration: none;
+    font-variation-settings:
+      "opsz" 144,
+      "SOFT" 30;
+  }
+  .brand-pair {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4ch;
+  }
+  .brand-active {
+    color: var(--pb-text);
+    font-weight: 700;
+  }
+  .brand-sep {
+    color: var(--pb-text-faint);
+    font-weight: 300;
+    font-style: italic;
+  }
+  .brand-link {
+    color: var(--pb-text-faint);
+    font-weight: 400;
+    text-decoration: none;
+    transition: color 160ms ease;
+  }
+  .brand-link:hover,
+  .brand-link:focus-visible {
+    color: var(--pb-accent);
+    outline: none;
+  }
+</style>
