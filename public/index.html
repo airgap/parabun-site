@@ -78,21 +78,27 @@
 
       <h1>ParaBun</h1>
       <p class="lede">
-        A fork of <a href="https://bun.com">Bun</a> with extra runtime modules: a worker pool with shared typed arrays,
-        raw CUDA and Metal kernels, SIMD primitives, V4L2 / ALSA capture, GGUF LLM inference, and statically-linked
-        image / audio / CSV codecs.
+        A fork of <a href="https://bun.com">Bun</a> that brings <strong>raw GPU compute</strong> and
+        <strong>statically-linked hardware bindings</strong> into a JavaScript runtime. Hand-written PTX dispatched
+        through the CUDA Driver API, an Obj-C FFI Metal backend, plus V4L2 cameras, ALSA audio, GPIO / I²C / SPI, and
+        statically-linked image codecs — all built into the binary.
       </p>
       <p class="lede">
-        These aren't npm packages — they're built into the runtime, so there's no <code>node-gyp</code> step and no
-        per-platform binary distribution. Imports look the same as Bun's other built-ins (<code
-          >import gpu from "para:gpu"</code
-        >). Plain <code>.ts</code> / <code>.js</code> files behave the same as upstream Bun.
+        The point is what's <em>not</em> there: no <code>node-gyp</code>, no per-platform native addon distribution, no
+        <code>cudatoolkit</code> install, no <code>libvips</code> / <code>libsharp</code> system dependency. Imports
+        look the same as Bun's other built-ins (<code>import gpu from "para:gpu"</code>). Plain <code>.ts</code> /
+        <code>.js</code> files behave the same as upstream Bun.
       </p>
       <p class="lede">
         Targets <strong>edge devices and IoT</strong> — Linux SBCs like Raspberry Pi 5 and Jetson Orin, NUCs, and
         anything else running a real OS with capable CPU/GPU. Not microcontrollers (Cortex-M / ESP32 / RP2040): those
         need a different runtime — JavaScriptCore alone is bigger than an MCU's flash budget. The positioning is "device
         that's basically a small computer," not "device that's basically a register file."
+      </p>
+      <p class="lede">
+        ParaBun also bundles every module from <a href="https://para.script.dev">Para</a> — signals, parallel, pipeline,
+        arena, simd, csv, arrow, rtp, mcp — but those aren't the differentiator: they're cross-runtime npm packages too.
+        What ParaBun adds is the stuff that needs a custom runtime to ship cleanly.
       </p>
       <div class="install">
         <span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/airgap/parabun/main/install.sh | bash
@@ -114,55 +120,51 @@
 
       <h2 id="stack">Module index</h2>
       <p>
-        Modules grouped by what you'd reach for them to do. Click a pill for the API. Higher-level modules compose the
-        lower-level ones — <span class="import">para:assistant</span> is built on
-        <span class="import">para:audio</span> + <span class="import">para:speech</span> +
-        <span class="import">para:llm</span>; <span class="import">para:llm</span> on
-        <span class="import">para:gpu</span> + <span class="import">para:simd</span>; and so on. The imports are the
-        truth, but you don't need to know the dependency graph to pick a module.
+        Modules grouped by what kind of dependency they have on the runtime. The first three tiers are what ParaBun
+        actually adds — capabilities you can't get from npm. The fourth tier is bundled too, but you could also just
+        install those from <a href="https://para.script.dev">para.script.dev</a>.
       </p>
 
-      <div class="tiers" aria-label="ParaBun modules by use case">
+      <div class="tiers" aria-label="ParaBun modules by what they require from the runtime">
         <div class="tier">
-          <span class="tier-label">Numerical &amp; parallel compute</span>
+          <span class="tier-label">GPU compute (FFI to libcuda / Metal)</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-simd">para:simd</a>
             <a class="mod-pill" href="#bun-gpu">para:gpu</a>
-            <a class="mod-pill" href="#bun-parallel">para:parallel</a>
-            <a class="mod-pill" href="#bun-pipeline">para:pipeline</a>
-            <a class="mod-pill" href="#bun-arena">para:arena</a>
           </div>
         </div>
         <div class="tier">
-          <span class="tier-label">Media — codec, capture, transport</span>
+          <span class="tier-label">Hardware capture &amp; I/O (statically linked)</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-image">para:image</a>
-            <a class="mod-pill" href="#bun-audio">para:audio</a>
             <a class="mod-pill" href="#bun-camera">para:camera</a>
+            <a class="mod-pill" href="#bun-audio">para:audio</a>
+            <a class="mod-pill" href="#bun-image">para:image</a>
+            <a class="mod-pill" href="#bun-gpio">para:gpio</a>
+            <a class="mod-pill" href="#bun-i2c">para:i2c</a>
+            <a class="mod-pill" href="#bun-spi">para:spi</a>
             <a class="mod-pill planned" href="#bun-video">para:video</a>
-            <a class="mod-pill" href="#bun-rtp">para:rtp</a>
           </div>
         </div>
         <div class="tier">
-          <span class="tier-label">AI &amp; inference</span>
+          <span class="tier-label">AI &amp; inference (composes the above)</span>
           <div class="tier-row">
             <a class="mod-pill" href="#bun-llm">para:llm</a>
             <a class="mod-pill" href="#bun-speech">para:speech</a>
-            <a class="mod-pill" href="#bun-assistant">para:assistant</a>
             <a class="mod-pill" href="#bun-vision">para:vision</a>
+            <a class="mod-pill" href="#bun-assistant">para:assistant</a>
           </div>
         </div>
         <div class="tier">
-          <span class="tier-label">Data &amp; tabular</span>
+          <span class="tier-label">Para modules (bundled, but cross-runtime)</span>
           <div class="tier-row">
-            <a class="mod-pill" href="#bun-csv">para:csv</a>
-            <a class="mod-pill" href="#bun-arrow">para:arrow</a>
-          </div>
-        </div>
-        <div class="tier">
-          <span class="tier-label">Reactive state</span>
-          <div class="tier-row">
-            <a class="mod-pill" href="#bun-signals">para:signals</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/signals/">para:signals</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/parallel/">para:parallel</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/pipeline/">para:pipeline</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/arena/">para:arena</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/simd/">para:simd</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/csv/">para:csv</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/arrow/">para:arrow</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/rtp/">para:rtp</a>
+            <a class="mod-pill" href="https://para.script.dev/docs/mcp/">para:mcp</a>
           </div>
         </div>
       </div>
@@ -170,107 +172,6 @@
       <h2 id="runtime-modules">Runtime modules</h2>
 
       <div class="modules">
-        <h3 id="bun-parallel"><span class="import">para:parallel</span></h3>
-        <p>
-          <code>pmap</code> and <code>preduce</code> chunk arrays across a persistent worker pool. Functions are
-          serialized via <code>fn.toString()</code>, so they must be pure — no closures, no outer references.
-          TypedArrays are passed through a <code>SharedArrayBuffer</code>, so <code>postMessage</code> transfers a
-          handle rather than a copy.
-        </p>
-        <figure class="code lang-tabs">
-          <div class="code-header">
-            <div class="lang-toggle" role="tablist">
-              <button data-lang="ts" type="button">TypeScript</button>
-              <button data-lang="parabun" type="button">Para</button>
-            </div>
-          </div>
-          <pre
-            data-lang="ts"
-          ><code><span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">import</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> { </span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7">pmap</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF"> from</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">para:parallel</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> rows</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> Array</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">from</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">({</span><span style="--shiki-light:#24292EFF;--shiki-dark:#73DACA"> length</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 1_000_000</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#24292EFF;--shiki-dark:#E0AF68">_</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#E0AF68"> i</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7"> =></span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> `</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">record-</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">${</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">}</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">`</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7">function</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> score</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#E0AF68">row</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#0DB9D7"> string</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#0DB9D7"> number</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> {</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">  let</span><span style="--shiki-light:#24292EFF;--shiki-dark:#BB9AF7"> h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7">  for</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">let</span><span style="--shiki-light:#24292EFF;--shiki-dark:#BB9AF7"> i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7"> &#x3C;</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> row</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#1976D2;--shiki-dark:#7DCFFF">length</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">++</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">) </span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> *</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 31</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> +</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> row</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">charCodeAt</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">i</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)) </span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7">|</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#BB9AF7;--shiki-dark-font-style:italic">  return</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> *</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> h</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">}</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> scores</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#BB9AF7;--shiki-dark-font-style:italic"> await</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> pmap</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">score</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> rows</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> {</span><span style="--shiki-light:#24292EFF;--shiki-dark:#73DACA"> concurrency</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 8</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> })</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5">console</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">log</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">scored</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> scores</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#1976D2;--shiki-dark:#7DCFFF">length</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">rows; first =</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> scores</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">[</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64">0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">])</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span></code></pre>
-          <pre
-            data-lang="parabun"
-            hidden
-          ><code><span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">import</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> { </span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7">pmap</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF"> from</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">para:parallel</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> rows</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> Array</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">from</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">({</span><span style="--shiki-light:#24292EFF;--shiki-dark:#73DACA"> length</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 1_000_000</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#24292EFF;--shiki-dark:#E0AF68">_</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#E0AF68"> i</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7"> =></span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> `</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">record-</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">${</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">}</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">`</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">pure</span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7"> function</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> score</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">row</span><span style="--shiki-light:#24292EFF;--shiki-dark:#A9B1D6">: </span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">string</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#A9B1D6">: </span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">number</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> {</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">  let</span><span style="--shiki-light:#24292EFF;--shiki-dark:#BB9AF7"> h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7">  for</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">let</span><span style="--shiki-light:#24292EFF;--shiki-dark:#BB9AF7"> i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7"> &#x3C;</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> row</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#1976D2;--shiki-dark:#7DCFFF">length</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> i</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">++</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">) </span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> *</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 31</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> +</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> row</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">charCodeAt</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">i</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)) </span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7">|</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#BB9AF7;--shiki-dark-font-style:italic">  return</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> h</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> *</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> h</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">}</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> scores</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#BB9AF7;--shiki-dark-font-style:italic"> await</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> pmap</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">score</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> rows</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> {</span><span style="--shiki-light:#24292EFF;--shiki-dark:#73DACA"> concurrency</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 8</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> })</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5">console</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">log</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">scored</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> scores</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#1976D2;--shiki-dark:#7DCFFF">length</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">rows; first =</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> scores</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">[</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64">0</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">])</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span></code></pre>
-        </figure>
-
-        <h3 id="bun-simd"><span class="import">para:simd</span></h3>
-        <p>
-          WebAssembly v128 kernels for <code>Float32Array</code> (f32x4) and <code>Float64Array</code> (f64x2). Inputs
-          above 4&nbsp;MiB are processed in place rather than copied into WASM memory. <code>alloc()</code> returns a
-          typed array backed by the WASM linear memory for zero-copy use.
-        </p>
-        <figure class="code">
-          <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">import</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> { </span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7">mulScalar</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7"> add</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7"> dot</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7"> sum</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF"> from</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">para:simd</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> a</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> new</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> Float32Array</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">([</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64">1</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 2</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 3</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 4</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">])</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> b</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> new</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> Float32Array</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">([</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64">5</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 6</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 7</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 8</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">])</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> y</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> mulScalar</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">a</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> 3</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#51597D;--shiki-dark-font-style:italic">     // [3, 6, 9, 12]</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> z</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> add</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">a</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> b</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#51597D;--shiki-dark-font-style:italic">          // [6, 8, 10, 12]</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> d</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> dot</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">a</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5"> b</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#51597D;--shiki-dark-font-style:italic">          // 70</span></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> s</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7"> sum</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#24292EFF;--shiki-dark:#C0CAF5">a</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span><span style="--shiki-light:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#51597D;--shiki-dark-font-style:italic">             // 10</span></span></code></pre>
-        </figure>
-
-        <table class="bench" aria-label="SIMD benchmark, N=100,000">
-          <thead>
-            <tr>
-              <th>op (N=100k, f32)</th>
-              <th class="num-cell">.map / .reduce</th>
-              <th class="num-cell">tight loop</th>
-              <th class="num-cell">para:simd</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>mulScalar(a, 3)</td>
-              <td class="num-cell">808 µs</td>
-              <td class="num-cell">60 µs</td>
-              <td class="num-cell">30 µs</td>
-            </tr>
-            <tr>
-              <td>add(a, b)</td>
-              <td class="num-cell">884 µs</td>
-              <td class="num-cell">73 µs</td>
-              <td class="num-cell">40 µs</td>
-            </tr>
-            <tr>
-              <td>sum(a)</td>
-              <td class="num-cell">574 µs</td>
-              <td class="num-cell">43 µs</td>
-              <td class="num-cell">17 µs</td>
-            </tr>
-            <tr>
-              <td>dot(a, b)</td>
-              <td class="num-cell">716 µs</td>
-              <td class="num-cell">51 µs</td>
-              <td class="num-cell">24 µs</td>
-            </tr>
-          </tbody>
-        </table>
-
         <h3 id="bun-gpu"><span class="import">para:gpu</span></h3>
         <p>
           Metal on macOS, CUDA on Linux and Windows, CPU fallback on hosts without a GPU. A matrix passed to
@@ -304,49 +205,6 @@
           <code>conv2D</code>, <code>scan</code>, <code>reduce</code>, <code>argMin</code> / <code>argMax</code>,
           <code>histogram</code>, and <code>median</code> / <code>quantile</code> — CPU correctness paths today, with
           optional CUDA / Metal hooks on the same dispatch surface for follow-up device kernels.
-        </p>
-
-        <h3 id="bun-arena"><span class="import">para:arena</span></h3>
-        <p>
-          A pool of <code>SharedArrayBuffer</code>-backed typed arrays. <span class="import">para:parallel</span> and
-          <span class="import">para:pipeline</span> draw from it so per-chunk work doesn't allocate a fresh buffer every
-          time. Entries return to the pool at the end of an <code>arena { }</code> block or a <code>pmap</code>
-          chunk, instead of waiting for the GC.
-        </p>
-
-        <h3 id="bun-pipeline"><span class="import">para:pipeline</span></h3>
-        <p>
-          A chain of <span class="import">para:simd</span> calls (<code>mulScalar</code>, <code>add</code>,
-          <code>relu</code>, …) is collapsed into a single pass at <code>.run()</code> time, so the intermediate arrays
-          don't get allocated. If the input is large enough that GPU dispatch wins (<code>gpu.winsForSize(...)</code>),
-          the fused chain runs as a single <span class="import">para:gpu</span> <code>simdMap</code> instead.
-        </p>
-
-        <h3 id="bun-signals"><span class="import">para:signals</span></h3>
-        <p>
-          <code>signal()</code> is a reactive cell, <code>derived()</code> derives one from others, and
-          <code>effect()</code> runs side effects when something it read changes. Reads inside an effect register a
-          dependency; writes invalidate downstream and a microtask flush re-runs only the effects that observed a value
-          that actually changed. <code>batch()</code> coalesces multi-write transactions; <code>untrack()</code> reads
-          inside a reactive context without registering a dep. Pairs with the <code>signal</code> /
-          <code>effect { }</code> / <code>~&gt;</code> language extensions.
-        </p>
-        <p>
-          Many other modules expose their own state as Signals — <span class="import">para:audio</span>'s capture stream
-          (<code>peakLevel</code>, <code>active</code>), <span class="import">para:llm</span>'s <code>LLM</code> and
-          <code>WhisperModel</code> instances (<code>busy</code>, <code>device</code>),
-          <span class="import">para:speech</span>'s <code>listen()</code> stream (<code>active</code>,
-          <code>noiseFloor</code>, <code>lastUtterance</code>), and <span class="import">para:assistant</span>'s
-          <code>state</code> / <code>history</code> / <code>lastTurn</code> / <code>interrupted</code>. Wire any of them
-          into UI without polling.
-        </p>
-
-        <h3 id="bun-rtp"><span class="import">para:rtp</span></h3>
-        <p>
-          RFC 3550 packet pack / parse and a jitter buffer. Built to sit under
-          <span class="import">para:audio</span>'s Opus encoder for a WebRTC-style send/receive path.
-          <code>rtp.pack({ payloadType, sequence, timestamp, ssrc, payload })</code> produces a wire-format packet; the
-          jitter buffer reorders by sequence number with a configurable depth.
         </p>
 
         <h3 id="bun-image"><span class="import">para:image</span></h3>
@@ -409,59 +267,6 @@
 <span class="line"><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">}</span></span></code></pre>
         </figure>
 
-        <h3 id="bun-csv"><span class="import">para:csv</span></h3>
-        <p>
-          Streaming RFC 4180 parser — async generator, full quote and escape handling, configurable delimiter, header
-          mode that yields records keyed by column name, per-cell type inference (number / boolean / null). An opt-in
-          <code>parallel: true</code> mode chunks the input across <span class="import">para:parallel</span>'s worker
-          pool when the input has no quoted cells and is large enough.
-        </p>
-        <figure class="code">
-          <figcaption class="code-header"><span class="code-lang">typescript</span></figcaption>
-          <pre><code><span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF">import</span><span style="--shiki-light:#24292EFF;--shiki-dark:#0DB9D7"> csv</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7DCFFF"> from</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">para:csv</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"></span>
-<span class="line"><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7">for</span><span style="--shiki-light:#D32F2F;--shiki-dark:#BB9AF7"> await</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> (</span><span style="--shiki-light:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#9D7CD8;--shiki-dark-font-style:italic">const</span><span style="--shiki-light:#1976D2;--shiki-dark:#BB9AF7"> row</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF"> of</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> csv</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">parseCsv</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5">Bun</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">file</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#22863A;--shiki-dark:#9ECE6A">rows.csv</span><span style="--shiki-light:#22863A;--shiki-dark:#89DDFF">"</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> {</span><span style="--shiki-light:#24292EFF;--shiki-dark:#73DACA"> header</span><span style="--shiki-light:#D32F2F;--shiki-dark:#89DDFF">:</span><span style="--shiki-light:#1976D2;--shiki-dark:#FF9E64"> true</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> }))</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5"> {</span></span>
-<span class="line"><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5">  console</span><span style="--shiki-light:#6F42C1;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7AA2F7">log</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">(</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5">row</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#24292EFF;--shiki-dark:#7DCFFF">id</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> row</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#24292EFF;--shiki-dark:#7DCFFF">name</span><span style="--shiki-light:#212121;--shiki-dark:#89DDFF">,</span><span style="--shiki-light:#1976D2;--shiki-dark:#C0CAF5"> row</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">.</span><span style="--shiki-light:#24292EFF;--shiki-dark:#7DCFFF">score</span><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">)</span><span style="--shiki-light:#24292EFF;--shiki-dark:#89DDFF">;</span></span>
-<span class="line"><span style="--shiki-light:#24292EFF;--shiki-dark:#9ABDF5">}</span></span></code></pre>
-        </figure>
-        <table class="bench" aria-label="para:csv parallel-vs-serial sweep on a 16-core x86 release build">
-          <thead>
-            <tr>
-              <th>fixture</th>
-              <th class="num-cell">serial (med)</th>
-              <th class="num-cell">parallel (med)</th>
-              <th class="num-cell">speedup</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>5 MB · 128k rows</td>
-              <td class="num-cell">152 ms</td>
-              <td class="num-cell">129 ms</td>
-              <td class="num-cell">1.18×</td>
-            </tr>
-            <tr>
-              <td>50 MB · 1.25M rows</td>
-              <td class="num-cell">1446 ms</td>
-              <td class="num-cell">1528 ms</td>
-              <td class="num-cell">0.95×</td>
-            </tr>
-            <tr>
-              <td>200 MB · 4.92M rows</td>
-              <td class="num-cell">5892 ms</td>
-              <td class="num-cell">6363 ms</td>
-              <td class="num-cell">0.93×</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="footnote">
-          <code>parallel: true</code> is not a per-file speedup. The serial state machine is already
-          memory-bandwidth-bound, and the parallel path's materialize-and-fork overhead grows with input size — so it
-          helps a little at small files, breaks even around 50 MB, and gets worse from there. Use it to keep the event
-          loop responsive while parsing (parsing N files concurrently does scale across cores), not because you expect
-          bigger files to go faster. <code>bench/parabun-csv-parallel/</code> reproduces these numbers.
-        </p>
-
         <h3 id="bun-camera"><span class="import">para:camera</span></h3>
         <p>
           V4L2 capture on Linux. <code>camera.devices()</code> reads <code>/sys/class/video4linux/</code> and runs
@@ -478,6 +283,32 @@
           <code>video.encode</code>, <code>video.decodeAll</code>, with codec / container / acceleration options) but
           the native side hasn't been wired yet. The plan is libavcodec on desktop, V4L2 M2M on Pi 5, NVDEC/NVENC on
           Jetson, all behind the same JS API.
+        </p>
+
+        <h3 id="bun-gpio"><span class="import">para:gpio</span></h3>
+        <p>
+          Linux <code>gpiochip</code> uAPI v2 over <code>/dev/gpiochip*</code> — the modern chardev interface, not
+          legacy sysfs. <code>gpio.open(chip, line, opts)</code> returns a <code>Line</code> with <code>read()</code> /
+          <code>write()</code> / async-iterable edge events. Validated end-to-end on a Raspberry Pi 5. Pairs with
+          <a href="https://para.script.dev/docs/signals/"><code>para:signals</code></a> — <code>line.value</code> is a
+          reactive Signal that updates on read and on edge events.
+        </p>
+
+        <h3 id="bun-i2c"><span class="import">para:i2c</span></h3>
+        <p>
+          <code>i2c-dev</code> wrapper with full SMBus quick / byte / word / block transactions plus a raw
+          <code>readWriteRaw()</code> for chips that need 16-bit register addressing or arbitrary frame layouts.
+          <code>i2c.scan(bus)</code> probes addresses, <code>i2c.open(bus, addr)</code> hands back a typed device
+          handle. Works on any Linux board with <code>/dev/i2c-*</code>.
+        </p>
+
+        <h3 id="bun-spi"><span class="import">para:spi</span></h3>
+        <p>
+          <code>spidev</code> wrapper with both half-duplex (<code>read</code> / <code>write</code>) and full-duplex
+          (<code>transfer</code>) plus multi-segment (<code>transferSegments</code>) for mode / speed / CS-hold changes
+          mid-burst. Per-device <code>mode</code> / <code>bitsPerWord</code> / <code>maxSpeedHz</code> /
+          <code>lsbFirst</code>
+          are sticky and apply to every transfer until changed.
         </p>
 
         <h3 id="bun-llm"><span class="import">para:llm</span></h3>
@@ -610,49 +441,6 @@
           the underlying model, so anything reachable directly via <span class="import">para:llm</span> /
           <span class="import">para:speech</span> / <span class="import">para:audio</span> is reachable through
           <code>bot</code> too.
-        </p>
-
-        <h3 id="bun-arrow"><span class="import">para:arrow</span></h3>
-        <p>
-          In-memory columnar tables. <code>arrow.recordBatch({ ... })</code> takes a map of typed arrays (or plain
-          arrays — types are inferred) and returns a <code>RecordBatch</code> with a <code>Schema</code>. Columns are
-          typed-array views with optional validity bitmaps; <code>arrow.table([...])</code> concatenates batches across
-          one schema. Computes: <code>sum</code>, <code>mean</code>, <code>min</code>, <code>max</code>,
-          <code>count</code>, <code>variance</code>, <code>stddev</code>, <code>quantile</code>, <code>median</code>,
-          <code>distinct</code>, <code>filter</code>, <code>groupBy</code>. <code>fromRows</code> /
-          <code>toRows</code> bridge between row-shaped JS data (e.g. <code>para:csv</code> output) and the columnar
-          form; <code>concat</code> materializes a table-wide column into one typed array.
-        </p>
-        <p>
-          <code>arrow.toIPC(table)</code> and <code>arrow.fromIPC(bytes)</code> handle both the Arrow IPC
-          <strong>streaming</strong> format (continuation-prefixed Schema + RecordBatch messages) and the
-          <strong>file</strong> format (<code>ARROW1</code>-bracketed messages + a Footer flatbuffer with random-access
-          Block offsets). <code>fromIPC</code> auto-detects via the head/tail magic bytes. Pass <code>"file"</code> as
-          the second arg to <code>toIPC</code> to write the file format; default is streaming.
-        </p>
-        <p>
-          Seven logical types round-trip: <code>int32</code>, <code>int64</code>, <code>float32</code>,
-          <code>float64</code>, <code>bool</code> (bit-packed on the wire), <code>utf8</code> (offsets + bytes), and
-          <code>list&lt;T&gt;</code> (offsets + recursive child column — including
-          <code>list&lt;list&lt;T&gt;&gt;</code>). On read, narrow ints (int8 / int16 / uint8 / uint16) are widened to
-          int32, uint32 widens to int64; Date / Time / Timestamp coerce to int / int64. DictionaryBatch decode handles
-          apache-arrow's default <code>Dictionary&lt;Utf8&gt;</code>. The FlatBuffers builder/reader is hand-rolled — no
-          npm dep.
-        </p>
-        <p>
-          Wire compat verified against <code>apache-arrow@21.1.0</code> in
-          <code>bench/parabun-arrow-ipc-interop/</code> — six round-trip directions (streaming + file ×
-          ParaBun↔apache-arrow, plus ParaBun→apache-arrow → ParaBun for List). The bytes ParaBun produces are the same
-          wire format pyarrow, arrow-rs, nanoarrow, polars, and duckdb consume on both the streaming and file paths.
-        </p>
-        <p>
-          <code>arrow.fromParquet(bytes)</code> and <code>arrow.toParquet(table, opts?)</code> read and write Apache
-          Parquet files. Hand-rolled Thrift compact-protocol codec, Snappy compressor + decompressor, dictionary + RLE +
-          bit-pack hybrid decoders, RLE writer for definition levels — no npm dep. Covers <code>BOOLEAN</code> /
-          <code>INT32</code> / <code>INT64</code> / <code>FLOAT</code> / <code>DOUBLE</code> /
-          <code>BYTE_ARRAY</code> physical types under <code>UNCOMPRESSED</code>, <code>SNAPPY</code>, and
-          <code>GZIP</code>. Verified end-to-end against pyarrow in both directions on 10,000-row multi-row-group
-          fixtures with scattered nulls; null counts match exactly across all three codecs.
         </p>
       </div>
 
@@ -954,14 +742,15 @@
       <h2 id="roadmap">Roadmap</h2>
 
       <p>
-        ParaBun's positioning is to open typical JS performance bottlenecks via multithreading and GPU. The shipped
-        modules — <span class="import">para:parallel</span>, <span class="import">para:simd</span>,
-        <span class="import">para:gpu</span>, <span class="import">para:pipeline</span>,
-        <span class="import">para:arena</span>, <span class="import">para:signals</span>,
-        <span class="import">para:llm</span>, <span class="import">para:image</span>,
-        <span class="import">para:audio</span>, <span class="import">para:csv</span>,
-        <span class="import">para:rtp</span> — cover the typed-array, codec, and CPU/GPU-parallel surface; the remaining
-        items below attack the next layer of <em>"I have to shell out / use Python / write native code"</em>
+        ParaBun's positioning is to make GPU compute and OS-level hardware access first-class in JS — without dragging
+        in node-gyp, CUDA toolkit installs, or per-platform binary distribution. The shipped runtime-only modules —
+        <span class="import">para:gpu</span>, <span class="import">para:image</span>,
+        <span class="import">para:audio</span>, <span class="import">para:camera</span>,
+        <span class="import">para:gpio</span>, <span class="import">para:i2c</span>,
+        <span class="import">para:spi</span>, <span class="import">para:llm</span>,
+        <span class="import">para:speech</span> — cover GPU dispatch, capture, peripheral I/O, and on-device inference;
+        the remaining items below attack the next layer of
+        <em>"I have to shell out / use Python / write native code"</em>
         pain points.
       </p>
 
@@ -998,19 +787,6 @@
           </tr>
           <tr>
             <td>shipped</td>
-            <td><span class="import">para:csv</span></td>
-            <td>
-              Streaming RFC 4180 parser. <code>parallel: true</code> is "off-the-main-thread", not a per-file speedup —
-              see the table above.
-            </td>
-          </tr>
-          <tr>
-            <td>shipped</td>
-            <td><span class="import">para:rtp</span></td>
-            <td>RFC 3550 packet pack/parse + jitter buffer. Transport for the codec stack.</td>
-          </tr>
-          <tr>
-            <td>shipped</td>
             <td><span class="import">para:gpu</span> primitives</td>
             <td>
               <code>conv2D</code>, <code>scan</code>, <code>reduce</code>, <code>argMin</code> / <code>argMax</code>,
@@ -1034,6 +810,17 @@
               Live ALSA capture + playback for <span class="import">para:audio</span>. <code>devices()</code> /
               <code>capture(...)</code> / <code>play(...)</code> with Float32 PCM streams, S16_LE on the wire. CoreAudio
               + WASAPI follow.
+            </td>
+          </tr>
+          <tr>
+            <td>shipped</td>
+            <td>
+              <span class="import">para:gpio</span> / <span class="import">para:i2c</span> /
+              <span class="import">para:spi</span>
+            </td>
+            <td>
+              Linux peripheral I/O — uAPI v2 GPIO chardev (with edge events), i2c-dev SMBus, spidev half + full duplex
+              with multi-segment transfers. Validated end-to-end on Raspberry Pi 5.
             </td>
           </tr>
           <tr>
@@ -1080,33 +867,11 @@
             </td>
           </tr>
           <tr>
-            <td>shipped</td>
-            <td><span class="import">para:arrow</span></td>
-            <td>
-              In-memory columnar tables, computes (sum / mean / min / max / variance / stddev / quantile / median /
-              distinct / filter / groupBy / sort / cumsum / diff / argMin / argMax / count),
-              <code>fromRows</code> / <code>toRows</code> bridges, Arrow IPC streaming + file formats (with
-              dictionary-batch decode and List&lt;T&gt;), and Parquet read + write (<code>fromParquet</code> /
-              <code>toParquet</code> — hand-rolled Thrift / Snappy / RLE / dictionary; UNCOMPRESSED / SNAPPY / GZIP;
-              verified bit-for-bit against pyarrow in both directions). Wire-compat verified against apache-arrow 21.1.0
-              in <code>bench/parabun-arrow-ipc-interop/</code>. Dictionary write encoding + nested types (Struct / Map /
-              FixedSizeList / Decimal) pending.
-            </td>
-          </tr>
-          <tr>
             <td>in progress</td>
             <td><span class="import">para:video</span></td>
             <td>
               JS surface scaffolded; libavcodec / V4L2 M2M / NVDEC native binding lands with hardware bring-up. Decode +
               encode + container muxing.
-            </td>
-          </tr>
-          <tr>
-            <td>next</td>
-            <td><span class="import">para:parallel</span> v2</td>
-            <td>
-              Closure-aware persistent worker pool + <code>SharedArrayBuffer</code> channels. Lifts today's
-              <code>pmap</code> ceiling.
             </td>
           </tr>
           <tr>
@@ -1118,14 +883,15 @@
       </table>
 
       <p class="footnote">
-        <span class="import">para:llm</span> serves as proof-of-concept for the stack — built on <code>para:gpu</code> +
-        <code>para:simd</code> + <code>para:parallel</code>. ParaBun is positioned as a perf runtime, not an AI runtime.
+        <span class="import">para:llm</span> is the proof-of-concept that ties the stack together — direct CUDA / Metal
+        dispatch through <code>para:gpu</code>, statically-linked SIMD kernels, GGUF tensor loading, no Python and no
+        external inference server.
       </p>
 
       <div class="disclaimer">
-        <strong>Scope.</strong> The added modules target typed-array numeric work, embarrassingly-parallel loops, and
-        GPU-friendly matrix shapes. HTTP handlers, JSON parsing, and ordinary application code go through the same paths
-        as upstream Bun — no changes in performance or behavior are expected there.
+        <strong>Scope.</strong> ParaBun's added surface is GPU compute and OS-level hardware. HTTP handlers, JSON
+        parsing, and ordinary application code go through the same paths as upstream Bun — no changes in performance or
+        behavior are expected there.
       </div>
 
       <footer>
