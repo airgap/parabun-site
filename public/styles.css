@@ -3,17 +3,19 @@
    accent: the amber companion is the brand color here, and the blue-white
    primary appears as the secondary. The two sites visibly orbit each
    other — one is blue-white-led, the other amber-led, but both show the
-   binary system. */
+   binary system. The dark bg here is also tinted warm so the page
+   temperature matches the companion star (vs para.script.dev's cooler
+   blue-tinted midnight). */
 :root,
 :root[data-theme="dark"] {
-  --bg: #050811;
-  --bg-elev: #0c1020;
-  --bg-code: #0d1224;
-  --rule: #1a2240;
-  --rule-strong: #2a3458;
-  --text: #e8e6dd;
-  --text-dim: #8a8b94;
-  --text-faint: #4a4d5a;
+  --bg: #0d0a07;
+  --bg-elev: #14100a;
+  --bg-code: #161109;
+  --rule: #2a2418;
+  --rule-strong: #3d3424;
+  --text: #f0e8d6;
+  --text-dim: #aaa087;
+  --text-faint: #5e5446;
   --star-primary: #6db4ff;
   --star-companion: #ffa855;
   --accent: var(--star-companion);

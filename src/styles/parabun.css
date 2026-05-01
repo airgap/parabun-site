@@ -18,17 +18,22 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,400..700,30..50&family=JetBrains+Mono:wght@400;500;600&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap");
 
 /* ─── Dark: Night Sky (default) ─────────────────────────────────────── */
+/* Warmer midnight than para.script.dev's cooler blue-tinted bg — the
+   page picks up the amber companion star's temperature so the brand
+   color and surface read as one system. para.script.dev stays blue-
+   tinted to match its blue-white primary. The two sites are both
+   "deep space" but visibly different temperatures. */
 :root,
 :root[data-theme="dark"] {
-  --pb-bg: #050811;
-  --pb-bg-elev: #0c1020;
-  --pb-bg-code: #0d1224;
-  --pb-bg-inline-code: #131830;
-  --pb-rule: #1a2240;
-  --pb-rule-strong: #2a3458;
-  --pb-text: #e8e6dd;
-  --pb-text-dim: #8a8b94;
-  --pb-text-faint: #4a4d5a;
+  --pb-bg: #0d0a07;
+  --pb-bg-elev: #14100a;
+  --pb-bg-code: #161109;
+  --pb-bg-inline-code: #1d1810;
+  --pb-rule: #2a2418;
+  --pb-rule-strong: #3d3424;
+  --pb-text: #f0e8d6;
+  --pb-text-dim: #aaa087;
+  --pb-text-faint: #5e5446;
 
   /* Same binary system, but the brand accent points to the COMPANION
      (Parabun's amber). Primary blue-white still defined for the brand
