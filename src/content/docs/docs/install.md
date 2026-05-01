@@ -22,7 +22,7 @@ The VS Code-family extension (works for `code`, `cursor`, and `kiro`) provides:
 
 - TextMate grammar for `.pts` / `.ptsx` / `.pjs` / `.pjsx` files.
 - An LSP with hover, go-to-definition, semantic highlighting, purity diagnostics, memo arity hints, and operator documentation.
-- Full chat-template detection on `.gguf` paths in `para:llm` calls.
+- Full chat-template detection on `.gguf` paths in `parabun:llm` calls.
 
 Install it independently of the runtime:
 

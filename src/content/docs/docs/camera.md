@@ -1,10 +1,10 @@
 ---
-title: para:camera
+title: parabun:camera
 description: V4L2 capture on Linux. AVFoundation (macOS) and Media Foundation (Windows) follow on the same surface.
 ---
 
 ```ts
-import camera from "para:camera";
+import camera from "parabun:camera";
 ```
 
 A small module wrapping the kernel's V4L2 capture API. Linux only today; the JS surface is platform-agnostic so AVFoundation + Media Foundation backends slot in without callsite changes.
@@ -54,7 +54,7 @@ for await (const frame of cam.frames()) {
 }
 ```
 
-To compose with [`para:image`](/docs/image/) / [`para:vision`](/docs/vision/), pass the iterator through `vision.frames(...)` to convert to packed-RGBA8.
+To compose with [`parabun:image`](/docs/image/) / [`parabun:vision`](/docs/vision/), pass the iterator through `vision.frames(...)` to convert to packed-RGBA8.
 
 ### `cam.close()`
 
@@ -88,12 +88,12 @@ Single-frame converter — useful when you have a `RawFrame` from somewhere else
 
 ## Composition
 
-The end-to-end shape pairs with [`para:vision`](/docs/vision/):
+The end-to-end shape pairs with [`parabun:vision`](/docs/vision/):
 
 ```ts
-import camera from "para:camera";
-import image from "para:image";
-import vision from "para:vision";
+import camera from "parabun:camera";
+import image from "parabun:image";
+import vision from "parabun:vision";
 
 await using cam = await camera.open({ device: "/dev/video0", width: 1280, height: 720, fps: 30 });
 

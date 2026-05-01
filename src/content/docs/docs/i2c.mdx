@@ -1,17 +1,17 @@
 ---
-title: para:i2c
+title: parabun:i2c
 description: Linux i2c-dev wrapper. Combined-message transactions + SMBus shortcuts. Same surface on RPi 4/5, Jetson, and any Linux SBC.
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ```ts
-import i2c from "para:i2c";
+import i2c from "parabun:i2c";
 ```
 
 A small module wrapping the Linux i2c-dev character device (`/dev/i2c-N`). Combined-message transactions go through `I2C_RDWR`; SMBus shortcuts (Read/Write Byte/Word/Block) go through `I2C_SMBUS`. No vendored libi2c; pure ioctl on the kernel character device.
 
-`para:i2c` is currently Linux-only.
+`parabun:i2c` is currently Linux-only.
 
 ## `buses()`
 
@@ -104,7 +104,7 @@ Pair with [`para:signals`](https://para.script.dev/docs/signals/)' `fromInterval
 <Tabs syncKey="lang">
   <TabItem label="TypeScript">
     ```ts
-    import i2c from "para:i2c";
+    import i2c from "parabun:i2c";
     import sigs from "para:signals";
 
     await using bus = i2c.open("/dev/i2c-1");
@@ -126,7 +126,7 @@ Pair with [`para:signals`](https://para.script.dev/docs/signals/)' `fromInterval
   </TabItem>
   <TabItem label="ParaBun">
     ```parabun
-    import i2c from "para:i2c";
+    import i2c from "parabun:i2c";
     import sigs from "para:signals";
 
     await using bus = i2c.open("/dev/i2c-1");
@@ -150,5 +150,5 @@ Pair with [`para:signals`](https://para.script.dev/docs/signals/)' `fromInterval
 
 ## See also
 
-- [`para:gpio`](/docs/gpio/) — character-device GPIO on the same Linux SBCs.
-- [`para:spi`](/docs/spi/) — spidev wrapper.
+- [`parabun:gpio`](/docs/gpio/) — character-device GPIO on the same Linux SBCs.
+- [`parabun:spi`](/docs/spi/) — spidev wrapper.

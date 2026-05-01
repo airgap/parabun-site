@@ -1,10 +1,10 @@
 ---
-title: para:audio
+title: parabun:audio
 description: WAV / MP3 / Opus codecs, biquads, FFT, mel spectrograms, voice activity detection, denoising, AGC, dynamics, and ALSA capture / playback.
 ---
 
 ```ts
-import audio from "para:audio";
+import audio from "parabun:audio";
 ```
 
 A from-scratch audio toolkit. Heavy codecs (libopus 1.6.1, minimp3, rnnoise) are vendored statically. The DSP surface is enough for a full voice-call pipeline plus the audio frontend that feeds [Whisper STT](/docs/llm/#whispermodel--speech-to-text).
@@ -178,7 +178,7 @@ await spk.write(f32Frame);
 
 - `spk.write(samples)` — queue more audio into ALSA.
 - `spk.drain()` — block until everything queued has played out.
-- `spk.stop()` — discard whatever is queued **immediately** and re-prepare the stream so subsequent `write` calls work. The barge-in cancel verb: cut the current playback short the moment a higher layer (VAD, UI button) decides the user wants to talk. `bot.interrupt()` in [`para:assistant`](/docs/assistant/) calls this under the hood.
+- `spk.stop()` — discard whatever is queued **immediately** and re-prepare the stream so subsequent `write` calls work. The barge-in cancel verb: cut the current playback short the moment a higher layer (VAD, UI button) decides the user wants to talk. `bot.interrupt()` in [`parabun:assistant`](/docs/assistant/) calls this under the hood.
 
 `spk.queuedMs: Signal<number>` reports the current depth of the kernel ring buffer in milliseconds. Updates after every `write` / `drain` / `stop` and on a low-frequency 100 ms poll while audio is queued — wire it into a UI for backpressure feedback ("can I write a few more sentences?") or into an `effect` that holds off speak() until the queue drains. The signal converges to 0 a few ms after the buffer empties; rate-limit matches `mic.peakLevel` / `listen().noiseFloor` to keep effects from thrashing.
 

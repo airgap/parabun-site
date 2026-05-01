@@ -1,22 +1,22 @@
 ---
-title: para:vision
+title: parabun:vision
 description: Frame stream conversion + motion detection. Detector / OCR engines stub until ONNX runtime is vendored.
 ---
 
 ```ts
-import vision from "para:vision";
+import vision from "parabun:vision";
 ```
 
 Tier 2 wrapper that turns any camera frame iterator into packed RGBA8 frames, plus a frame-diff motion estimator. Detector + OCR engines are typed but stubbed — they need an ONNX runtime vendored before they can do anything.
 
 ## `frames(stream, opts?)`
 
-Takes a `RawFrame` iterator (e.g. from [`para:camera`](/docs/camera/)) and yields `{ width, height, data: Uint8Array }` packed-RGBA8 frames.
+Takes a `RawFrame` iterator (e.g. from [`parabun:camera`](/docs/camera/)) and yields `{ width, height, data: Uint8Array }` packed-RGBA8 frames.
 
 ```ts
-import camera from "para:camera";
-import image from "para:image";
-import vision from "para:vision";
+import camera from "parabun:camera";
+import image from "parabun:image";
+import vision from "parabun:vision";
 
 const cam = await camera.open({ device: "/dev/video0", width: 1280, height: 720, fps: 30 });
 for await (const frame of vision.frames(cam.frames(), { decodeMjpg: image.decode })) {
@@ -32,7 +32,7 @@ Supported pixel formats:
 | `nv12` | YUV 4:2:0 → RGBA |
 | `rgb24` | RGB → RGBA (alpha=255) |
 | `rgba` | passthrough |
-| `mjpg` | passes through `decodeMjpg(frame.data)`. Required: caller passes `image.decode` from [`para:image`](/docs/image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here). |
+| `mjpg` | passes through `decodeMjpg(frame.data)`. Required: caller passes `image.decode` from [`parabun:image`](/docs/image/) (cross-builtin imports between `bun:` modules aren't supported, so the dep is injected here). |
 
 ## `detectMotion(stream, opts?)`
 
@@ -86,7 +86,7 @@ When the input stream ends (or the disposer fires), both signals reset to their 
 
 Object detection — YOLO / SSD / RT-DETR. Throws:
 
-> `para:vision.detect: object-detection engines (YOLO / SSD / RT-DETR) require ONNX runtime as a vendored dep — not yet wired. Tracked in the roadmap as para:vision (Tier 2).`
+> `parabun:vision.detect: object-detection engines (YOLO / SSD / RT-DETR) require ONNX runtime as a vendored dep — not yet wired. Tracked in the roadmap as parabun:vision (Tier 2).`
 
 Once ONNX is vendored, callers pass an ONNX model path and a label set; the function returns `{ boxes: [{x, y, w, h}], scores: number[], labels: string[] }`.
 
@@ -101,5 +101,5 @@ The shape of `vision.frames` is also the shape `detectMotion`, `detect`, and `re
 ## Limits
 
 - Detector / OCR engines: pending ONNX vendor add. The interfaces are typed and stable; bodies throw.
-- No GPU path on the converters yet — `frames` pixel conversions run on CPU. Big surface for a [`para:gpu`](/docs/gpu/) `simdMap` lift.
+- No GPU path on the converters yet — `frames` pixel conversions run on CPU. Big surface for a [`parabun:gpu`](/docs/gpu/) `simdMap` lift.
 - Motion detection's downsampler is a simple stride sample — Gaussian-prefilter would suppress aliasing on high-detail backgrounds. Currently not exposed; happy to expose `prefilter: true` if needed.

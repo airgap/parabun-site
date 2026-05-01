@@ -1,16 +1,16 @@
 ---
-title: para:assistant
-description: Three-line edge voice assistant. Composes para:audio + para:speech + para:llm with reactive signals and persistent memory.
+title: parabun:assistant
+description: Three-line edge voice assistant. Composes parabun:audio + parabun:speech + parabun:llm with reactive signals and persistent memory.
 ---
 
 ```ts
-import assistant from "para:assistant";
+import assistant from "parabun:assistant";
 ```
 
-A Tier 2 facade. Composes [`para:audio`](/docs/audio/) (mic + speaker), [`para:speech`](/docs/speech/) (VAD + STT + TTS), and [`para:llm`](/docs/llm/) (Llama / Qwen2 inference) into a complete on-device voice loop. The 3-line case stays 3 lines; new fields unlock new capabilities, never remove defaults.
+A Tier 2 facade. Composes [`parabun:audio`](/docs/audio/) (mic + speaker), [`parabun:speech`](/docs/speech/) (VAD + STT + TTS), and [`parabun:llm`](/docs/llm/) (Llama / Qwen2 inference) into a complete on-device voice loop. The 3-line case stays 3 lines; new fields unlock new capabilities, never remove defaults.
 
 ```ts
-import assistant from "para:assistant";
+import assistant from "parabun:assistant";
 
 await using bot = await assistant.create({
   llm: "/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
@@ -310,7 +310,7 @@ const bot = await assistant.create({
 await bot.ask("What did I write about hash maps last week?");
 ```
 
-`encoder` is either a path to a sentence-embedding GGUF (BGE / E5 / MiniLM-class — anything `para:llm.Encoder.load` can open) or a pre-loaded `Encoder` instance. Use the pre-loaded form when you want one encoder shared across multiple bots / stores in the same process.
+`encoder` is either a path to a sentence-embedding GGUF (BGE / E5 / MiniLM-class — anything `parabun:llm.Encoder.load` can open) or a pre-loaded `Encoder` instance. Use the pre-loaded form when you want one encoder shared across multiple bots / stores in the same process.
 
 `KnowledgeOptions`:
 
@@ -348,19 +348,19 @@ Each `KnowledgeHit` is `{ path, offset, text, score }` — `score` is cosine sim
 
 - Pure-JS cosine over a `Float32Array` matrix. Fine for `<10k` chunks on a Pi 5; beyond that, the per-query scan starts costing real ms. A vector-DB MCP connection (or a future `bun:vector`) is the path for larger corpora.
 - Indexing is one-shot — no persistent on-disk vector cache. A process restart re-embeds the whole corpus (and on a Pi 5 with BGE-small, a few thousand chunks is ~10–30 s). A simple sqlite-backed cache is a tracked follow-up.
-- The encoder runs on whatever device `para:llm` picks. CPU is fine for embedding short chunks; the cost is mostly tokenization on the JS side.
+- The encoder runs on whatever device `parabun:llm` picks. CPU is fine for embedding short chunks; the cost is mostly tokenization on the JS side.
 
 ## Power-user escape hatches
 
 The composed resources are reachable directly when you need to do something `bot` doesn't:
 
 ```ts
-bot.llm        // para:llm.LLM — call .chat / .generate / .embed / .prefix directly
+bot.llm        // parabun:llm.LLM — call .chat / .generate / .embed / .prefix directly
 bot.memory     // MemoryStore — query / clear out of band
 bot.knowledge  // KnowledgeStore — search / reindex / introspect the RAG corpus
 ```
 
-Anything reachable via [`para:llm`](/docs/llm/), [`para:speech`](/docs/speech/), or [`para:audio`](/docs/audio/) is reachable through `bot` too.
+Anything reachable via [`parabun:llm`](/docs/llm/), [`parabun:speech`](/docs/speech/), or [`parabun:audio`](/docs/audio/) is reachable through `bot` too.
 
 ## Disposal
 
@@ -392,7 +392,7 @@ Per `PLAN-bun-assistant.md` build order, the core covers:
 Tracked under [LYK-760](https://linear.app/lyku/issue/LYK-760) — none of these are blocking core use cases:
 
 - **Sub-watt KWS engine** — the v1 wake word is whisper-backed, which is honest about its CPU cost (only fires on VAD-detected speech bursts) but isn't a true always-on sub-watt KWS like Picovoice Porcupine or openWakeWord. Adding a dedicated engine option is a tracked follow-up; the surface here is engine-agnostic enough to absorb it.
-- **Vision / VLM turns** — `vision: VisionOpts` — `para:camera` frame fed into a VLM turn. Blocked on `para:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
+- **Vision / VLM turns** — `vision: VisionOpts` — `parabun:camera` frame fed into a VLM turn. Blocked on `parabun:llm` gaining VLM architecture support (LLaVA / Qwen-VL).
 - **Persistent vector cache** — RAG re-embeds the whole corpus on process restart. A sqlite-backed vector cache keyed by `(file mtime, chunk offset, encoder hash)` would cut Pi 5 cold-start by an order of magnitude.
 
 ## Limits

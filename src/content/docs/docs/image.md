@@ -1,10 +1,10 @@
 ---
-title: para:image
+title: parabun:image
 description: Sharp-class image module — JPEG / PNG / WebP, resize, blur, sharpen, edges, rotate, crop, color adjust, alpha compositing.
 ---
 
 ```ts
-import image from "para:image";
+import image from "parabun:image";
 ```
 
 A from-scratch image module with the codecs and operations Sharp covers, baked into the runtime. libjpeg-turbo, libpng, libwebp, and libsharpyuv are vendored statically — no `npm install sharp`, no Node-ABI-versioned binary distribution.
@@ -153,7 +153,7 @@ The terminal calls are `.encode(opts)`, `.toBuffer()` (raw bytes), or `.toImage(
 
 CPU release build, 4096² RGBA on a 16-core x86:
 
-| Operation | para:image | Sharp | Speedup |
+| Operation | parabun:image | Sharp | Speedup |
 | --- | --- | --- | --- |
 | Gaussian blur, σ=4 | 38 ms | 137 ms | 3.6× |
 | Lanczos 4096²→2048² | 67 ms | 163 ms | 2.4× |

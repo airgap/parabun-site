@@ -1,15 +1,15 @@
 ---
-title: para:spi
+title: parabun:spi
 description: Linux spidev wrapper. Full-duplex transfers + multi-segment transactions with CS held across segments.
 ---
 
 ```ts
-import spi from "para:spi";
+import spi from "parabun:spi";
 ```
 
 A small module wrapping the Linux spidev character device (`/dev/spidevN.M`). Mode / bits-per-word / clock speed configured at open via `SPI_IOC_WR_*`; transfers via `SPI_IOC_MESSAGE` for both single full-duplex transfers and multi-segment transactions where chip-select stays asserted across segments.
 
-`para:spi` is currently Linux-only.
+`parabun:spi` is currently Linux-only.
 
 ## `devices()`
 
@@ -85,5 +85,5 @@ The Pi 5 user header SPI is at `/dev/spidev10.0` (bus 10), not `/dev/spidev0.0`.
 
 ## See also
 
-- [`para:gpio`](/docs/gpio/) — character-device GPIO on the same Linux SBCs.
-- [`para:i2c`](/docs/i2c/) — i2c-dev wrapper.
+- [`parabun:gpio`](/docs/gpio/) — character-device GPIO on the same Linux SBCs.
+- [`parabun:i2c`](/docs/i2c/) — i2c-dev wrapper.
