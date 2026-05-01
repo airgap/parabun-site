@@ -1184,23 +1184,10 @@ table.bench tr.winner.pulse td {
   }
 }
 
-/* ─── Mobile / touch perf carve-outs ──────────────────────────────────
-   Scroll-driven parallax + backdrop-filter blur fight Android's
-   compositor scroll, killing momentum and forcing late paints
-   ("elements only render when already on screen"). Disable both on
-   touch devices regardless of viewport size — phones AND tablets,
-   without excluding hybrid laptops. */
-@media (hover: none), (pointer: coarse) {
-  html::before,
-  body::before,
-  body::after {
-    animation: none !important;
-    animation-timeline: none !important;
-    will-change: auto;
-  }
-  header {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: color-mix(in srgb, var(--bg) 94%, transparent) !important;
-  }
+/* Canvas-based starfield + nebulae (public/space.js) replaces the
+   pseudo-element parallax layers. */
+html::before,
+body::before,
+body::after {
+  display: none !important;
 }

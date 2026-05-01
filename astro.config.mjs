@@ -53,6 +53,9 @@ export default defineConfig({
         "A fork of Bun with extra runtime modules: parallel CPU work, GPU compute, codecs, capture, on-device LLM inference.",
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/airgap/parabun" }],
       customCss: ["./src/styles/parabun.css"],
+      // Canvas-based starfield + nebulae renderer. Replaces the old
+      // pseudo-element parallax (see public/space.js for why).
+      head: [{ tag: "script", attrs: { src: "/space.js", defer: true } }],
       sidebar: [
         { label: "Guides", items: guides },
         { label: "Modules", items: modules },
