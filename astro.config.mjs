@@ -35,7 +35,7 @@ const runtimeModules = [
   "spi",
   "video",
   "vision",
-].map(slug => ({ label: `para:${slug}`, link: `${docsRoot}/${slug}/` }));
+].map(slug => ({ label: `parabun:${slug}`, link: `${docsRoot}/${slug}/` }));
 // Portable Para modules — pure JS / WASM, run anywhere; documented on
 // para.script.dev so the language story stays in one place. Listed here so
 // readers see what ParaBun ships, with the link pointing at the canonical doc.
