@@ -149,7 +149,12 @@
       const x = s.x * cssWidth;
       const [cr, cg, cb] = s.color;
       if (s.halo) {
-        const haloR = s.radius * 4;
+        // Halo extent matches para.script.dev's SVG style — the SVG
+        // there uses radial-gradient(2px 2px ...) where the gradient
+        // extent IS the star size. 2× radius keeps the canvas stars
+        // visually the same scale instead of bloating them with a
+        // wide halo.
+        const haloR = s.radius * 2;
         const grad = ctx.createRadialGradient(x, y, 0, x, y, haloR);
         grad.addColorStop(0, `rgba(${cr},${cg},${cb},${s.alpha})`);
         grad.addColorStop(0.25, `rgba(${cr},${cg},${cb},${s.alpha * 0.35})`);
