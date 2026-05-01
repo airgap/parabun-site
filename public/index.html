@@ -883,9 +883,11 @@
       </table>
 
       <p class="footnote">
-        <span class="import">para:llm</span> is the proof-of-concept that ties the stack together — direct CUDA / Metal
-        dispatch through <code>para:gpu</code>, statically-linked SIMD kernels, GGUF tensor loading, no Python and no
-        external inference server.
+        <span class="import">para:llm</span> is a full local inference stack — GGUF Llama 3 / Qwen2 chat with grammar
+        and JSON-schema constrained decoding, BERT sentence embedders, Whisper STT (encoder-decoder, KV cache, beam
+        search, 99 languages), and an OpenAI-compatible HTTP wrapper (<code>llm.serve</code>). CUDA Q4_K / Q6_K matVec
+        kernels measure at ollama parity; weights stay device-resident so per-token traffic is a 4-byte argmax. No
+        Python, no external inference server.
       </p>
 
       <div class="disclaimer">
