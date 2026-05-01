@@ -110,11 +110,14 @@
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
     // Nebulae underneath. Their y wraps the same way as stars.
+    // Sized by vmin so their shape is governed by the n.rx/ry ratio
+    // alone — not pulled wide on landscape or tall on portrait.
+    const vmin = Math.min(cssWidth, cssHeight);
     for (const n of nebulae) {
       const y = wrap(n.y - (scrollY * n.parallax) / pageHeight) * cssHeight;
       const cx = n.x * cssWidth;
-      const rx = n.rx * cssWidth;
-      const ry = n.ry * cssHeight;
+      const rx = n.rx * vmin;
+      const ry = n.ry * vmin;
       const r = Math.max(rx, ry);
       ctx.save();
       ctx.translate(cx, y);
