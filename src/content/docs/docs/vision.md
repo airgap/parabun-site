@@ -56,7 +56,7 @@ for await (const { frame, motion } of vision.detectMotion(vision.frames(cam.fram
 
 ### Reactive signals
 
-The returned iterator carries two [`para:signals`](/docs/signals/) Signals — wire `effect()` blocks against motion state without iterating the full stream.
+The returned iterator carries two [`para:signals`](https://para.script.dev/docs/signals/) Signals — wire `effect()` blocks against motion state without iterating the full stream.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |

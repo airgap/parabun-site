@@ -7,7 +7,7 @@ description: GPU-accelerated vector + matrix primitives. Metal on macOS, CUDA on
 import gpu from "para:gpu";
 ```
 
-`para:gpu` is the device-dispatch layer. The same API works on Metal, CUDA, and CPU — backends register themselves via probe + capability, and `para:gpu` picks the best one available. The CPU backend forwards to [`para:simd`](/docs/simd/), so unsupported hosts still get vectorized routes.
+`para:gpu` is the device-dispatch layer. The same API works on Metal, CUDA, and CPU — backends register themselves via probe + capability, and `para:gpu` picks the best one available. The CPU backend forwards to [`para:simd`](https://para.script.dev/docs/simd/), so unsupported hosts still get vectorized routes.
 
 ## Backend
 
@@ -157,7 +157,7 @@ Obj-C FFI to `MTLDevice` + `MTLComputePipelineState`. Zero-copy via Apple's unif
 
 ### CPU
 
-Forwards every op to [`para:simd`](/docs/simd/). Always available — useful for tests and CI hosts without a GPU.
+Forwards every op to [`para:simd`](https://para.script.dev/docs/simd/). Always available — useful for tests and CI hosts without a GPU.
 
 ## Limits
 

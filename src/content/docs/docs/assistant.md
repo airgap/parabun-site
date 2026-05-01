@@ -131,7 +131,7 @@ await bot.say("Your laundry cycle is finished.");
 
 ## Reactive signals
 
-Every public signal is a [`para:signals`](/docs/signals/) Signal — wire them into a UI without polling. Each updates synchronously when its source changes; subscribe with `.subscribe(cb)` or read with `.get()`.
+Every public signal is a [`para:signals`](https://para.script.dev/docs/signals/) Signal — wire them into a UI without polling. Each updates synchronously when its source changes; subscribe with `.subscribe(cb)` or read with `.get()`.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |

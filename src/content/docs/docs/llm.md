@@ -94,7 +94,7 @@ Returns a `PrefixCache` — the KV cache snapshot after running `text` (or the t
 
 ### Reactive signals
 
-Each `LLM` instance exposes two [`para:signals`](/docs/signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
+Each `LLM` instance exposes two [`para:signals`](https://para.script.dev/docs/signals/) Signals — wire them into a UI to drive busy spinners and device badges without polling.
 
 | Signal | Type | What it tracks |
 | --- | --- | --- |

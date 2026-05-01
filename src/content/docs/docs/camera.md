@@ -62,7 +62,7 @@ Manual close. Equivalent to `using` scope exit. Idempotent.
 
 ### Reactive signals
 
-Three [`para:signals`](/docs/signals/) Signals on the camera handle — wire them into a UI without polling.
+Three [`para:signals`](https://para.script.dev/docs/signals/) Signals on the camera handle — wire them into a UI without polling.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |

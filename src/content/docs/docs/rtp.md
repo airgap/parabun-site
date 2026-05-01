@@ -60,7 +60,7 @@ for (const ordered of buf.drain()) {
 
 ### Reactive signals
 
-Three [`para:signals`](/docs/signals/) Signals on the buffer instance — wire them into a UI without polling.
+Three [`para:signals`](https://para.script.dev/docs/signals/) Signals on the buffer instance — wire them into a UI without polling.
 
 | Signal | Type | When it changes |
 | --- | --- | --- |

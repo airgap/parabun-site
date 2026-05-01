@@ -57,7 +57,7 @@ type Utterance = {
 
 ### Reactive signals on the listen stream
 
-The object `listen()` returns is the async iterator plus three [`para:signals`](/docs/signals/) Signals — wire them straight into a UI without polling.
+The object `listen()` returns is the async iterator plus three [`para:signals`](https://para.script.dev/docs/signals/) Signals — wire them straight into a UI without polling.
 
 | Signal | Type | What it tracks |
 | --- | --- | --- |

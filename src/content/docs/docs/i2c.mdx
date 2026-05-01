@@ -99,7 +99,7 @@ On stock Pi 5, the user header's i2c-1 isn't enabled by default. Add `dtparam=i2
 
 ## Reactive sensor reads
 
-Pair with [`para:signals`](/docs/signals/)' `fromInterval` to turn any periodic register read into a reactive Signal. The shape is identical for any chip — replace the register address and decoding with whatever the sensor's datasheet says.
+Pair with [`para:signals`](https://para.script.dev/docs/signals/)' `fromInterval` to turn any periodic register read into a reactive Signal. The shape is identical for any chip — replace the register address and decoding with whatever the sensor's datasheet says.
 
 <Tabs syncKey="lang">
   <TabItem label="TypeScript">

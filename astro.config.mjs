@@ -11,41 +11,51 @@ import parabunJsxGrammar from "./src/grammars/parabun-jsx.tmLanguage.json" with 
 import parabunInjectGrammar from "./src/grammars/parabun-inject.tmLanguage.json" with { type: "json" };
 
 // Hand-curated sidebar — the docs sit flat under src/content/docs/docs/* to
-// preserve existing /docs/<slug>/ URLs, so autogen-from-directory isn't a
-// natural fit. Two groups (Guides + Modules) match the section split the
-// previous build used.
+// preserve existing /docs/<slug>/ URLs. ParaBun docs cover hardware-bound
+// runtime modules; portable language modules (signals, parallel, pipeline,
+// arena, simd, csv, arrow) and the language sugar itself live on
+// para.script.dev — we link there rather than mirror.
 const docsRoot = "/docs";
 const guides = [
   { label: "ParaBun docs", link: `${docsRoot}/` },
   { label: "Install", link: `${docsRoot}/install/` },
-  { label: "Language extensions", link: `${docsRoot}/language/` },
 ];
-const modules = [
-  "arena",
-  "arrow",
+// Hardware-bound and runtime-only modules — not portable to other JS
+// runtimes, so they live here.
+const runtimeModules = [
   "assistant",
   "audio",
   "camera",
-  "csv",
   "gpio",
   "gpu",
   "i2c",
   "image",
   "llm",
   "mcp",
-  "parallel",
-  "pipeline",
   "rtp",
-  "signals",
-  "simd",
   "speech",
   "spi",
   "video",
   "vision",
 ].map(slug => ({ label: `para:${slug}`, link: `${docsRoot}/${slug}/` }));
+// Portable Para modules — pure JS / WASM, run anywhere; documented on
+// para.script.dev so the language story stays in one place. Listed here so
+// readers see what ParaBun ships, with the link pointing at the canonical doc.
+const portableModules = ["arena", "arrow", "csv", "parallel", "pipeline", "signals", "simd"].map(slug => ({
+  label: `para:${slug}`,
+  link: `https://para.script.dev/docs/${slug}/`,
+}));
+
+// Old /docs/<slug>/ paths for portable modules — preserved as 301s so any
+// social or LLM-cached link keeps working after the page moved to para.script.dev.
+const portableSlugs = ["arena", "arrow", "csv", "parallel", "pipeline", "signals", "simd", "language"];
+const docsRedirects = Object.fromEntries(
+  portableSlugs.map(slug => [`/docs/${slug}/`, `https://para.script.dev/docs/${slug}/`]),
+);
 
 export default defineConfig({
   site: "https://parabun.script.dev",
+  redirects: docsRedirects,
   integrations: [
     starlight({
       title: "ParaBun",
@@ -59,7 +69,8 @@ export default defineConfig({
       head: [{ tag: "script", attrs: { src: "/space.js", defer: true } }],
       sidebar: [
         { label: "Guides", items: guides },
-        { label: "Modules", items: modules },
+        { label: "Runtime modules", items: runtimeModules },
+        { label: "Para modules (cross-runtime)", items: portableModules },
       ],
       expressiveCode: {
         // Custom TextMate grammars for `.pts` / `.ptsx` / `.pjs` / `.pjsx`.

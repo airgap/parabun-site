@@ -17,15 +17,15 @@ If you want a tour, the [landing page](/) walks the module stack top-down with w
 
 Three layers of dependency:
 
-- **Tier 0 — primitives.** [para:simd](/docs/simd/), [para:gpu](/docs/gpu/), [para:parallel](/docs/parallel/), [para:arena](/docs/arena/), [para:pipeline](/docs/pipeline/), [para:signals](/docs/signals/), [para:rtp](/docs/rtp/). The numerical / structural / scheduling primitives the rest of the stack composes.
-- **Tier 1 — codecs, capture & protocols.** [para:image](/docs/image/), [para:audio](/docs/audio/), [para:csv](/docs/csv/), [para:llm](/docs/llm/), [para:camera](/docs/camera/), [para:video](/docs/video/), [para:mcp](/docs/mcp/). Statically-linked codecs, OS hardware capture, the GGUF inference runtime, and a Model Context Protocol client.
-- **Tier 2 — composed apps.** [para:speech](/docs/speech/) (Whisper STT + Piper TTS + VAD + wake word), [para:assistant](/docs/assistant/) (the 3-line edge voice assistant), [para:arrow](/docs/arrow/) (in-memory tables + IPC streaming), [para:vision](/docs/vision/). Use-case-shaped wrappers built on Tier 1.
+- **Tier 0 — primitives.** [para:simd](https://para.script.dev/docs/simd/), [para:gpu](/docs/gpu/), [para:parallel](https://para.script.dev/docs/parallel/), [para:arena](https://para.script.dev/docs/arena/), [para:pipeline](https://para.script.dev/docs/pipeline/), [para:signals](https://para.script.dev/docs/signals/), [para:rtp](/docs/rtp/). The numerical / structural / scheduling primitives the rest of the stack composes.
+- **Tier 1 — codecs, capture & protocols.** [para:image](/docs/image/), [para:audio](/docs/audio/), [para:csv](https://para.script.dev/docs/csv/), [para:llm](/docs/llm/), [para:camera](/docs/camera/), [para:video](/docs/video/), [para:mcp](/docs/mcp/). Statically-linked codecs, OS hardware capture, the GGUF inference runtime, and a Model Context Protocol client.
+- **Tier 2 — composed apps.** [para:speech](/docs/speech/) (Whisper STT + Piper TTS + VAD + wake word), [para:assistant](/docs/assistant/) (the 3-line edge voice assistant), [para:arrow](https://para.script.dev/docs/arrow/) (in-memory tables + IPC streaming), [para:vision](/docs/vision/). Use-case-shaped wrappers built on Tier 1.
 
 Modules without engines wired (ONNX vision detectors, Parquet) throw at the engine boundary with a documented error message. Their interfaces are stable so callers can write against them now.
 
 ## Language extensions
 
-[Language extensions](/docs/language/) covers the `.pts` / `.pjs` syntax: `pure` / `memo` declarators, `signal` / `effect` / `~>` reactive bindings, `|>` pipeline + inlining, `..!` / `..&` / `..=` suffix operators, and `defer` / `arena` block forms. All desugarings are parse-time and emit standard JS.
+[Language extensions](https://para.script.dev/docs/language/) covers the `.pts` / `.pjs` syntax: `pure` / `memo` declarators, `signal` / `effect` / `~>` reactive bindings, `|>` pipeline + inlining, `..!` / `..&` / `..=` suffix operators, and `defer` / `arena` block forms. All desugarings are parse-time and emit standard JS.
 
 ## Other reading
 
