@@ -422,3 +422,32 @@ header.header {
   background: var(--pb-accent-soft);
   color: var(--pb-text);
 }
+
+/* ─── Mobile / touch perf carve-outs ──────────────────────────────────
+   On Android Chrome and iOS Safari, two effects fight the compositor
+   scroll: scroll-driven parallax (animation-timeline: scroll(root))
+   forces transform reevaluation per scroll event, and backdrop-filter
+   blur on the floating nav pills re-rasterizes their underlying area
+   on every frame. Together they kill momentum scroll and cause
+   "elements paint only once on screen" lazy-render behavior.
+
+   Detection: (hover: none) or (pointer: coarse) hits touch devices
+   regardless of viewport size — covers phones AND tablets without
+   excluding hybrid laptops with touchscreens that also have a mouse. */
+@media (hover: none), (pointer: coarse) {
+  html::before,
+  body::before,
+  body::after {
+    animation: none !important;
+    animation-timeline: none !important;
+    will-change: auto;
+  }
+  header.header,
+  .sidebar-pane {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    /* Bump the bg alpha since blur is gone and partial transparency
+       would otherwise let the parallax-frozen nebulae leak into nav text. */
+    background: color-mix(in srgb, var(--pb-bg) 92%, transparent) !important;
+  }
+}
