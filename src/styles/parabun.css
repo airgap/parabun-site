@@ -137,7 +137,9 @@
     radial-gradient(1px 1px at 49% 88%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
     radial-gradient(1px 1px at 73% 53%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
   background-size: 100vw 100vh;
-  background-attachment: fixed;
+  /* Compositor-promote so scroll doesn't repaint. */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Soft nebulae — amber-led mirror of para.script.dev's blue-led version. */
@@ -152,7 +154,8 @@
     radial-gradient(ellipse 70vw 55vh at 78% 18%, rgba(255, 168, 85, 0.12), transparent 65%),
     radial-gradient(ellipse 55vw 45vh at 12% 75%, rgba(109, 180, 255, 0.07), transparent 65%),
     radial-gradient(ellipse 45vw 50vh at 55% 105%, rgba(180, 110, 220, 0.05), transparent 60%);
-  background-attachment: fixed;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 :root[data-theme="light"] body::before {
@@ -310,15 +313,15 @@ header a.site-title,
     "SOFT" 30 !important;
 }
 
+/* Header / sidebar — solid 98% bg. backdrop-filter blur over the
+   nebulae was hammering the main thread on every scroll frame. */
 header.header {
   border-block-end: 1px solid var(--pb-rule);
-  background: color-mix(in srgb, var(--pb-bg) 88%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--pb-bg) 98%, transparent);
 }
 .sidebar-pane {
   border-inline-end: 1px solid var(--pb-rule);
-  background: color-mix(in srgb, var(--pb-bg) 92%, transparent);
+  background: color-mix(in srgb, var(--pb-bg) 98%, transparent);
 }
 
 /* ─── Tables, blockquotes ───────────────────────────────────────────── */

@@ -114,7 +114,9 @@ body::before {
     radial-gradient(1px 1px at 49% 88%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
     radial-gradient(1px 1px at 73% 53%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
   background-size: 100vw 100vh;
-  background-attachment: fixed;
+  /* Compositor-promote so scroll doesn't repaint. */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 :root[data-theme="light"] body::before {
@@ -136,7 +138,8 @@ body::before {
     radial-gradient(ellipse 70vw 55vh at 78% 18%, rgba(255, 168, 85, 0.12), transparent 65%),
     radial-gradient(ellipse 55vw 45vh at 12% 75%, rgba(109, 180, 255, 0.07), transparent 65%),
     radial-gradient(ellipse 45vw 50vh at 55% 105%, rgba(180, 110, 220, 0.05), transparent 60%);
-  background-attachment: fixed;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .page,
@@ -169,17 +172,16 @@ header {
 }
 .binary .star-a {
   fill: var(--star-primary);
-  /* Two-stage glow: tight bright halo + diffuse outer corona. */
-  filter: drop-shadow(0 0 2px var(--star-primary))
-    drop-shadow(0 0 8px color-mix(in srgb, var(--star-primary) 60%, transparent));
+  /* Single shadow — stacked drop-shadows recompute every animation
+     frame on the rotating star and spike scroll latency. */
+  filter: drop-shadow(0 0 4px var(--star-primary));
   animation:
     orbit 14s linear infinite,
     twinkle-a 4.2s ease-in-out infinite;
 }
 .binary .star-b {
   fill: var(--star-companion);
-  filter: drop-shadow(0 0 2px var(--star-companion))
-    drop-shadow(0 0 8px color-mix(in srgb, var(--star-companion) 60%, transparent));
+  filter: drop-shadow(0 0 4px var(--star-companion));
   animation:
     orbit 14s linear infinite,
     twinkle-b 5.7s ease-in-out infinite;
@@ -233,10 +235,10 @@ header {
   z-index: 10;
   padding: 14px 0;
   margin-top: -14px;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: saturate(180%) blur(8px);
-  -webkit-backdrop-filter: saturate(180%) blur(8px);
-  border-bottom: 1px solid transparent;
+  /* Solid 98% — backdrop-filter blur was re-rasterizing the nebulae
+     underneath every scroll frame. */
+  background: color-mix(in srgb, var(--bg) 98%, transparent);
+  border-bottom: 1px solid var(--rule);
 }
 
 /* Once anchor-linked, the heading would otherwise scroll under the sticky
