@@ -80,81 +80,111 @@ body {
   position: relative;
 }
 
-/* ─── Atmospheric backgrounds ─────────────────────────────────────────
-   Dark: starfield with the amber companion painted larger / brighter
-   than the blue-white primary — Parabun's site, Parabun's star wins.
-   Light: subtle dot grid like astronomical chart paper.
-   ─────────────────────────────────────────────────────────────────── */
-body::before {
+/* ─── Atmospheric backgrounds — three parallax layers ─────────────────
+   Mirror of para.script.dev's three-layer system, but amber dominates
+   (companion-led, since this is Parabun's site).
+
+   Layer 1 (html::before, deepest): soft nebulae backdrop, slowest.
+   Layer 2 (body::before, middle): dense starfield, medium.
+   Layer 3 (body::after, closest): bright foreground stars + near dust,
+   fastest. */
+
+html::before,
+body::before,
+body::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
-}
-
-:root[data-theme="dark"] body::before,
-:root:not([data-theme="light"]) body::before {
-  background-image:
-    /* Bright stars with halos. The brightest of the bunch is amber on this
-       site (vs blue on para.script.dev) — visible signal of which half of
-       the binary you're looking at. */
-    radial-gradient(3px 3px at 88% 38%, rgba(255, 220, 180, 0.95) 18%, rgba(255, 168, 85, 0.35) 45%, transparent 100%),
-    radial-gradient(3px 3px at 41% 31%, rgba(255, 255, 255, 0.95) 18%, rgba(255, 255, 255, 0.25) 45%, transparent 100%),
-    radial-gradient(3px 3px at 14% 78%, rgba(180, 210, 255, 0.85) 18%, rgba(109, 180, 255, 0.25) 45%, transparent 100%),
-    radial-gradient(2px 2px at 67% 12%, rgba(255, 255, 255, 0.85) 25%, rgba(255, 255, 255, 0.18) 60%, transparent 100%),
-    radial-gradient(2px 2px at 23% 22%, rgba(255, 255, 255, 0.8) 25%, rgba(255, 255, 255, 0.15) 60%, transparent 100%),
-    radial-gradient(1px 1px at 8% 18%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 23% 76%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 56% 64%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
-    radial-gradient(1px 1px at 79% 87%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 14% 52%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
-    radial-gradient(1px 1px at 92% 71%, rgba(255, 168, 85, 0.55) 50%, transparent 100%),
-    radial-gradient(1px 1px at 35% 7%, rgba(255, 255, 255, 0.35) 50%, transparent 100%),
-    radial-gradient(1px 1px at 49% 88%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
-    radial-gradient(1px 1px at 73% 53%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
-  background-size: 100vw 100vh;
   will-change: transform;
   transform: translate3d(0, 0, 0);
-  /* Scroll-driven parallax — stars drift up faster than nebulae below. */
-  animation: star-parallax linear;
+}
+
+/* ─── Layer 1: deep nebulae (html::before) — amber-led ──────────────── */
+:root[data-theme="dark"]::before,
+:root:not([data-theme="light"])::before {
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse 80vw 65vh at 78% 18%, rgba(255, 168, 85, 0.13), transparent 65%),
+    radial-gradient(ellipse 65vw 50vh at 12% 75%, rgba(109, 180, 255, 0.08), transparent 65%),
+    radial-gradient(ellipse 55vw 60vh at 55% 110%, rgba(180, 110, 220, 0.06), transparent 60%);
+  animation: layer-deep linear;
   animation-timeline: scroll(root);
 }
 
-@keyframes star-parallax {
-  to {
-    transform: translate3d(0, -25vh, 0);
-  }
+/* ─── Layer 2: dense starfield (body::before) ───────────────────────── */
+:root[data-theme="dark"] body::before,
+:root:not([data-theme="light"]) body::before {
+  z-index: 0;
+  background-image:
+    radial-gradient(2px 2px at 8% 18%, rgba(255, 255, 255, 0.85) 25%, rgba(255, 255, 255, 0.18) 55%, transparent 100%),
+    radial-gradient(2px 2px at 23% 76%, rgba(255, 255, 255, 0.8) 25%, rgba(255, 255, 255, 0.15) 55%, transparent 100%),
+    radial-gradient(2px 2px at 67% 12%, rgba(255, 255, 255, 0.85) 25%, rgba(255, 255, 255, 0.18) 55%, transparent 100%),
+    radial-gradient(2px 2px at 23% 22%, rgba(255, 255, 255, 0.8) 25%, rgba(255, 255, 255, 0.15) 55%, transparent 100%),
+    radial-gradient(2px 2px at 49% 53%, rgba(255, 220, 180, 0.85) 25%, rgba(255, 168, 85, 0.18) 55%, transparent 100%),
+    radial-gradient(2px 2px at 38% 4%, rgba(255, 255, 255, 0.75) 25%, rgba(255, 255, 255, 0.14) 55%, transparent 100%),
+    radial-gradient(1px 1px at 14% 52%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 7%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 49% 88%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 73% 53%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 18% 38%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 31% 65%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 47% 28%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 58% 82%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 64% 38%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 76% 18%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 84% 62%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 95% 28%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 4% 84%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 28% 92%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 41% 18%, rgba(255, 168, 85, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 87% 8%, rgba(109, 180, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 12% 5%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 52% 96%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+  background-size: 100vw 100vh;
+  animation: layer-mid linear;
+  animation-timeline: scroll(root);
+}
+
+/* ─── Layer 3: foreground bright stars + near-dust (body::after) ─────── */
+:root[data-theme="dark"] body::after,
+:root:not([data-theme="light"]) body::after {
+  z-index: 0;
+  background-image:
+    /* Brightest foreground star is amber on this site (companion lead). */
+    radial-gradient(3px 3px at 88% 38%, rgba(255, 220, 180, 1) 16%, rgba(255, 168, 85, 0.5) 38%, transparent 90%),
+    radial-gradient(4px 4px at 41% 31%, rgba(255, 255, 255, 1) 14%, rgba(255, 255, 255, 0.35) 38%, transparent 90%),
+    radial-gradient(3px 3px at 14% 78%, rgba(180, 210, 255, 0.95) 16%, rgba(109, 180, 255, 0.35) 38%, transparent 90%),
+    radial-gradient(3px 3px at 71% 88%, rgba(255, 255, 255, 0.95) 16%, rgba(255, 255, 255, 0.3) 38%, transparent 90%),
+    radial-gradient(ellipse 35vw 28vh at 85% 8%, rgba(255, 168, 85, 0.07), transparent 70%),
+    radial-gradient(ellipse 30vw 25vh at 15% 92%, rgba(109, 180, 255, 0.05), transparent 70%);
+  animation: layer-near linear;
+  animation-timeline: scroll(root);
 }
 
 :root[data-theme="light"] body::before {
+  z-index: 0;
   background-image: radial-gradient(circle at 1px 1px, rgba(26, 24, 18, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
 }
-
-/* ─── Soft nebulae (dark mode only) — amber-led mirror of para.script.dev.
-   Amber gas dominates (matches the Parabun companion star), blue gas
-   appears as secondary, deep magenta in the third corner adds depth. */
-:root[data-theme="dark"] body::after,
-:root:not([data-theme="light"]) body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(ellipse 70vw 55vh at 78% 18%, rgba(255, 168, 85, 0.12), transparent 65%),
-    radial-gradient(ellipse 55vw 45vh at 12% 75%, rgba(109, 180, 255, 0.07), transparent 65%),
-    radial-gradient(ellipse 45vw 50vh at 55% 105%, rgba(180, 110, 220, 0.05), transparent 60%);
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  animation: nebula-parallax linear;
-  animation-timeline: scroll(root);
+:root[data-theme="light"]::before,
+:root[data-theme="light"] body::after {
+  display: none;
 }
 
-@keyframes nebula-parallax {
+@keyframes layer-deep {
   to {
-    transform: translate3d(0, -10vh, 0);
+    transform: translate3d(0, -6vh, 0);
+  }
+}
+@keyframes layer-mid {
+  to {
+    transform: translate3d(0, -22vh, 0);
+  }
+}
+@keyframes layer-near {
+  to {
+    transform: translate3d(0, -38vh, 0);
   }
 }
 
