@@ -38,7 +38,7 @@ const f32 = dec.decode(opus);
 
 `application` is `"voip" | "audio" | "lowdelay"`. Frame sizes are the Opus standard (2.5 / 5 / 10 / 20 / 40 / 60 ms at 48 kHz). Bitrate, complexity, FEC, DTX, in-band PLC are all knobs on the encoder constructor; see source for the full option set.
 
-Pair with [`para:rtp`](/docs/rtp/) for a wire-format Opus / RTP stream.
+Pair with [`para:rtp`](https://para.script.dev/docs/rtp/) for a wire-format Opus / RTP stream.
 
 ## Biquad filters (RBJ Audio EQ Cookbook)
 

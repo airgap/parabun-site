@@ -31,8 +31,6 @@ const runtimeModules = [
   "i2c",
   "image",
   "llm",
-  "mcp",
-  "rtp",
   "speech",
   "spi",
   "video",
@@ -41,14 +39,16 @@ const runtimeModules = [
 // Portable Para modules — pure JS / WASM, run anywhere; documented on
 // para.script.dev so the language story stays in one place. Listed here so
 // readers see what ParaBun ships, with the link pointing at the canonical doc.
-const portableModules = ["arena", "arrow", "csv", "parallel", "pipeline", "signals", "simd"].map(slug => ({
-  label: `para:${slug}`,
-  link: `https://para.script.dev/docs/${slug}/`,
-}));
+const portableModules = ["arena", "arrow", "csv", "mcp", "parallel", "pipeline", "rtp", "signals", "simd"].map(
+  slug => ({
+    label: `para:${slug}`,
+    link: `https://para.script.dev/docs/${slug}/`,
+  }),
+);
 
 // Old /docs/<slug>/ paths for portable modules — preserved as 301s so any
 // social or LLM-cached link keeps working after the page moved to para.script.dev.
-const portableSlugs = ["arena", "arrow", "csv", "parallel", "pipeline", "signals", "simd", "language"];
+const portableSlugs = ["arena", "arrow", "csv", "language", "mcp", "parallel", "pipeline", "rtp", "signals", "simd"];
 const docsRedirects = Object.fromEntries(
   portableSlugs.map(slug => [`/docs/${slug}/`, `https://para.script.dev/docs/${slug}/`]),
 );

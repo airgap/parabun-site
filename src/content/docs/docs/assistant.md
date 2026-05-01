@@ -205,7 +205,7 @@ const bot = await assistant.create({
 
 `run` returns any JSON-serializable value. Async returns are awaited. Schema is the JSON Schema fed to grammar-constrained sampling; only structures the schema lib supports work (no recursive `oneOf`, no recursive `object`).
 
-**MCP connections** — an object with `tools: ToolDescriptor[]` + `call(name, args)`. Every [`para:mcp`](/docs/mcp/) connection matches structurally:
+**MCP connections** — an object with `tools: ToolDescriptor[]` + `call(name, args)`. Every [`para:mcp`](https://para.script.dev/docs/mcp/) connection matches structurally:
 
 ```ts
 import mcp from "para:mcp";

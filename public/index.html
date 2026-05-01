@@ -69,7 +69,6 @@
         <nav class="nav">
           <a href="#stack">stack</a>
           <a href="#runtime-modules">modules</a>
-          <a href="#language">language</a>
           <a href="#roadmap">roadmap</a>
           <a href="/configure">configure</a>
           <a href="https://github.com/airgap/parabun" target="_blank" rel="noopener">github</a>
@@ -182,7 +181,7 @@
           <div class="code-header">
             <div class="lang-toggle" role="tablist">
               <button data-lang="ts" type="button">TypeScript</button>
-              <button data-lang="parabun" type="button">ParaBun</button>
+              <button data-lang="parabun" type="button">Para</button>
             </div>
           </div>
           <pre
@@ -751,7 +750,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">ParaBun</button>
+            <button data-lang="parabun" type="button">Para</button>
           </div>
         </div>
         <pre
@@ -817,7 +816,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">ParaBun</button>
+            <button data-lang="parabun" type="button">Para</button>
           </div>
         </div>
         <pre
@@ -882,7 +881,7 @@
         <div class="code-header">
           <div class="lang-toggle" role="tablist">
             <button data-lang="ts" type="button">TypeScript</button>
-            <button data-lang="parabun" type="button">ParaBun</button>
+            <button data-lang="parabun" type="button">Para</button>
           </div>
         </div>
         <pre
@@ -950,22 +949,6 @@
         call; <code>speech.say(text)</code> wraps <code>speak()</code> + <code>audio.play()</code> +
         <code>spk.write()</code> with a process-wide cached PlaybackStream keyed on (sampleRate, channels). Both
         ergonomic shortcuts shipped alongside the assistant facade.
-      </p>
-
-      <h2 id="language">Language sugar — see <a href="https://para.script.dev">para.script.dev</a></h2>
-      <p>
-        ParaBun runs <code>.pts</code>, <code>.ptsx</code>, <code>.pjs</code>, and <code>.pjsx</code> files with no
-        configuration — its bundled parser is the reference Para implementation. The
-        <a href="https://github.com/airgap/parabun/tree/main/editors">VS Code / Cursor / Kiro extension</a>
-        provides the grammar and an LSP with hover, go-to-definition, purity diagnostics, memo hints, and operator
-        documentation.
-      </p>
-      <p>
-        The language itself — <code>pure</code> / <code>memo</code>, <code>signal</code> / <code>effect</code> /
-        <code>~&gt;</code> / <code>-&gt;</code>, <code>defer</code> / <code>arena</code>, the <code>|&gt;</code> /
-        <code>..!</code> / <code>..&amp;</code> operators — is documented at
-        <a href="https://para.script.dev/docs/language/">para.script.dev/docs/language/</a>. Para is the language;
-        ParaBun is one runtime that ships it.
       </p>
 
       <h2 id="roadmap">Roadmap</h2>
