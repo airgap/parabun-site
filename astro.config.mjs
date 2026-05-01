@@ -83,7 +83,11 @@ export default defineConfig({
             pjsx: "parabun-jsx",
           },
         },
-        themes: ["github-dark"],
+        // Stellar Atlas pair — Tokyo Night for the night-sky default
+        // (slate bg, periwinkle keywords, warm-amber strings — sits
+        // naturally inside the cosmic page); min-light for the atlas
+        // alternate (parchment-friendly, low-saturation tokens).
+        themes: ["min-light", "tokyo-night"],
       },
     }),
   ],

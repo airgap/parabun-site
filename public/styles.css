@@ -1,17 +1,49 @@
-:root {
-  --bg: #0f0f11;
-  --bg-elev: #16161a;
-  --bg-code: #17171b;
-  --rule: #24242a;
-  --text: #e8e6e3;
-  --text-dim: #9a988f;
-  --text-faint: #6a6860;
-  --accent: #f5b041;
-  --accent-dim: #8a6626;
-  --add: #7ab87a;
-  --rem: #c96a6a;
+/* ─── Stellar Atlas, companion-led — Parabun owns the amber star ──────
+   This site mirrors para.script.dev's Stellar Atlas system but flips the
+   accent: the amber companion is the brand color here, and the blue-white
+   primary appears as the secondary. The two sites visibly orbit each
+   other — one is blue-white-led, the other amber-led, but both show the
+   binary system. */
+:root,
+:root[data-theme="dark"] {
+  --bg: #050811;
+  --bg-elev: #0c1020;
+  --bg-code: #0d1224;
+  --rule: #1a2240;
+  --rule-strong: #2a3458;
+  --text: #e8e6dd;
+  --text-dim: #8a8b94;
+  --text-faint: #4a4d5a;
+  --star-primary: #6db4ff;
+  --star-companion: #ffa855;
+  --accent: var(--star-companion);
+  --accent-dim: #ffc78a;
+  --accent-soft: #3a2a14;
+  --add: #6dd49a;
+  --rem: #ff7a7a;
+  --shadow-strong: rgba(0, 0, 0, 0.6);
   --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, ui-monospace, monospace;
-  --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+  --sans: "Spectral", Georgia, "Times New Roman", serif;
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+}
+
+:root[data-theme="light"] {
+  --bg: #f3efe3;
+  --bg-elev: #f8f5ec;
+  --bg-code: #ebe5d4;
+  --rule: #d4cdba;
+  --rule-strong: #b8af9a;
+  --text: #1a1812;
+  --text-dim: #5e574a;
+  --text-faint: #94897a;
+  --star-primary: #1a4880;
+  --star-companion: #b94a1f;
+  --accent: var(--star-companion);
+  --accent-dim: #8a3614;
+  --accent-soft: #f4d4cf;
+  --add: #4d7c4f;
+  --rem: #b94a1f;
+  --shadow-strong: rgba(26, 24, 18, 0.1);
 }
 
 * {
@@ -43,6 +75,101 @@ html {
 body {
   margin: 0;
   padding: 0;
+  position: relative;
+}
+
+/* ─── Atmospheric backgrounds ─────────────────────────────────────────
+   Dark: starfield with the amber companion painted larger / brighter
+   than the blue-white primary — Parabun's site, Parabun's star wins.
+   Light: subtle dot grid like astronomical chart paper.
+   ─────────────────────────────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+:root[data-theme="dark"] body::before,
+:root:not([data-theme="light"]) body::before {
+  background-image:
+    radial-gradient(1px 1px at 8% 18%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 23% 76%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(2px 2px at 41% 31%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 56% 64%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 67% 12%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 79% 87%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(2px 2px at 88% 38%, rgba(255, 168, 85, 0.75) 50%, transparent 100%),
+    radial-gradient(1px 1px at 14% 52%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 92% 71%, rgba(109, 180, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 7%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  background-size: 100vw 100vh;
+}
+
+:root[data-theme="light"] body::before {
+  background-image: radial-gradient(circle at 1px 1px, rgba(26, 24, 18, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.page,
+header {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Binary star brand mark ──────────────────────────────────────────
+   Same SVG shape as para.script.dev — but on this site the COMPANION
+   star (right) is the larger of the two, since this is Parabun's site.
+   Independent twinkle animations at slightly different rates so the two
+   stars shimmer asynchronously, like a real eclipsing binary. */
+.binary {
+  display: inline-block;
+  width: 36px;
+  height: 14px;
+  vertical-align: -2px;
+  margin-right: 8px;
+}
+.binary .orbit {
+  fill: none;
+  stroke: var(--text-faint);
+  stroke-width: 0.6;
+  stroke-dasharray: 1.5 1.5;
+  opacity: 0.7;
+}
+.binary .star-a {
+  fill: var(--star-primary);
+  filter: drop-shadow(0 0 2px var(--star-primary));
+  animation: twinkle-a 4.2s ease-in-out infinite;
+}
+.binary .star-b {
+  fill: var(--star-companion);
+  filter: drop-shadow(0 0 2px var(--star-companion));
+  animation: twinkle-b 5.7s ease-in-out infinite;
+}
+@keyframes twinkle-a {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.78;
+  }
+}
+@keyframes twinkle-b {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.7;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .binary .star-a,
+  .binary .star-b {
+    animation: none;
+  }
 }
 
 .page {
@@ -77,14 +204,16 @@ h2[id] {
 }
 
 .brand {
-  font-family: var(--mono);
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-
-.brand .marker {
-  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  color: var(--text);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
 }
 
 .nav {
@@ -170,45 +299,73 @@ html.ligatures .brand {
 }
 
 h1 {
-  font-size: 40px;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  font-weight: 500;
-  margin: 0 0 20px;
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 1.9rem + 2.8vw, 4.2rem);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+  margin: 0 0 24px;
+  color: var(--text);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
 }
 
 h1 em {
-  font-style: normal;
+  font-style: italic;
+  font-weight: 400;
   color: var(--accent);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
 }
 
 .lede {
-  font-size: 17px;
+  font-family: var(--serif);
+  font-size: 1.32rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
   color: var(--text-dim);
   margin: 0 0 28px;
+  max-width: 38em;
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 50;
 }
 
 h2 {
-  font-family: var(--mono);
-  font-size: 13px;
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 1.4rem + 0.8vw, 2.1rem);
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-faint);
-  margin: 64px 0 20px;
-  padding-top: 24px;
+  letter-spacing: -0.012em;
+  color: var(--text);
+  margin: 80px 0 20px;
+  padding-top: 28px;
   border-top: 1px solid var(--rule);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
 }
 
 h3 {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 500;
-  margin: 28px 0 10px;
+  font-family: var(--serif);
+  font-size: 1.32rem;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--text);
+  margin: 36px 0 10px;
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 50;
 }
 
 h3 .import {
+  font-family: var(--mono);
+  font-size: 0.78em;
   color: var(--accent);
+  font-weight: 500;
 }
 
 p {
@@ -254,13 +411,28 @@ pre code {
   font-size: inherit;
 }
 
-/* Code blocks inside <pre> are rendered through Shiki + the parabun
-   TextMate grammar at build time (scripts/highlight-landing.ts) — every
-   colour comes through inline `style="color:#…"` on per-token <span>s,
-   so this stylesheet only owns layout. The classes below are still used
-   for inline decoration in prose: `pb-kw` / `pb-op` highlight Parabun
-   tokens called out in section headings, `import` italicises `bun:*`
-   module names referenced in body text. */
+/* Code blocks inside <pre data-lang="…"> are rendered through Shiki at
+   build time (scripts/highlight-landing.ts) with dual-theme output: each
+   span carries `--shiki-light` and `--shiki-dark` CSS variables but no
+   default `color`. The rules below pick the active theme based on
+   [data-theme] on <html>. Inline-prose token classes (.pb-kw / .pb-op)
+   still use the accent variable directly. */
+:root[data-theme="light"] pre[data-lang] span,
+:root[data-theme="light"] pre[data-lang] {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, inherit);
+  font-weight: var(--shiki-light-font-weight, inherit);
+  text-decoration: var(--shiki-light-text-decoration, inherit);
+}
+:root[data-theme="dark"] pre[data-lang] span,
+:root[data-theme="dark"] pre[data-lang],
+:root:not([data-theme="light"]) pre[data-lang] span,
+:root:not([data-theme="light"]) pre[data-lang] {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, inherit);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+  text-decoration: var(--shiki-dark-text-decoration, inherit);
+}
 .pure,
 .pb-kw {
   color: var(--accent);

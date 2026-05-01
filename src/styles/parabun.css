@@ -1,77 +1,335 @@
-/* JetBrains Mono — keeps the parabun mono look across docs code blocks. */
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+/* ─── Parabun: Stellar Atlas, companion-led ────────────────────────────
+   Parabun is the warm amber companion in a binary star system; ParaScript
+   is the blue-white primary at para.script.dev. Both sites use the same
+   Stellar Atlas system, but each leads with its own star — visiting one
+   then the other makes the binary visibly orbit between them.
 
-/* ─── Parabun palette mapped onto Starlight CSS variables ────────────────
-   Variables map onto props.css (see node_modules/@astrojs/starlight/style/
-   props.css). Both `:root` (dark) and `[data-theme='light']` are overridden
-   so the toggle has no visible effect — parabun is always dark.
+   Dark (default) — Night Sky observation. Deep midnight bg with the
+   amber companion as the lead accent and the blue-white primary present
+   as the secondary.
+
+   Light (alternate) — Atlas. Parchment, the same binary expressed as
+   ink markings: vermillion lead + deep blue secondary.
+
+   Typography — Fraunces (display) + Spectral (body), both Production
+   Type, designed to pair. JetBrains Mono unchanged for code.
    ───────────────────────────────────────────────────────────────────── */
-:root,
-:root[data-theme="light"] {
-  /* Core palette (mirrors the original styles.css :root). */
-  --pb-bg: #0f0f11;
-  --pb-bg-elev: #16161a;
-  --pb-bg-code: #17171b;
-  --pb-rule: #24242a;
-  --pb-text: #e8e6e3;
-  --pb-text-dim: #9a988f;
-  --pb-text-faint: #6a6860;
-  --pb-accent: #f5b041;
-  --pb-accent-dim: #8a6626;
 
-  /* Starlight overrides. */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,400..700,30..50&family=JetBrains+Mono:wght@400;500;600&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap");
+
+/* ─── Dark: Night Sky (default) ─────────────────────────────────────── */
+:root,
+:root[data-theme="dark"] {
+  --pb-bg: #050811;
+  --pb-bg-elev: #0c1020;
+  --pb-bg-code: #0d1224;
+  --pb-bg-inline-code: #131830;
+  --pb-rule: #1a2240;
+  --pb-rule-strong: #2a3458;
+  --pb-text: #e8e6dd;
+  --pb-text-dim: #8a8b94;
+  --pb-text-faint: #4a4d5a;
+
+  /* Same binary system, but the brand accent points to the COMPANION
+     (Parabun's amber). Primary blue-white still defined for the brand
+     mark + cross-references to ParaScript. */
+  --pb-star-primary: #6db4ff;
+  --pb-star-companion: #ffa855;
+
+  --pb-accent: var(--pb-star-companion);
+  --pb-accent-strong: #ffc78a;
+  --pb-accent-soft: #3a2a14;
+
+  --sl-color-text-invert: var(--pb-bg);
+}
+
+/* ─── Light: Atlas (alternate) ──────────────────────────────────────── */
+:root[data-theme="light"] {
+  --pb-bg: #f3efe3;
+  --pb-bg-elev: #f8f5ec;
+  --pb-bg-code: #ebe5d4;
+  --pb-bg-inline-code: #ebe2cc;
+  --pb-rule: #d4cdba;
+  --pb-rule-strong: #b8af9a;
+  --pb-text: #1a1812;
+  --pb-text-dim: #5e574a;
+  --pb-text-faint: #94897a;
+
+  --pb-star-primary: #1a4880;
+  --pb-star-companion: #b94a1f;
+
+  --pb-accent: var(--pb-star-companion);
+  --pb-accent-strong: #8a3614;
+  --pb-accent-soft: #f4d4cf;
+
+  --sl-color-text-invert: #ffffff;
+}
+
+/* ─── Starlight bindings ────────────────────────────────────────────── */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
   --sl-color-bg: var(--pb-bg);
   --sl-color-bg-nav: var(--pb-bg);
   --sl-color-bg-sidebar: var(--pb-bg);
-  --sl-color-bg-inline-code: var(--pb-bg-elev);
+  --sl-color-bg-inline-code: var(--pb-bg-inline-code);
   --sl-color-bg-accent: var(--pb-accent);
 
   --sl-color-text: var(--pb-text);
   --sl-color-text-accent: var(--pb-accent);
-  --sl-color-text-invert: var(--pb-bg);
   --sl-color-white: var(--pb-text);
+  --sl-color-black: var(--pb-text);
 
   --sl-color-accent: var(--pb-accent);
-  --sl-color-accent-low: var(--pb-accent-dim);
-  --sl-color-accent-high: var(--pb-accent);
+  --sl-color-accent-low: var(--pb-accent-soft);
+  --sl-color-accent-high: var(--pb-accent-strong);
 
   --sl-color-hairline: var(--pb-rule);
   --sl-color-hairline-light: var(--pb-rule);
-  --sl-color-hairline-shade: var(--pb-bg-elev);
+  --sl-color-hairline-shade: var(--pb-rule-strong);
 
-  /* Gray scale (used by Starlight chrome — sidebar dim labels, etc.). */
   --sl-color-gray-1: var(--pb-text);
   --sl-color-gray-2: var(--pb-text-dim);
   --sl-color-gray-3: var(--pb-text-faint);
-  --sl-color-gray-4: var(--pb-text-faint);
-  --sl-color-gray-5: var(--pb-bg-elev);
+  --sl-color-gray-4: var(--pb-rule-strong);
+  --sl-color-gray-5: var(--pb-rule);
   --sl-color-gray-6: var(--pb-bg-elev);
+  --sl-color-gray-7: var(--pb-bg);
 
-  /* Fonts. */
-  --sl-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+  --sl-font: "Spectral", Georgia, "Times New Roman", serif;
   --sl-font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, ui-monospace, monospace;
+
+  --sl-content-width: 50rem;
+  --sl-line-height: 1.65;
+  --sl-line-height-headings: 1.12;
 }
 
-/* Hide the light/dark toggle — parabun is dark-only. */
-starlight-theme-select {
-  display: none;
+/* ─── Atmospheric backgrounds ───────────────────────────────────────── */
+:root[data-theme="dark"] body::before,
+:root:not([data-theme="light"]) body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 8% 18%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 23% 76%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(2px 2px at 41% 31%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 56% 64%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 67% 12%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 79% 87%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    /* Companion lead — amber dot is larger / brighter on this site. */
+      radial-gradient(2px 2px at 88% 38%, rgba(255, 168, 85, 0.75) 50%, transparent 100%),
+    radial-gradient(1px 1px at 14% 52%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 92% 71%, rgba(109, 180, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 7%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  background-size: 100vw 100vh;
 }
 
-/* Subtle accents that Starlight doesn't expose as variables. */
+:root[data-theme="light"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(26, 24, 18, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.sl-container,
+header.header,
+.sidebar-pane,
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Headings: Fraunces ────────────────────────────────────────────── */
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+h1.content-panel,
+.hero h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  color: var(--pb-text);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
+}
+
+.sl-markdown-content h1 {
+  font-size: clamp(2.4rem, 1.85rem + 2.2vw, 3.5rem);
+  font-weight: 600;
+  margin-block-end: 0.35em;
+}
+.sl-markdown-content h2 {
+  font-size: clamp(1.6rem, 1.4rem + 0.8vw, 2.05rem);
+  font-weight: 500;
+  margin-block-start: 2.4em;
+  margin-block-end: 0.55em;
+  padding-block-end: 0.4em;
+  border-block-end: 1px solid var(--pb-rule);
+}
+.sl-markdown-content h3 {
+  font-size: 1.32rem;
+  font-weight: 600;
+  margin-block-start: 1.8em;
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 50;
+}
+.sl-markdown-content h4 {
+  font-family: "Spectral", serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pb-text-faint);
+  margin-block-start: 1.6em;
+}
+
+.sl-markdown-content {
+  font-size: 1rem;
+  font-family: "Spectral", Georgia, serif;
+}
+.sl-markdown-content p,
+.sl-markdown-content li {
+  color: var(--pb-text);
+}
+
+.sl-markdown-content > h1 + p {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 1.32rem;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  color: var(--pb-text-dim);
+  margin-block-end: 1.8em;
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 50;
+}
+
+.sl-markdown-content a {
+  color: var(--pb-accent);
+  text-decoration: none;
+  border-block-end: 1px solid var(--pb-accent-soft);
+  transition: border-color 120ms ease;
+}
+.sl-markdown-content a:hover {
+  border-block-end-color: var(--pb-accent);
+}
+
+/* ─── Code ──────────────────────────────────────────────────────────── */
+
 .sl-markdown-content code:not(pre code) {
+  font-family: var(--sl-font-mono);
+  font-size: 0.86em;
+  background: var(--pb-bg-inline-code);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
   border: 1px solid var(--pb-rule);
+  color: var(--pb-text);
 }
 
-/* Use the same accent for the active sidebar link the original site used. */
+.expressive-code {
+  margin-block: 1.5rem !important;
+}
+.expressive-code pre {
+  border: 1px solid var(--pb-rule) !important;
+  border-radius: 6px !important;
+  background: var(--pb-bg-code) !important;
+}
+
+/* ─── Sidebar / nav chrome ──────────────────────────────────────────── */
+
+.sl-link-card,
+.card {
+  border: 1px solid var(--pb-rule);
+  background: var(--pb-bg-elev);
+}
+
 [aria-current="page"] {
   color: var(--pb-accent) !important;
+  font-weight: 600;
 }
 
-/* Match the original lede-paragraph treatment for the first paragraph
-   following an h1 in docs content. Starlight doesn't ship a `.lede` class,
-   but the first paragraph after the auto-rendered title is the description
-   from frontmatter — give it the same dim-and-larger styling. */
-.sl-markdown-content > h1 + p {
+.sidebar-pane summary span,
+.sidebar-pane h2,
+.sidebar-content > ul > li > span {
+  font-family: "Spectral", serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--pb-text-faint);
+  font-weight: 600;
+}
+
+.site-title,
+header a.site-title,
+[data-has-hero] header a.site-title {
+  font-family: "Fraunces", Georgia, serif !important;
+  font-weight: 700 !important;
+  font-size: 1.2rem !important;
+  letter-spacing: -0.012em;
+  color: var(--pb-text) !important;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30 !important;
+}
+
+header.header {
+  border-block-end: 1px solid var(--pb-rule);
+  background: color-mix(in srgb, var(--pb-bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.sidebar-pane {
+  border-inline-end: 1px solid var(--pb-rule);
+  background: color-mix(in srgb, var(--pb-bg) 92%, transparent);
+}
+
+/* ─── Tables, blockquotes ───────────────────────────────────────────── */
+.sl-markdown-content blockquote {
+  border-inline-start: 3px solid var(--pb-accent);
+  background: transparent;
+  padding-inline-start: 1.1rem;
   color: var(--pb-text-dim);
-  font-size: 1.0625rem;
+  font-style: italic;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.08rem;
+}
+
+.sl-markdown-content table {
+  border-collapse: collapse;
+}
+.sl-markdown-content th,
+.sl-markdown-content td {
+  border-block-end: 1px solid var(--pb-rule);
+  padding: 0.55rem 0.8rem;
+  text-align: start;
+}
+.sl-markdown-content th {
+  font-family: "Spectral", serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pb-text-dim);
+  border-block-end-color: var(--pb-rule-strong);
+}
+
+.sl-markdown-content hr {
+  border: 0;
+  border-block-start: 1px dashed var(--pb-rule-strong);
+  margin-block: 2.5rem;
+}
+
+::selection {
+  background: var(--pb-accent-soft);
+  color: var(--pb-text);
 }

@@ -72,7 +72,9 @@ const highlighter = await createHighlighter({
     parabunJsx as any,
     parabunInject as any,
   ],
-  themes: ["github-dark"],
+  // Dual-theme: shiki emits per-span CSS variables for both themes; the
+  // landing CSS picks `--shiki-light` or `--shiki-dark` from `[data-theme]`.
+  themes: ["min-light", "tokyo-night"],
   langAlias: {
     parabun: "parabun-ts",
     pts: "parabun-ts",
@@ -90,7 +92,13 @@ const rewritten = original.replace(
     const lang = langMatch ? langMatch[1] : "ts";
     const code = rawCode(body);
     const targetLang = lang === "ts" ? "typescript" : lang;
-    const html = highlighter.codeToHtml(code, { lang: targetLang, theme: "github-dark" });
+    const html = highlighter.codeToHtml(code, {
+      lang: targetLang,
+      themes: { light: "min-light", dark: "tokyo-night" },
+      // No default color → both themes emit only as CSS variables. CSS
+      // rules under [data-theme="…"] pick the active one.
+      defaultColor: false,
+    });
     const innerMatch = html.match(/<code[^>]*>([\s\S]*?)<\/code>/);
     const inner = innerMatch ? innerMatch[1] : code;
     blockCount++;
