@@ -119,33 +119,45 @@ header {
 }
 
 /* ─── Binary star brand mark ──────────────────────────────────────────
-   Same SVG shape as para.script.dev — but on this site the COMPANION
-   star (right) is the larger of the two, since this is Parabun's site.
-   Independent twinkle animations at slightly different rates so the two
-   stars shimmer asynchronously, like a real eclipsing binary. */
+   Same shape and animation as para.script.dev's .binary. The two stars
+   share an `orbit` keyframe so they always stay 180° apart on the same
+   circular path; each also has its own opacity twinkle so they shimmer
+   asynchronously. transform-box: view-box puts transform-origin in
+   viewport coords; 50% 50% is (16, 16) = the system's barycenter.
+
+   Companion (amber) is the heavier body on this site — it orbits closer
+   to the barycenter (cx=21, distance 5) while the lighter primary
+   (blue-white) traces the wider arc (cx=5, distance 11). On para.script.dev
+   the relationship inverts. */
 .binary {
   display: inline-block;
-  width: 36px;
-  height: 14px;
-  vertical-align: -2px;
-  margin-right: 8px;
+  width: 32px;
+  height: 32px;
+  vertical-align: -10px;
+  margin-right: 10px;
 }
-.binary .orbit {
-  fill: none;
-  stroke: var(--text-faint);
-  stroke-width: 0.6;
-  stroke-dasharray: 1.5 1.5;
-  opacity: 0.7;
+.binary circle {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
 }
 .binary .star-a {
   fill: var(--star-primary);
-  filter: drop-shadow(0 0 2px var(--star-primary));
-  animation: twinkle-a 4.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px var(--star-primary));
+  animation:
+    orbit 14s linear infinite,
+    twinkle-a 4.2s ease-in-out infinite;
 }
 .binary .star-b {
   fill: var(--star-companion);
-  filter: drop-shadow(0 0 2px var(--star-companion));
-  animation: twinkle-b 5.7s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px var(--star-companion));
+  animation:
+    orbit 14s linear infinite,
+    twinkle-b 5.7s ease-in-out infinite;
+}
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
 }
 @keyframes twinkle-a {
   0%,
