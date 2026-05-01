@@ -6,7 +6,7 @@
 // just an rAF-throttled redraw.
 (() => {
   const SEED = 1337;
-  const STAR_COUNT = 700;
+  const STAR_COUNT = 220;
 
   const canvas = document.createElement("canvas");
   canvas.id = "__space";
@@ -59,10 +59,11 @@
       halo = false;
       parallax = 0.04 + rng() * 0.08;
     }
+    // Mostly warm-white stars with occasional amber accent (companion-led
+    // brand). No blue tint — that's para.script.dev's primary star.
     const ct = rng();
     let color;
-    if (ct > 0.93) color = [255, 168, 85];
-    else if (ct > 0.86) color = [180, 210, 255];
+    if (ct > 0.92) color = [255, 168, 85];
     else color = [255, 250, 240];
     stars.push({
       x: rng(),
@@ -76,14 +77,14 @@
   }
 
   // Nebulae — slowest layer (deep background).
-  // Alphas all >= 0.12 so the 8-bit gradient quantization isn't
-  // perceptible — at alpha 0.08 the gradient steps in the 0-255 range
-  // were too sparse and read as visible bands. Higher alpha = more
-  // intermediate steps available, smoother fade.
+  // Three amber-spectrum nebulae — main amber, peachy, deep warm —
+  // since this is parabun's site (companion-led, no blue/magenta).
+  // Alphas >= 0.12 so 8-bit gradient quantization stays under the eye's
+  // band-detection threshold.
   const nebulae = [
     { x: 0.78, y: 0.18, rx: 0.7, ry: 0.55, color: [255, 168, 85], alpha: 0.13, parallax: 0.02 },
-    { x: 0.12, y: 0.75, rx: 0.55, ry: 0.45, color: [109, 180, 255], alpha: 0.13, parallax: 0.02 },
-    { x: 0.55, y: 1.1, rx: 0.45, ry: 0.5, color: [180, 110, 220], alpha: 0.12, parallax: 0.015 },
+    { x: 0.12, y: 0.75, rx: 0.55, ry: 0.45, color: [255, 200, 130], alpha: 0.12, parallax: 0.02 },
+    { x: 0.55, y: 1.1, rx: 0.45, ry: 0.5, color: [220, 130, 60], alpha: 0.12, parallax: 0.015 },
   ];
 
   let dpr = 1;
