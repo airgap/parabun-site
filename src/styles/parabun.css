@@ -110,6 +110,10 @@
 }
 
 /* ─── Atmospheric backgrounds ───────────────────────────────────────── */
+/* Dark: starfield with halos + soft nebulae. The brightest star here is
+   amber (vs blue-white on para.script.dev) — matches the companion lead.
+   Three layered nebulae in body::after: amber dominant, blue secondary,
+   deep magenta as the third "background galaxy" hint. */
 :root[data-theme="dark"] body::before,
 :root:not([data-theme="light"]) body::before {
   content: "";
@@ -118,18 +122,37 @@
   pointer-events: none;
   z-index: 0;
   background-image:
+    radial-gradient(3px 3px at 88% 38%, rgba(255, 220, 180, 0.95) 18%, rgba(255, 168, 85, 0.35) 45%, transparent 100%),
+    radial-gradient(3px 3px at 41% 31%, rgba(255, 255, 255, 0.95) 18%, rgba(255, 255, 255, 0.25) 45%, transparent 100%),
+    radial-gradient(3px 3px at 14% 78%, rgba(180, 210, 255, 0.85) 18%, rgba(109, 180, 255, 0.25) 45%, transparent 100%),
+    radial-gradient(2px 2px at 67% 12%, rgba(255, 255, 255, 0.85) 25%, rgba(255, 255, 255, 0.18) 60%, transparent 100%),
+    radial-gradient(2px 2px at 23% 22%, rgba(255, 255, 255, 0.8) 25%, rgba(255, 255, 255, 0.15) 60%, transparent 100%),
     radial-gradient(1px 1px at 8% 18%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
     radial-gradient(1px 1px at 23% 76%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-    radial-gradient(2px 2px at 41% 31%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
     radial-gradient(1px 1px at 56% 64%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
-    radial-gradient(1px 1px at 67% 12%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
     radial-gradient(1px 1px at 79% 87%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-    /* Companion lead — amber dot is larger / brighter on this site. */
-      radial-gradient(2px 2px at 88% 38%, rgba(255, 168, 85, 0.75) 50%, transparent 100%),
     radial-gradient(1px 1px at 14% 52%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
-    radial-gradient(1px 1px at 92% 71%, rgba(109, 180, 255, 0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 35% 7%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+    radial-gradient(1px 1px at 92% 71%, rgba(255, 168, 85, 0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 7%, rgba(255, 255, 255, 0.35) 50%, transparent 100%),
+    radial-gradient(1px 1px at 49% 88%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 73% 53%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
   background-size: 100vw 100vh;
+  background-attachment: fixed;
+}
+
+/* Soft nebulae — amber-led mirror of para.script.dev's blue-led version. */
+:root[data-theme="dark"] body::after,
+:root:not([data-theme="light"]) body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse 70vw 55vh at 78% 18%, rgba(255, 168, 85, 0.12), transparent 65%),
+    radial-gradient(ellipse 55vw 45vh at 12% 75%, rgba(109, 180, 255, 0.07), transparent 65%),
+    radial-gradient(ellipse 45vw 50vh at 55% 105%, rgba(180, 110, 220, 0.05), transparent 60%);
+  background-attachment: fixed;
 }
 
 :root[data-theme="light"] body::before {
